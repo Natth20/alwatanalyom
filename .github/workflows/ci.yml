@@ -1,0 +1,42 @@
+name: ci
+on: [pull_request, push]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: awt
+          POSTGRES_USER: awt
+          POSTGRES_PASSWORD: test
+        ports:
+          - "5432:5432"
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run Unit Tests
+        run: pnpm --filter @awt/db exec tsx --test ../shared/src/tests/shared.test.ts ../dedupe/src/tests/dedupe.test.ts
+
+      - name: Build All Apps
+        run: pnpm build
