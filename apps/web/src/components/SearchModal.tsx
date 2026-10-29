@@ -245,3 +245,4 @@ export function SearchModal() {
     </div>
   );
 }
+

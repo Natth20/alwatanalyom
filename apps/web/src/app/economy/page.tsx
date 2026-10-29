@@ -1,5 +1,6 @@
 import { getLatestQuotes } from "@/lib/dal";
 import { QuoteTile } from "@/components/QuoteTile";
+import { CurrencyConverter } from "@/components/CurrencyConverter";
 
 export const revalidate = 30; // ISR 30 ثانية
 
@@ -31,6 +32,9 @@ export default async function EconomyPage() {
           ⚠️ <strong>تنويه:</strong> كافة الأسعار والمؤشرات المعروضة هي لأغراض إخبارية وإعلامية فقط، ولا تشكّل بأي حال من الأحوال نصيحة مالية أو توصية استثمارية.
         </div>
       </div>
+
+      {/* حاسبة أسعار الصرف والذهب */}
+      <CurrencyConverter quotes={quotes} />
 
       {/* أقسام المؤشرات */}
       <div className="space-y-8">

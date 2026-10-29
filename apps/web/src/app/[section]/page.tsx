@@ -103,6 +103,33 @@ export default async function SectionPage({ params }: Props) {
             </div>
           </div>
         )}
+
+        {/* لوحة الشراكة مع يلا سبورت لقسم الرياضة */}
+        {sectionSlug === "sports" && (
+          <div className="mt-6 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <span className="text-xs font-bold text-emerald-400">تكامل ذكي مع منصة يلا سبورت (yallasport.com)</span>
+                </div>
+                <p className="text-xs text-[var(--text-muted)]">
+                  تابع التغطيات الحية، جداول المباريات، وترتيب الدوريات الأوروبية والعربية لحظة بلحظة عبر شريكنا الرياضي المعتمد.
+                </p>
+              </div>
+
+              <a
+                href="https://yallasport.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 shadow-sm"
+              >
+                <span>الانتقال إلى يلا سبورت</span>
+                <span>↗</span>
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* المقالات */}
@@ -146,4 +173,3 @@ export default async function SectionPage({ params }: Props) {
     </div>
   );
 }
-

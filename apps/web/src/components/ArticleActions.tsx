@@ -118,3 +118,4 @@ export function ArticleActions({ article }: Props) {
     </div>
   );
 }
+

@@ -1,6 +1,13 @@
 import { getChannels } from "@/lib/dal";
+import { LiveChannelsFilter } from "@/components/LiveChannelsFilter";
 
 export const revalidate = 300; // ISR 5 دقائق
+
+export const metadata = {
+  title: "دليل البث المباشر المعتمد — الوطن اليوم",
+  description:
+    "دليل شامل وموثق لقنوات البث الإخباري الحي العربية والعالمية بروابط رسمية مفحوصة دورياً.",
+};
 
 export default async function LiveDirectoryPage() {
   const channels = await getChannels();
@@ -20,53 +27,8 @@ export default async function LiveDirectoryPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {channels.map((channel) => (
-          <div
-            key={channel.id}
-            className="p-5 rounded-xl border border-[var(--border)] bg-[var(--surface)] flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 rounded">
-                  {channel.category === "arabic" ? "قناة عربية" : "قناة دولية"}
-                </span>
-                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  رابط رسمي محقق
-                </span>
-              </div>
-
-              <h3 className="text-lg font-bold text-[var(--text)] mb-2">
-                {channel.nameAr}
-              </h3>
-
-              {channel.descriptionAr && (
-                <p className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 leading-relaxed">
-                  {channel.descriptionAr}
-                </p>
-              )}
-            </div>
-
-            <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between">
-              <a
-                href={channel.officialSiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-colors flex items-center gap-1"
-              >
-                <span>مشاهدة البث الرسمي</span>
-                <span>↗</span>
-              </a>
-
-              <span className="text-[10px] text-[var(--text-muted)]">
-                آخر فحص: اليوم
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* مكوّن التصفية التفاعلي وشبكة القنوات */}
+      <LiveChannelsFilter channels={channels} />
     </div>
   );
 }
-
