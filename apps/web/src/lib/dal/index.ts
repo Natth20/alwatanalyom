@@ -164,6 +164,187 @@ export async function getHomeFeed() {
 }
 
 /**
+ * جلب مقالات وقصص قسم محدد مع الترقيم بمؤشر
+ */
+export async function getSectionFeed(
+  sectionSlug: string,
+  subSlug?: string,
+  cursor?: string,
+  limit = 15
+) {
+  try {
+    const section = await prisma.section.findUnique({
+      where: { slug: subSlug ? `${sectionSlug}-${subSlug}` : sectionSlug },
+      include: {
+        children: true,
+        parent: true,
+      },
+    });
+
+    if (!section) return null;
+
+    // جلب المقالات التابعة للقسم أو أقسامه الفرعية
+    const sectionIds = [section.id, ...section.children.map((c) => c.id)];
+
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        sectionId: { in: sectionIds },
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+
+    let nextCursor: string | null = null;
+    if (articles.length > limit) {
+      const nextItem = articles.pop();
+      nextCursor = nextItem?.id || null;
+    }
+
+    return {
+      section: {
+        id: section.id,
+        slug: section.slug,
+        nameAr: section.nameAr,
+        nameEn: section.nameEn,
+        descriptionAr: section.descriptionAr,
+        children: section.children.map((c) => ({
+          id: c.id,
+          slug: c.slug.replace(`${sectionSlug}-`, ""),
+          nameAr: c.nameAr,
+        })),
+      },
+      articles: articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        titleOriginal: a.titleOriginal,
+        summaryAr: a.summaryAr,
+        kind: a.kind as any,
+        publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+        sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+        displayPolicy: a.displayPolicy as any,
+        isBreaking: a.isBreaking,
+        sectionSlug: a.section.slug,
+        sectionNameAr: a.section.nameAr,
+        source: a.source
+          ? {
+              id: a.source.id,
+              slug: a.source.slug,
+              nameAr: a.source.nameAr,
+              logoUrl: a.source.logoUrl,
+              homepageUrl: a.source.homepageUrl,
+            }
+          : null,
+      })),
+      nextCursor,
+    };
+  } catch (error) {
+    console.error("Failed to load section feed:", error);
+    return null;
+  }
+}
+
+/**
+ * جلب قصة مجمعة وتغطياتها المتعددة
+ */
+export async function getStoryById(id: string) {
+  try {
+    const story = await prisma.story.findUnique({
+      where: { id },
+      include: {
+        section: true,
+        articles: {
+          where: { status: "PUBLISHED" },
+          include: { source: true, section: true },
+          orderBy: { publishedAt: "asc" },
+        },
+      },
+    });
+
+    if (!story) return null;
+
+    return {
+      id: story.id,
+      slug: story.slug,
+      headlineAr: story.headlineAr,
+      summaryAr: story.summaryAr,
+      importance: story.importance,
+      trendingScore: story.trendingScore,
+      firstSeenAt: story.firstSeenAt.toISOString(),
+      lastUpdatedAt: story.lastUpdatedAt.toISOString(),
+      section: story.section ? { slug: story.section.slug, nameAr: story.section.nameAr } : null,
+      articles: story.articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        titleOriginal: a.titleOriginal,
+        summaryAr: a.summaryAr,
+        publishedAt: a.publishedAt?.toISOString() || "",
+        sourceUrl: a.sourceUrl,
+        displayPolicy: a.displayPolicy,
+        source: a.source
+          ? {
+              id: a.source.id,
+              slug: a.source.slug,
+              nameAr: a.source.nameAr,
+              logoUrl: a.source.logoUrl,
+              homepageUrl: a.source.homepageUrl,
+            }
+          : null,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * بحث سريع في المقالات المنشورة
+ */
+export async function searchArticles(query: string, sectionSlug?: string, limit = 20) {
+  try {
+    if (!query.trim()) return [];
+
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { titleAr: { contains: query, mode: "insensitive" } },
+          { titleOriginal: { contains: query, mode: "insensitive" } },
+          { summaryAr: { contains: query, mode: "insensitive" } },
+        ],
+        ...(sectionSlug ? { section: { slug: sectionSlug } } : {}),
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
+    });
+
+    return articles.map((a) => ({
+      id: a.id,
+      slug: a.slug,
+      titleAr: a.titleAr,
+      summaryAr: a.summaryAr,
+      publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+      sectionNameAr: a.section.nameAr,
+      sectionSlug: a.section.slug,
+      sourceNameAr: a.source?.nameAr || "مصدر",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * جلب مقال كامل بواسطة معرّفه
  */
 export async function getArticleById(id: string) {

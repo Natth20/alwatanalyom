@@ -34,3 +34,4 @@ describe("URL Canonicalization & Hashing", () => {
     assert.strictEqual(hash1, hash2);
   });
 });
+
