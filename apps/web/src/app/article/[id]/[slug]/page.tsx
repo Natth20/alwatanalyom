@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { getArticleById } from "@/lib/dal";
 import { SportsLinkCard } from "@/components/SportsLinkCard";
+import { ArticleActions } from "@/components/ArticleActions";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -152,7 +153,16 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ArticleActions
+            article={{
+              id: article.id,
+              slug: article.slug,
+              titleAr: article.titleAr,
+              sectionNameAr: article.section.nameAr,
+            }}
+          />
+
           {article.translatedBy && (
             <span className="bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded text-[11px] font-medium">
               {article.translatedBy === "machine" ? "🤖 ترجمة آلية مراجعة" : "✍️ ترجمة بشرية"}

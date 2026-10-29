@@ -26,3 +26,4 @@ describe("Search Client & Query Logic", () => {
     assert.strictEqual(searchRes, null); // signals to fall back to Prisma database
   });
 });
+

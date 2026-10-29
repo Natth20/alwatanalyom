@@ -82,3 +82,4 @@ export function hasPermission(userRole: Role, allowedRoles: Role[]): boolean {
   if (userRole === "ADMIN") return true; // المدير يملك كافة الصلاحيات
   return allowedRoles.includes(userRole);
 }
+

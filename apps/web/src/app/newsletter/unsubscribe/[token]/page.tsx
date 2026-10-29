@@ -55,3 +55,4 @@ export default async function UnsubscribeNewsletterPage({ params }: Props) {
     </div>
   );
 }
+

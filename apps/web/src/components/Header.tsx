@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE_SECTIONS } from "@awt/shared";
+import { SearchTrigger } from "@/components/SearchTrigger";
 
 export function Header() {
   return (
@@ -44,13 +45,7 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/search"
-            className="px-3 py-1.5 rounded-md border border-[var(--border)] text-sm text-[var(--text-muted)] hover:border-[var(--primary)] flex items-center gap-2 bg-[var(--surface)]"
-          >
-            <span>بحث فوري في الأخبار...</span>
-            <kbd className="text-[10px] bg-[var(--bg)] px-1.5 py-0.5 rounded border border-[var(--border)]">Ctrl+K</kbd>
-          </Link>
+          <SearchTrigger />
           <Link
             href="/newsletter"
             className="px-4 py-1.5 rounded-md bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-hover)] transition-colors"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SearchModal } from "@/components/SearchModal";
 
 export const metadata: Metadata = {
   title: "الوطن اليوم — المكان الرئيسي لجميع الأخبار بمصادرها الأصلية",
@@ -23,6 +24,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1 pb-16">{children}</main>
         <Footer />
+        <SearchModal />
       </body>
     </html>
   );
