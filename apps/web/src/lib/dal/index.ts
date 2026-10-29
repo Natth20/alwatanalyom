@@ -1,5 +1,6 @@
 import { prisma } from "@awt/db";
 import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard } from "@awt/shared";
+import { searchClient } from "@awt/search";
 
 /**
  * جلب شريط الأخبار العاجلة النشطة (آخر 60 دقيقة)
@@ -311,6 +312,26 @@ export async function searchArticles(query: string, sectionSlug?: string, limit 
   try {
     if (!query.trim()) return [];
 
+    // 1. محاولة البحث السريع عبر Meilisearch
+    try {
+      const meiliResult = await searchClient.search(query, { sectionSlug, limit });
+      if (meiliResult && meiliResult.hits.length > 0) {
+        return meiliResult.hits.map((h) => ({
+          id: h.id,
+          slug: h.slug,
+          titleAr: h.titleAr,
+          summaryAr: h.summaryAr,
+          publishedAt: h.publishedAt,
+          sectionNameAr: h.sectionNameAr,
+          sectionSlug: h.sectionSlug,
+          sourceNameAr: h.sourceNameAr,
+        }));
+      }
+    } catch {
+      // إكمال البحث عبر قاعدة البيانات إذا كان Meilisearch غير متاح
+    }
+
+    // 2. الرجوع التلقائي إلى قاعدة البيانات (Database Full-text / Trigram Fallback)
     const articles = await prisma.article.findMany({
       where: {
         status: "PUBLISHED",

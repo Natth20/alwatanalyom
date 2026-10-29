@@ -23,6 +23,9 @@ importers:
       '@awt/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@awt/search':
+        specifier: workspace:*
+        version: link:../../packages/search
       '@awt/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -75,6 +78,9 @@ importers:
       '@awt/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@awt/search':
+        specifier: workspace:*
+        version: link:../../packages/search
       '@awt/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -136,6 +142,9 @@ importers:
       '@awt/ingest':
         specifier: workspace:*
         version: link:../../packages/ingest
+      '@awt/search':
+        specifier: workspace:*
+        version: link:../../packages/search
       '@awt/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -242,6 +251,22 @@ importers:
       '@types/sanitize-html':
         specifier: ^2.13.0
         version: 2.16.2
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/search:
+    dependencies:
+      '@awt/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@awt/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.13.5
+        version: 22.20.5
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

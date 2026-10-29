@@ -1,0 +1,19 @@
+{
+  "name": "@awt/search",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo search-lint"
+  },
+  "dependencies": {
+    "@awt/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@awt/config": "workspace:*",
+    "@types/node": "^22.13.5",
+    "typescript": "^5.7.3"
+  }
+}

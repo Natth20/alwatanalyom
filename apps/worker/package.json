@@ -14,6 +14,7 @@
     "@awt/db": "workspace:*",
     "@awt/dedupe": "workspace:*",
     "@awt/ingest": "workspace:*",
+    "@awt/search": "workspace:*",
     "@awt/shared": "workspace:*",
     "bullmq": "^5.41.6",
     "dotenv": "^16.4.7",

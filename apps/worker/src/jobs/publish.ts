@@ -1,5 +1,6 @@
 import { prisma } from "@awt/db";
 import { generateArabicSlug, AIOutput } from "@awt/shared";
+import { searchClient } from "@awt/search";
 import { processSportsLink } from "./sports-link";
 
 export async function processPublish(itemId: string, aiResult: AIOutput) {
@@ -91,6 +92,27 @@ export async function processPublish(itemId: string, aiResult: AIOutput) {
   });
 
   console.log(`📰 Article published: [${section.slug}] ${article.titleAr} (${article.id})`);
+
+  // 4. الفهرسة في محرك البحث Meilisearch
+  searchClient.indexArticles([
+    {
+      id: article.id,
+      slug: article.slug,
+      titleAr: article.titleAr,
+      titleOriginal: article.titleOriginal || "",
+      summaryAr: article.summaryAr || "",
+      sectionSlug: section.slug,
+      sectionNameAr: section.nameAr,
+      sourceNameAr: item.source.nameAr,
+      sourceSlug: item.source.slug,
+      isBreaking: article.isBreaking,
+      publishedAt: article.publishedAt ? article.publishedAt.toISOString() : now.toISOString(),
+      publishedAtTimestamp: article.publishedAt ? article.publishedAt.getTime() : now.getTime(),
+      importance: aiResult.importance,
+    },
+  ]).catch((err) => {
+    console.warn("⚠️ Meilisearch indexing warning:", err);
+  });
 
   // إذا كان المقال رياضياً، يتم تشغيل مطابقة يلا سبورت
   if (section.slug === "sports") {

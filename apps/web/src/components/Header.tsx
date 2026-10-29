@@ -17,6 +17,13 @@ export function Header() {
           <Link href="/economy" className="hover:text-[var(--text)]">الوطن الاقتصادي</Link>
           <span>•</span>
           <Link href="/newsletter" className="hover:text-[var(--text)]">النشرة البريدية</Link>
+          <span>•</span>
+          <Link
+            href="/en"
+            className="px-2 py-0.5 rounded border border-[var(--border)] text-[10px] font-bold text-[var(--text)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
+          >
+            EN
+          </Link>
         </div>
       </div>
 

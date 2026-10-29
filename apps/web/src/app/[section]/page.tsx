@@ -75,6 +75,34 @@ export default async function SectionPage({ params }: Props) {
             ))}
           </div>
         )}
+
+        {/* لوحة التغطية الخاصة لفلسطين أولاً */}
+        {sectionSlug === "palestine" && (
+          <div className="mt-6 p-4 rounded-xl border border-emerald-500/30 bg-gradient-to-l from-emerald-950/20 via-[var(--surface)] to-[var(--surface)]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-bold text-emerald-400">فلسطين أولاً — التغطية المركزية المباشرة</span>
+                </div>
+                <p className="text-xs text-[var(--text-muted)]">
+                  تغطية ميدانية وتحقق لحظي لكافة المستجدات في غزة والضفة والقدس وكافة الأراضي المحتلة، ملتزمة بالقاموس التحريري الوطني.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-4 text-xs font-semibold text-[var(--text)] border-t md:border-t-0 md:border-r border-[var(--border)] pt-2 md:pt-0 md:pe-4 shrink-0">
+                <div className="text-center">
+                  <span className="block text-[10px] text-[var(--text-muted)]">المصادر المعتمدة</span>
+                  <span className="text-emerald-400 font-bold">وكالة وفا · شهاب · صفا</span>
+                </div>
+                <div className="text-center border-r border-[var(--border)] pe-4">
+                  <span className="block text-[10px] text-[var(--text-muted)]">الرصد الإنساني</span>
+                  <span className="text-[var(--primary)] font-bold">وزارة الصحة · الهلال الأحمر</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* المقالات */}
