@@ -69,3 +69,4 @@ export class MockQuoteProvider implements QuoteProvider {
     return { ok: true, latencyMs: 5 };
   }
 }
+

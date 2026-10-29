@@ -45,3 +45,4 @@ export function SportsLinkCard({ links }: Props) {
     </div>
   );
 }
+

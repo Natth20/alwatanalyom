@@ -49,3 +49,4 @@ export async function processPricePoll() {
 
   console.log(`📈 Polled prices for ${rawQuotes.length} instruments successfully.`);
 }
+

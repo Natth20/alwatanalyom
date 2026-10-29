@@ -73,3 +73,4 @@ export async function processSportsLink(articleId: string) {
     console.log(`⚽ Linked ${top3.length} YallaSport entities to article: ${article.titleAr}`);
   }
 }
+
