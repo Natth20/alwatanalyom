@@ -6,6 +6,8 @@ import { processNormalize } from "./jobs/normalize";
 import { processDedupe } from "./jobs/dedupe";
 import { processTranslateClassify } from "./jobs/translate-classify";
 import { processPublish } from "./jobs/publish";
+import { processPricePoll } from "./jobs/price-poll";
+import { processChannelCheck } from "./jobs/channel-check";
 import { runScheduler } from "./scheduler";
 
 dotenv.config();
@@ -62,6 +64,18 @@ runScheduler().catch(console.error);
 setInterval(() => {
   runScheduler().catch(console.error);
 }, 60 * 1000);
+
+// تحديث أسعار المؤشرات الاقتصادية دورياً كل 3 دقائق
+processPricePoll().catch(console.error);
+setInterval(() => {
+  processPricePoll().catch(console.error);
+}, 3 * 60 * 1000);
+
+// فحص قنوات البث الحي دورياً كل ساعتين
+processChannelCheck().catch(console.error);
+setInterval(() => {
+  processChannelCheck().catch(console.error);
+}, 2 * 60 * 60 * 1000);
 
 console.log("✅ Worker pipeline active and listening for newsroom jobs.");
 

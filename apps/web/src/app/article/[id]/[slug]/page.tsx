@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
 import { getArticleById } from "@/lib/dal";
+import { SportsLinkCard } from "@/components/SportsLinkCard";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -197,6 +198,18 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* بطاقة يلا سبورت للكيانات الرياضية */}
+      {article.sportsLinks && article.sportsLinks.length > 0 && (
+        <SportsLinkCard
+          links={article.sportsLinks.map((l: any) => ({
+            entityId: l.entity.id,
+            nameAr: l.entity.nameAr,
+            kind: l.entity.kind,
+            urlPath: l.entity.urlPath,
+          }))}
+        />
+      )}
 
       {/* سجل التصحيحات إذا وجد */}
       {article.corrections && article.corrections.length > 0 && (

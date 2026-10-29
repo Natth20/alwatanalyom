@@ -1,5 +1,6 @@
 import { prisma } from "@awt/db";
 import { generateArabicSlug, AIOutput } from "@awt/shared";
+import { processSportsLink } from "./sports-link";
 
 export async function processPublish(itemId: string, aiResult: AIOutput) {
   const item = await prisma.item.findUnique({
@@ -90,5 +91,10 @@ export async function processPublish(itemId: string, aiResult: AIOutput) {
   });
 
   console.log(`📰 Article published: [${section.slug}] ${article.titleAr} (${article.id})`);
+
+  // إذا كان المقال رياضياً، يتم تشغيل مطابقة يلا سبورت
+  if (section.slug === "sports") {
+    await processSportsLink(article.id).catch(console.error);
+  }
 }
 
