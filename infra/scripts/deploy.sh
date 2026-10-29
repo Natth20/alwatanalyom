@@ -38,3 +38,4 @@ else
   echo "⚠️ Healthcheck failed! Review container logs with: docker compose logs --tail=50"
   exit 1
 fi
+

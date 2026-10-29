@@ -40,3 +40,4 @@ jobs:
 
       - name: Build All Apps
         run: pnpm build
+

@@ -135,3 +135,4 @@ export default async function StoryPage({ params }: Props) {
     </div>
   );
 }
+

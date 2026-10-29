@@ -118,3 +118,4 @@ export default async function SectionPage({ params }: Props) {
     </div>
   );
 }
+

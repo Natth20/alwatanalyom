@@ -41,3 +41,4 @@ jobs:
         run: |
           echo "Deploying ${{ github.ref_name }} to production..."
           # ssh deploy@${{ secrets.SERVER_HOST }} "cd /srv/awt && TAG=${{ github.ref_name }} ./deploy.sh"
+

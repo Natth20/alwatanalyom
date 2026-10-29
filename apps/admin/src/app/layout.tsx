@@ -38,17 +38,29 @@ export default function AdminLayout({
               <Link href="/newsroom/review" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-amber-400 bg-amber-500/10">
                 ⏳ قائمة المراجعة البشرية
               </Link>
+              <Link href="/articles" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
+                📝 المقالات والتصحيحات
+              </Link>
+              <Link href="/stories" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
+                📂 القصص المجمعة
+              </Link>
               <Link href="/sources" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📡 المصادر وخلاصات RSS
               </Link>
               <Link href="/economy" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📈 مراقبة الأسعار
               </Link>
+              <Link href="/sportslink" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
+                ⚽ تكامل يلا سبورت
+              </Link>
               <Link href="/policies" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 ⚖️ سياسات النشر الآلي
               </Link>
               <Link href="/audit" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📜 سجل التدقيق (Audit)
+              </Link>
+              <Link href="/users" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
+                👥 المستخدمون والصلاحيات
               </Link>
             </nav>
           </div>
