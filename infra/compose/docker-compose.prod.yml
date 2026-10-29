@@ -1,0 +1,68 @@
+services:
+  caddy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - awt_caddy_data:/data
+    depends_on: [web, admin]
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/awt/awt-web:${TAG:-latest}
+    env_file: .env.web
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  admin:
+    image: ghcr.io/awt/awt-admin:${TAG:-latest}
+    env_file: .env.admin
+    depends_on: [postgres, redis]
+    restart: unless-stopped
+
+  worker:
+    image: ghcr.io/awt/awt-worker:${TAG:-latest}
+    env_file: .env.worker
+    depends_on: [postgres, redis, meili]
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: awt
+      POSTGRES_USER: awt
+      POSTGRES_PASSWORD: awt_prod_secure_password
+    volumes:
+      - awt_pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U awt -d awt"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - awt_redisdata_prod:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    restart: unless-stopped
+
+  meili:
+    image: getmeili/meilisearch:v1.12
+    environment:
+      MEILI_ENV: production
+      MEILI_MASTER_KEY: prod_meili_master_key_secure
+    volumes:
+      - awt_meilidata_prod:/meili_data
+    restart: unless-stopped
+
+volumes:
+  awt_caddy_data:
+  awt_pgdata_prod:
+  awt_redisdata_prod:
+  awt_meilidata_prod:
+

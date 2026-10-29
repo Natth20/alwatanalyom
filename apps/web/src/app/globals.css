@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --surface: #f5f6f8;
+  --text: #14171c;
+  --text-muted: #5a6270;
+  --primary: #0b5d3b;
+  --primary-hover: #08492e;
+  --breaking: #c62828;
+  --up: #1b7f3b;
+  --down: #c62828;
+  --border: #e2e5ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --text: #eceff4;
+    --text-muted: #9aa3b2;
+    --primary: #2fbf7a;
+    --primary-hover: #26a367;
+    --breaking: #ff6b6b;
+    --up: #3ddc84;
+    --down: #ff6b6b;
+    --border: #2a2f3a;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Logical spacing utilities for RTL */
+.container-custom {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+

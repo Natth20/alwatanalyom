@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface-hover: #222634;
+  --text: #f0f3f8;
+  --text-muted: #8c96a8;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --border: #282e3d;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+

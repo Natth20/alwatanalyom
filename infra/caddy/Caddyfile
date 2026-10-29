@@ -1,0 +1,24 @@
+{
+  email ops@alwatantoday.net
+}
+
+www.alwatantoday.net {
+  redir https://alwatantoday.net{uri} permanent
+}
+
+alwatantoday.net {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options "SAMEORIGIN"
+    Referrer-Policy "strict-origin-when-cross-origin"
+  }
+  reverse_proxy web:3000
+}
+
+admin.alwatantoday.net {
+  encode zstd gzip
+  reverse_proxy admin:3001
+}
+

@@ -1,0 +1,29 @@
+{
+  "name": "@awt/worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@awt/ai": "workspace:*",
+    "@awt/db": "workspace:*",
+    "@awt/dedupe": "workspace:*",
+    "@awt/ingest": "workspace:*",
+    "@awt/shared": "workspace:*",
+    "bullmq": "^5.41.6",
+    "dotenv": "^16.4.7",
+    "ioredis": "^5.5.0"
+  },
+  "devDependencies": {
+    "@awt/config": "workspace:*",
+    "@types/node": "^22.13.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
+

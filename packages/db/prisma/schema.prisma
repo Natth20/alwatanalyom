@@ -1,0 +1,481 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm, unaccent, vector]
+}
+
+// ---------- التعدادات ----------
+enum Role {
+  ADMIN
+  EDITOR
+  REVIEWER
+  TECH
+}
+
+enum SourceType {
+  AGENCY
+  NEWSPAPER
+  CHANNEL
+  OFFICIAL
+  ECONOMIC
+  SPORTS
+}
+
+enum IngestMethod {
+  RSS
+  API
+  LICENSED
+}
+
+enum DisplayPolicy {
+  TITLE_ONLY
+  EXCERPT
+  SUMMARY
+  LICENSED_FULL
+}
+
+enum ConnectionState {
+  OK
+  PAUSED
+  NEEDS_CHECK
+  FAILING
+}
+
+enum ItemStatus {
+  NEW
+  DUPLICATE
+  REJECTED
+  QUEUED
+  REVIEW
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum ArticleKind {
+  NEWS
+  BREAKING
+  ANALYSIS
+  OPINION
+  FACTCHECK
+  LIVE
+  VIDEO
+  PHOTO
+  INFOGRAPHIC
+}
+
+enum ArticleStatus {
+  DRAFT
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum DataStatus {
+  LIVE
+  DELAYED
+  CLOSE
+  UNAVAILABLE
+}
+
+enum ChannelStatus {
+  AVAILABLE
+  UNAVAILABLE
+  UNVERIFIED
+}
+
+enum Lang {
+  AR
+  EN
+}
+
+// ---------- المستخدمون والتدقيق ----------
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  name        String
+  role        Role       @default(EDITOR)
+  twoFactorOn Boolean    @default(false)
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  authored    Author?
+  audits      AuditLog[]
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String   // publish, withdraw, merge-story, edit-source...
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ---------- المصادر ----------
+model Source {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  nameAr          String
+  nameEn          String?
+  homepageUrl     String
+  logoUrl         String?
+  countryCode     String?
+  lang            Lang            @default(AR)
+  type            SourceType      @default(NEWSPAPER)
+  method          IngestMethod    @default(RSS)
+  feedUrl         String?
+  sectionHints    String[]        @default([])
+  pollSeconds     Int             @default(300)
+  displayPolicy   DisplayPolicy   @default(TITLE_ONLY)
+  allowImages     Boolean         @default(false)
+  allowCommercial Boolean         @default(false)
+  termsUrl        String?
+  termsNotes      String?
+  trustLevel      Int             @default(3) // 1-5
+  state           ConnectionState @default(OK)
+  lastSuccessAt   DateTime?
+  lastError       String?
+  enabled         Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  items           Item[]
+  articles        Article[]
+}
+
+// ---------- المواد الخام ----------
+model Item {
+  id                String                       @id @default(cuid())
+  sourceId          String
+  externalId        String?
+  url               String
+  canonicalUrl      String
+  urlHash           String                       @unique
+  titleOriginal     String
+  titleAr           String?
+  summaryOrig       String?
+  lang              Lang                         @default(AR)
+  publishedAtSource DateTime?
+  fetchedAt         DateTime                     @default(now())
+  contentHash       String
+  simhash           BigInt?
+  embedding         Unsupported("vector(1024)")?
+  countryCodes      String[]                     @default([])
+  sectionGuess      String?
+  importance        Int? // 0-100
+  isBreaking        Boolean                      @default(false)
+  status            ItemStatus                   @default(NEW)
+  rejectReason      String?
+  storyId           String?
+  duplicateOfId     String?
+  source            Source                       @relation(fields: [sourceId], references: [id])
+  story             Story?                       @relation(fields: [storyId], references: [id])
+  article           Article?
+  events            PipelineEvent[]
+
+  @@index([status, fetchedAt])
+  @@index([storyId])
+  @@index([contentHash])
+}
+
+// ---------- القصص والمقالات ----------
+model Story {
+  id            String    @id @default(cuid())
+  slug          String
+  headlineAr    String
+  headlineEn    String?
+  summaryAr     String?
+  importance    Int       @default(0)
+  trendingScore Float     @default(0)
+  pinned        Boolean   @default(false)
+  firstSeenAt   DateTime  @default(now())
+  lastUpdatedAt DateTime  @default(now())
+  sectionId     String?
+  topicId       String?
+  section       Section?  @relation(fields: [sectionId], references: [id])
+  topic         Topic?    @relation(fields: [topicId], references: [id])
+  items         Item[]
+  articles      Article[]
+
+  @@index([lastUpdatedAt])
+  @@index([sectionId, lastUpdatedAt])
+}
+
+model Article {
+  id                String           @id @default(cuid())
+  slug              String
+  kind              ArticleKind      @default(NEWS)
+  status            ArticleStatus    @default(DRAFT)
+  lang              Lang             @default(AR)
+  titleAr           String
+  titleOriginal     String?
+  summaryAr         String?
+  bodyHtml          String? // فقط للأصلي أو المرخص
+  displayPolicy     DisplayPolicy    @default(TITLE_ONLY)
+  translatedBy      String? // 'machine' | 'machine+reviewed' | 'human'
+  sourceId          String?
+  itemId            String?          @unique
+  sourceUrl         String?
+  storyId           String?
+  sectionId         String
+  authorId          String?
+  coverMediaId      String?
+  isBreaking        Boolean          @default(false)
+  breakingUntil     DateTime?
+  publishedAt       DateTime?
+  updatedAtPub      DateTime?
+  sourcePublishedAt DateTime?
+  readCount         Int              @default(0)
+  withdrawnReason   String?
+  createdAt         DateTime         @default(now())
+  source            Source?          @relation(fields: [sourceId], references: [id])
+  item              Item?            @relation(fields: [itemId], references: [id])
+  story             Story?           @relation(fields: [storyId], references: [id])
+  section           Section          @relation(fields: [sectionId], references: [id])
+  author            Author?          @relation(fields: [authorId], references: [id])
+  tags              ArticleTag[]
+  countries         ArticleCountry[]
+  corrections       Correction[]
+  sportsLinks       SportsLink[]
+
+  @@index([status, publishedAt])
+  @@index([sectionId, publishedAt])
+  @@index([storyId])
+  @@index([isBreaking, breakingUntil])
+}
+
+model Correction {
+  id        String   @id @default(cuid())
+  articleId String
+  note      String
+  createdAt DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id])
+}
+
+// ---------- التصنيف ----------
+model Section {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  parentId      String?
+  nameAr        String
+  nameEn        String
+  descriptionAr String?
+  layoutConfig  Json?
+  sortOrder     Int       @default(0)
+  showInNav     Boolean   @default(false)
+  parent        Section?  @relation("SectionTree", fields: [parentId], references: [id])
+  children      Section[] @relation("SectionTree")
+  articles      Article[]
+  stories       Story[]
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  titleAr   String
+  titleEn   String?
+  summaryAr String?
+  active    Boolean  @default(true)
+  stories   Story[]
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  slug     String       @unique
+  nameAr   String
+  nameEn   String?
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([articleId, tagId])
+}
+
+model Country {
+  code      String           @id
+  nameAr    String
+  nameEn    String
+  articles  ArticleCountry[]
+}
+
+model ArticleCountry {
+  articleId   String
+  countryCode String
+  article     Article @relation(fields: [articleId], references: [id])
+  country     Country @relation(fields: [countryCode], references: [code])
+
+  @@id([articleId, countryCode])
+}
+
+model Author {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  nameAr   String
+  bioAr    String?
+  userId   String?   @unique
+  user     User?     @relation(fields: [userId], references: [id])
+  articles Article[]
+}
+
+model Media {
+  id          String  @id @default(cuid())
+  url         String
+  kind        String  // image | video-embed
+  credit      String?
+  licenseNote String?
+  width       Int?
+  height      Int?
+  altAr       String?
+}
+
+// ---------- الاقتصاد ----------
+model Instrument {
+  id          String   @id @default(cuid())
+  symbol      String   @unique // BRENT, XAUUSD, EURUSD, BTCUSD...
+  nameAr      String
+  nameEn      String
+  category    String   // energy | metals | fx | crypto | index | stock
+  unit        String?
+  currency    String?
+  providerKey String
+  termsUrl    String?
+  enabled     Boolean  @default(true)
+  quotes      Quote[]
+}
+
+model Quote {
+  id           String     @id @default(cuid())
+  instrumentId String
+  price        Decimal    @db.Decimal(20, 6)
+  change       Decimal?   @db.Decimal(20, 6)
+  changePct    Decimal?   @db.Decimal(10, 4)
+  status       DataStatus
+  asOf         DateTime   // وقت السعر لدى المزود
+  fetchedAt    DateTime   @default(now())
+  instrument   Instrument @relation(fields: [instrumentId], references: [id])
+
+  @@index([instrumentId, asOf])
+}
+
+// ---------- البث ----------
+model Channel {
+  id                String         @id @default(cuid())
+  slug              String         @unique
+  nameAr            String
+  nameEn            String?
+  logoUrl           String?
+  countryCode       String?
+  lang              Lang           @default(AR)
+  category          String         // arabic | international
+  descriptionAr     String?
+  officialSiteUrl   String
+  officialStreamUrl String?
+  embedAllowed      Boolean        @default(false)
+  status            ChannelStatus  @default(UNVERIFIED)
+  lastCheckedAt     DateTime?
+  checks            ChannelCheck[]
+}
+
+model ChannelCheck {
+  id         String   @id @default(cuid())
+  channelId  String
+  ok         Boolean
+  httpStatus Int?
+  note       String?
+  at         DateTime @default(now())
+  channel    Channel  @relation(fields: [channelId], references: [id])
+}
+
+// ---------- يلا سبورت ----------
+model SportsEntity {
+  id         String       @id @default(cuid())
+  kind       String       // team | player | competition | match
+  externalId String       // المعرف الثابت في yallasport.com
+  nameAr     String
+  nameEn     String
+  aliases    String[]     @default([])
+  urlPath    String?
+  verifiedAt DateTime?
+  links      SportsLink[]
+
+  @@unique([kind, externalId])
+}
+
+model SportsLink {
+  articleId  String
+  entityId   String
+  confidence Float
+  article    Article      @relation(fields: [articleId], references: [id])
+  entity     SportsEntity @relation(fields: [entityId], references: [id])
+
+  @@id([articleId, entityId])
+}
+
+// ---------- الجمهور ----------
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  lists          String[]  @default([])
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+  token          String    @unique
+  createdAt      DateTime  @default(now())
+}
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  endpoint     String   @unique
+  p256dh       String
+  auth         String
+  topics       String[] @default([])
+  countryCodes String[] @default([])
+  createdAt    DateTime @default(now())
+}
+
+model Event {
+  id        String    @id @default(cuid())
+  titleAr   String
+  startsAt  DateTime
+  endsAt    DateTime?
+  location  String?
+  sourceUrl String
+  sectionId String?
+}
+
+// ---------- المعالجة والمراقبة ----------
+model PipelineEvent {
+  id       String   @id @default(cuid())
+  itemId   String?
+  stage    String   // fetch|normalize|dedupe|cluster|translate|classify|rights|publish
+  decision String   // pass|duplicate|reject|review|publish|error
+  reason   String?
+  meta     Json?
+  at       DateTime @default(now())
+  item     Item?    @relation(fields: [itemId], references: [id])
+
+  @@index([itemId, at])
+}
+
+model PublishPolicy {
+  id        String   @id @default(cuid())
+  name      String
+  rules     Json     // قواعد قابلة للتعديل
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+

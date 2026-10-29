@@ -1,0 +1,28 @@
+{
+  "name": "alwatantoday",
+  "version": "1.0.0",
+  "private": true,
+  "description": "منصة الوطن اليوم الإخبارية الشاملة - Monorepo",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@awt/web",
+    "dev:admin": "turbo dev --filter=@awt/admin",
+    "dev:worker": "turbo dev --filter=@awt/worker",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "db:generate": "pnpm --filter @awt/db exec prisma generate",
+    "db:migrate": "pnpm --filter @awt/db exec prisma migrate dev",
+    "db:seed": "pnpm --filter @awt/db run seed",
+    "db:studio": "pnpm --filter @awt/db exec prisma studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.1",
+    "turbo": "^2.4.2",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@10.33.0"
+}
+

@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: awt-postgres-dev
+    environment:
+      POSTGRES_DB: awt
+      POSTGRES_USER: awt
+      POSTGRES_PASSWORD: awt_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - awt_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U awt -d awt"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: awt-redis-dev
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - awt_redisdata_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: awt-meili-dev
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: dev_meili_master_key_change_in_prod
+    ports:
+      - "7700:7700"
+    volumes:
+      - awt_meilidata_dev:/meili_data
+    restart: unless-stopped
+
+volumes:
+  awt_pgdata_dev:
+  awt_redisdata_dev:
+  awt_meilidata_dev:
+

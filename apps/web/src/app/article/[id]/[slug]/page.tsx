@@ -1,0 +1,239 @@
+import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { Metadata } from "next";
+import { getArticleById } from "@/lib/dal";
+
+export const revalidate = 300; // ISR 5 دقائق
+
+interface PageProps {
+  params: Promise<{
+    id: string;
+    slug: string;
+  }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id, slug } = await params;
+  const article = await getArticleById(id);
+
+  if (!article) {
+    return { title: "الخبر غير موجود — الوطن اليوم" };
+  }
+
+  return {
+    title: `${article.titleAr} — الوطن اليوم`,
+    description: article.summaryAr || article.titleAr,
+    alternates: {
+      canonical: `/article/${article.id}/${article.slug}`,
+    },
+    openGraph: {
+      title: article.titleAr,
+      description: article.summaryAr || article.titleAr,
+      type: "article",
+      publishedTime: article.publishedAt,
+    },
+  };
+}
+
+export default async function ArticlePage({ params }: PageProps) {
+  const { id, slug } = await params;
+  const article = await getArticleById(id);
+
+  if (!article) {
+    notFound();
+  }
+
+  // إذا تم سحب المقال لأسباب قانونية أو تصحيحية
+  if (article.status === "WITHDRAWN") {
+    return (
+      <div className="container-custom py-16 text-center max-w-xl mx-auto">
+        <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto mb-4 font-bold text-xl">
+          410
+        </div>
+        <h1 className="text-2xl font-bold mb-3">تم سحب هذه المادة الصحفية</h1>
+        <p className="text-sm text-[var(--text-muted)] mb-6 leading-relaxed">
+          سُحبت هذه المادة التزاماً بمعايير الشفافية وحقوق النشر والتصحيح التحريري.
+          {article.withdrawnReason && ` السبب: ${article.withdrawnReason}`}
+        </p>
+        <Link href="/" className="px-4 py-2 bg-[var(--primary)] text-white rounded-md text-sm font-semibold">
+          العودة للرئيسية
+        </Link>
+      </div>
+    );
+  }
+
+  // إعادة توجيه 301 إذا كان الـ slug غير مطابق للعنوان المحدث
+  if (article.slug && slug !== article.slug) {
+    redirect(`/article/${article.id}/${article.slug}`);
+  }
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.titleAr,
+    description: article.summaryAr,
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAtPub || article.publishedAt,
+    publisher: {
+      "@type": "Organization",
+      name: "الوطن اليوم",
+      url: "https://alwatantoday.net",
+    },
+    isAccessibleForFree: true,
+  };
+
+  return (
+    <div className="container-custom py-8 max-w-4xl mx-auto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* مسار التنقل (Breadcrumb) */}
+      <nav className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6">
+        <Link href="/" className="hover:text-[var(--primary)]">الرئيسية</Link>
+        <span>/</span>
+        <Link href={`/${article.section.slug}`} className="hover:text-[var(--primary)] font-semibold text-[var(--primary)]">
+          {article.section.nameAr}
+        </Link>
+        <span>/</span>
+        <span className="truncate max-w-xs">{article.titleAr}</span>
+      </nav>
+
+      {/* العنوان والتصنيف */}
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center gap-2">
+          <span className="bg-[var(--primary)]/10 text-[var(--primary)] px-2.5 py-0.5 rounded text-xs font-bold">
+            {article.section.nameAr}
+          </span>
+          {article.isBreaking && (
+            <span className="bg-[var(--breaking)] text-white px-2 py-0.5 rounded text-xs font-bold animate-pulse">
+              عاجل
+            </span>
+          )}
+          {article.kind === "OPINION" && (
+            <span className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded text-xs font-bold">
+              رأي وتحليل
+            </span>
+          )}
+        </div>
+
+        <h1 className="text-3xl md:text-4xl font-black text-[var(--text)] leading-tight">
+          {article.titleAr}
+        </h1>
+
+        {article.titleOriginal && article.titleOriginal !== article.titleAr && (
+          <p className="text-xs text-[var(--text-muted)] italic dir-ltr text-start">
+            Original Headline: &quot;{article.titleOriginal}&quot;
+          </p>
+        )}
+
+        {article.summaryAr && (
+          <div className="p-4 rounded-lg bg-[var(--surface)] border-r-4 border-[var(--primary)] text-base font-medium text-[var(--text)] leading-relaxed">
+            {article.summaryAr}
+          </div>
+        )}
+      </div>
+
+      {/* صندوق الشفافية والمسؤولية التحريرية (Transparency Box) */}
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]/60 p-4 mb-8 text-xs text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center font-bold text-[var(--primary)]">
+            مصدر
+          </div>
+          <div>
+            <span className="block font-bold text-[var(--text)]">
+              المصدر الأصلي: {article.source?.nameAr || "وكالة معتمدة"}
+            </span>
+            <span>
+              نُشر لدى المصدر: {article.sourcePublishedAt ? new Date(article.sourcePublishedAt).toLocaleString("ar-EG") : "غير محدد"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {article.translatedBy && (
+            <span className="bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded text-[11px] font-medium">
+              {article.translatedBy === "machine" ? "🤖 ترجمة آلية مراجعة" : "✍️ ترجمة بشرية"}
+            </span>
+          )}
+
+          {article.sourceUrl && (
+            <a
+              href={article.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+            >
+              <span>قراءة الخبر من المصدر</span>
+              <span>↗</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* جسم المقال حسب سياسة العرض (Display Policy) */}
+      <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+        {article.displayPolicy === "LICENSED_FULL" && article.bodyHtml ? (
+          <div dangerouslySetInnerHTML={{ __html: article.bodyHtml }} />
+        ) : (
+          <div className="border border-dashed border-[var(--border)] rounded-xl p-8 text-center bg-[var(--surface)]/30 space-y-4">
+            <h3 className="font-bold text-base text-[var(--text)]">
+              حقوق النشر والاقتباس محفوظة للناشر الأصلي
+            </h3>
+            <p className="text-sm text-[var(--text-muted)] max-w-lg mx-auto leading-relaxed">
+              وفقاً لمبادئ منصة «الوطن اليوم» وسياسة الشفافية وحماية حقوق الملكية الفكرية، نقوم بتلخيص الحدث وتقديم السياق التحريري، بينما يتوفر النص الكامل للخبر لدى الناشر الأصلي مباشرة.
+            </p>
+            {article.sourceUrl && (
+              <a
+                href={article.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-block px-5 py-2.5 rounded-lg bg-[var(--primary)] text-white text-sm font-bold shadow hover:bg-[var(--primary-hover)] transition-colors"
+              >
+                متابعة قراءة النص الكامل على {article.source?.nameAr} ↗
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* سجل التصحيحات إذا وجد */}
+      {article.corrections && article.corrections.length > 0 && (
+        <div className="border-t border-[var(--border)] pt-4 mb-8">
+          <h4 className="font-bold text-xs text-amber-600 mb-2">سجل التصحيحات:</h4>
+          {article.corrections.map((cor) => (
+            <p key={cor.id} className="text-xs text-[var(--text-muted)]">
+              • {new Date(cor.createdAt).toLocaleDateString("ar-EG")}: {cor.note}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* تغطيات أخرى لنفس الحدث (Story Cluster) */}
+      {article.otherCoverages && article.otherCoverages.length > 0 && (
+        <div className="border-t border-[var(--border)] pt-8">
+          <h3 className="text-lg font-bold text-[var(--text)] mb-4">
+            تغطيات أخرى لنفس الحدث من مصادر متعددة ({article.otherCoverages.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {article.otherCoverages.map((cov) => (
+              <div key={cov.id} className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                <span className="text-[11px] font-semibold text-[var(--primary)] block mb-1">
+                  {cov.sourceNameAr}
+                </span>
+                <Link
+                  href={`/article/${cov.id}/${cov.slug}`}
+                  className="font-bold text-sm text-[var(--text)] hover:text-[var(--primary)] leading-snug line-clamp-2"
+                >
+                  {cov.titleAr}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
