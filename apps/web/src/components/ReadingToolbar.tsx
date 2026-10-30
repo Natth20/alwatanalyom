@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bookmark, BookmarkCheck, Share2, Check, Printer, ZoomIn, ZoomOut, RotateCcw, Clock } from "lucide-react";
+import { Bookmark, BookmarkCheck, Share2, Check, Printer, ZoomIn, ZoomOut, Clock, Quote } from "lucide-react";
+import { QuoteCardModal } from "./QuoteCardModal";
 
 interface Props {
   article: {
@@ -9,6 +10,8 @@ interface Props {
     slug: string;
     titleAr: string;
     sectionNameAr: string;
+    summaryAr?: string | null;
+    sourceNameAr?: string | null;
     wordCount?: number;
   };
 }
@@ -16,6 +19,7 @@ interface Props {
 export function ReadingToolbar({ article }: Props) {
   const [isSaved, setIsSaved] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [fontSizeLevel, setFontSizeLevel] = useState<number>(0); // -1 (small), 0 (normal), 1 (large), 2 (huge)
 
   const words = article.wordCount || 250;
@@ -165,6 +169,16 @@ export function ReadingToolbar({ article }: Props) {
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onClick={() => setIsQuoteModalOpen(true)}
+          className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--primary)] flex items-center gap-1.5 transition-colors cursor-pointer"
+          title="توليد بطاقة اقتباس للمشاركة"
+        >
+          <Quote className="w-3.5 h-3.5 text-emerald-500" />
+          <span>اقتباس</span>
+        </button>
+
+        <button
+          type="button"
           onClick={handlePrint}
           title="طباعة نسخة نظيفة"
           className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--primary)] transition-colors text-xs flex items-center gap-1"
@@ -215,6 +229,16 @@ export function ReadingToolbar({ article }: Props) {
           )}
         </button>
       </div>
+
+      <QuoteCardModal
+        isOpen={isQuoteModalOpen}
+        onClose={() => setIsQuoteModalOpen(false)}
+        defaultQuote={article.summaryAr || article.titleAr}
+        articleTitle={article.titleAr}
+        sourceName={article.sourceNameAr || "الوطن اليوم"}
+        articleUrl={typeof window !== "undefined" ? window.location.href : `https://alwatantoday.net/article/${article.id}/${article.slug}`}
+      />
     </div>
   );
 }
+

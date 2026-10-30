@@ -14,7 +14,11 @@ import {
   Bold,
   Heading,
   Quote,
-  List
+  List,
+  Search,
+  Share2,
+  Globe,
+  Award
 } from "lucide-react";
 
 interface GlossaryRule {
@@ -43,6 +47,7 @@ export default function NewArticlePage() {
   const [summaryAr, setSummaryAr] = useState("");
   const [content, setContent] = useState("");
   const [isBreaking, setIsBreaking] = useState(false);
+  const [activeTab, setActiveTab] = useState<"editor" | "serp" | "social">("editor");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -52,6 +57,22 @@ export default function NewArticlePage() {
   const glossaryViolations = PALESTINE_GLOSSARY_RULES.filter((rule) =>
     fullText.includes(rule.target)
   );
+
+  // حساب مؤشر جودة المقال (Pre-Publish Quality Score: 0 - 100)
+  let qualityScore = 0;
+  const titleLen = titleAr.trim().length;
+  if (titleLen >= 25 && titleLen <= 110) qualityScore += 25;
+  else if (titleLen > 10) qualityScore += 15;
+
+  const summaryLen = summaryAr.trim().length;
+  if (summaryLen >= 40 && summaryLen <= 280) qualityScore += 25;
+  else if (summaryLen > 0) qualityScore += 10;
+
+  if (glossaryViolations.length === 0 && fullText.trim().length > 30) qualityScore += 25;
+
+  const contentLen = content.trim().length;
+  if (contentLen > 180) qualityScore += 25;
+  else if (contentLen > 40) qualityScore += 15;
 
   const applyCorrection = (rule: GlossaryRule) => {
     setTitleAr((prev) => prev.replaceAll(rule.target, rule.replacement));
@@ -197,8 +218,165 @@ export default function NewArticlePage() {
         </div>
       )}
 
+      {/* بطاقة مؤشر جودة المقال قبل النشر (Pre-Publish Quality Score) */}
+      <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+              qualityScore >= 80 ? "bg-emerald-500/20 text-emerald-400" : qualityScore >= 50 ? "bg-amber-500/20 text-amber-400" : "bg-rose-500/20 text-rose-400"
+            }`}>
+              <Award className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold block leading-tight">مؤشر جودة واكتمال المادة الصحفية:</span>
+              <span className="text-[10px] text-[var(--text-muted)]">
+                {qualityScore >= 80 ? "ممتاز — المادة جاهزة للنشر وتلبي كافة المعايير" : qualityScore >= 50 ? "جيد — يوصى باستكمال بعض العناصر التحريرية" : "بحاجة لاكتمال العنوان والملخص والمتن"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 font-mono">
+            <span className={`text-base font-black ${
+              qualityScore >= 80 ? "text-emerald-400" : qualityScore >= 50 ? "text-amber-400" : "text-rose-400"
+            }`}>
+              {qualityScore} / 100
+            </span>
+          </div>
+        </div>
+
+        {/* شريط التقدم */}
+        <div className="h-1.5 rounded-full bg-[var(--bg)] overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${
+              qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-rose-500"
+            }`}
+            style={{ width: `${qualityScore}%` }}
+          />
+        </div>
+
+        {/* شارات التحقق السريعة */}
+        <div className="flex flex-wrap items-center gap-2 text-[10px]">
+          <span className={`px-2 py-0.5 rounded-full border ${titleLen >= 25 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-[var(--bg)] border-[var(--border)] text-[var(--text-muted)]"}`}>
+            {titleLen >= 25 ? "✓ العنوان مناسب" : "العنوان قصير"}
+          </span>
+          <span className={`px-2 py-0.5 rounded-full border ${summaryLen >= 40 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-[var(--bg)] border-[var(--border)] text-[var(--text-muted)]"}`}>
+            {summaryLen >= 40 ? "✓ الملخص مكتمل" : "الملخص بحاجة لإثراء"}
+          </span>
+          <span className={`px-2 py-0.5 rounded-full border ${glossaryViolations.length === 0 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"}`}>
+            {glossaryViolations.length === 0 ? "✓ القاموس الوطني منضبط" : "يوجد مصطلحات للدليل"}
+          </span>
+          <span className={`px-2 py-0.5 rounded-full border ${contentLen > 150 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-[var(--bg)] border-[var(--border)] text-[var(--text-muted)]"}`}>
+            {contentLen > 150 ? "✓ المتن كافٍ" : "المتن موجز"}
+          </span>
+        </div>
+      </div>
+
+      {/* تبويبات المحرر والمعاينة الحية */}
+      <div className="flex items-center gap-2 border-b border-[var(--border)] pb-2 text-xs">
+        <button
+          type="button"
+          onClick={() => setActiveTab("editor")}
+          className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+            activeTab === "editor"
+              ? "bg-[var(--primary)] text-slate-950 shadow-sm"
+              : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)]"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>محرر المادة الصحفية</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("serp")}
+          className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+            activeTab === "serp"
+              ? "bg-[var(--primary)] text-slate-950 shadow-sm"
+              : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)]"
+          }`}
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span>معاينة بحث Google (SERP)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("social")}
+          className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+            activeTab === "social"
+              ? "bg-[var(--primary)] text-slate-950 shadow-sm"
+              : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)]"
+          }`}
+        >
+          <Share2 className="w-3.5 h-3.5" />
+          <span>معاينة التواصل (X / Facebook)</span>
+        </button>
+      </div>
+
+      {/* شاشة معاينة Google SERP */}
+      {activeTab === "serp" && (
+        <div className="p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-4 animate-in fade-in duration-150">
+          <div className="border-b border-[var(--border)] pb-2 flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span className="font-bold flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-blue-400" />
+              <span>محاكاة بطاقة النتيجة في Google Search</span>
+            </span>
+            <span>الظهور المتوقع على الهاتف وسطح المكتب</span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] max-w-2xl space-y-1.5 text-start font-sans">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">
+                و
+              </span>
+              <span className="text-slate-400 text-xs">alwatantoday.net &gt; {sectionSlug}</span>
+            </div>
+            <h3 className="text-lg text-blue-400 hover:underline font-medium cursor-pointer leading-snug">
+              {titleAr || "أدخل عنوان المقال لمعاينة ظهوره في محرك البحث"} — الوطن اليوم
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
+              {summaryAr || "الملخص التحريري للمقال سيظهر هنا كنبذة تشرح للقارئ محتوى الخبر وسياقه قبل النقر..."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* شاشة معاينة السوشيال ميديا */}
+      {activeTab === "social" && (
+        <div className="p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-4 animate-in fade-in duration-150">
+          <div className="border-b border-[var(--border)] pb-2 flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span className="font-bold flex items-center gap-1.5">
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>محاكاة بطاقة OpenGraph على منصات X و WhatsApp و Facebook</span>
+            </span>
+            <span>نسبة 16:9 قياسية</span>
+          </div>
+
+          <div className="max-w-xl mx-auto rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--bg)] shadow-xl">
+            <div className="h-44 bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 flex flex-col justify-between p-4 text-white relative">
+              <div className="flex items-center justify-between">
+                <span className="font-black text-sm text-emerald-400">الوطن اليوم</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 uppercase">{sectionSlug}</span>
+              </div>
+              <h4 className="text-base font-bold leading-snug pe-4 line-clamp-2">
+                {titleAr || "عنوان المادة الصحفية"}
+              </h4>
+              <span className="text-[10px] text-emerald-300/80 font-mono">alwatantoday.net</span>
+            </div>
+
+            <div className="p-3 bg-[var(--surface)] border-t border-[var(--border)]">
+              <span className="text-[10px] text-[var(--text-muted)] uppercase block">ALWATANTODAY.NET</span>
+              <h5 className="font-bold text-xs text-[var(--text)] truncate">{titleAr || "عنوان الخبر"}</h5>
+              <p className="text-[11px] text-[var(--text-muted)] line-clamp-1 mt-0.5">
+                {summaryAr || "الملخص الإخباري الموجز"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* نموذج التحرير */}
-      <div className="p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-6">
+      <div className={`p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-6 ${activeTab !== "editor" ? "hidden" : ""}`}>
         {/* عنوان المقال */}
         <div>
           <div className="flex items-center justify-between mb-2">

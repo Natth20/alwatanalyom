@@ -5,6 +5,8 @@ import { getArticleById } from "@/lib/dal";
 import { SportsLinkCard } from "@/components/SportsLinkCard";
 import { ArticleActions } from "@/components/ArticleActions";
 import { ReadingToolbar } from "@/components/ReadingToolbar";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { AudioReader } from "@/components/AudioReader";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -141,6 +143,9 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <div className="container-custom py-8 max-w-4xl mx-auto">
+      {/* شريط تقدم قراءة المقال الدقيق في أعلى الشاشة */}
+      <ReadingProgressBar />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -168,6 +173,8 @@ export default async function ArticlePage({ params }: PageProps) {
           slug: article.slug,
           titleAr: article.titleAr,
           sectionNameAr: article.section.nameAr,
+          summaryAr: article.summaryAr,
+          sourceNameAr: article.source?.nameAr,
           wordCount: (article.summaryAr?.length || 0) + (article.bodyHtml?.length || 0) / 4,
         }}
       />
@@ -205,6 +212,13 @@ export default async function ArticlePage({ params }: PageProps) {
             {article.summaryAr}
           </div>
         )}
+
+        {/* القارئ الصوتي الذكي للمقال */}
+        <AudioReader
+          title={article.titleAr}
+          summary={article.summaryAr}
+          bodyHtml={article.bodyHtml}
+        />
       </div>
 
       {/* صندوق الشفافية والمسؤولية التحريرية (Transparency Box) */}

@@ -1,4 +1,5 @@
 import { prisma } from "@awt/db";
+import { ExportAuditButton } from "./ExportAuditButton";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +10,28 @@ export default async function AuditLogAdminPage() {
     take: 50,
   });
 
+  const exportableLogs = logs.map((l) => ({
+    id: l.id,
+    userName: l.user?.name || "نظام آلي",
+    userEmail: l.user?.email || "system@internal",
+    action: l.action,
+    entityType: l.entityType,
+    entityId: l.entityId,
+    ip: l.ip || "127.0.0.1",
+    createdAt: l.createdAt.toISOString(),
+  }));
+
   return (
     <div className="space-y-6 max-w-7xl">
-      <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
         <div>
           <h1 className="text-xl font-bold">سجل التدقيق والمراقبة التحريرية (Audit Log)</h1>
           <p className="text-xs text-[var(--text-muted)] mt-1">
             سجل غير قابل للتعديل يوثق كل إجراء إداري أو تحريري (نشر، سحب، تعديل مصادر، تغيير سياسات)
           </p>
         </div>
+
+        <ExportAuditButton logs={exportableLogs} />
       </div>
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">

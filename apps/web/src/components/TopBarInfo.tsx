@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock, MapPin, ChevronDown } from "lucide-react";
+import { WeatherWidget } from "./WeatherWidget";
 
 interface PrayerTimes {
   fajr: string;
@@ -142,6 +143,14 @@ export function TopBarInfo() {
           </div>
         )}
       </div>
+
+      <span className="hidden xl:inline text-[var(--border)]">•</span>
+
+      {/* ودجة الأحوال الجوية */}
+      <div className="hidden sm:inline-block">
+        <WeatherWidget />
+      </div>
     </div>
   );
 }
+
