@@ -139,3 +139,4 @@ export const PLACES: PalestinianPlace[] = [
     image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
   },
 ];
+
