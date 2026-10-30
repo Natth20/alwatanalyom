@@ -11,6 +11,11 @@ import { PalestineCoverageHub } from "@/components/PalestineCoverageHub";
 import { InfographicSection } from "@/components/InfographicSection";
 import { PodcastWidget } from "@/components/PodcastWidget";
 import { InteractivePoll } from "@/components/InteractivePoll";
+import { FrontpageAudioBrief } from "@/components/FrontpageAudioBrief";
+import { LiveWarRoomMap } from "@/components/LiveWarRoomMap";
+import { HistoryTodayWidget } from "@/components/HistoryTodayWidget";
+import { DailyMindGames } from "@/components/DailyMindGames";
+import { AskNewsroomWidget } from "@/components/AskNewsroomWidget";
 
 export const revalidate = 30; // ISR 30 ثانية
 
@@ -21,6 +26,12 @@ export default async function HomePage() {
   const heroMainArticle = heroStory?.articles[0];
   const sideHeroArticles = heroStory?.articles.slice(1) || [];
 
+  const headlinesForAudio = [
+    heroMainArticle?.titleAr,
+    ...feed.breaking.map((b) => b.titleAr),
+    ...feed.palestineStories.map((s) => s.articles[0]?.titleAr).filter(Boolean),
+  ].filter(Boolean) as string[];
+
   return (
     <div>
       {/* 1. شريط العاجل المتدفق */}
@@ -30,7 +41,10 @@ export default async function HomePage() {
       <TrendingRibbon />
 
       <div className="container-custom mt-6 space-y-12">
-        {/* 3. وحدة البطل (Hero) مع قائمة المتابعات الفورية */}
+        {/* 3. الموجز الصوتي السريع للمنصة (استمع للجريدة في 3 دقائق) */}
+        <FrontpageAudioBrief headlines={headlinesForAudio.slice(0, 5)} />
+
+        {/* 4. وحدة البطل (Hero) مع قائمة المتابعات الفورية */}
         {heroMainArticle ? (
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -64,10 +78,13 @@ export default async function HomePage() {
           </div>
         )}
 
-        {/* 4. مركز تغطيات فلسطين الميدانية التفاعلي (غزة، القدس، الضفة، الشتات) */}
+        {/* 5. رادار الميدان وغرفة المتابعة الإنسانية والأمنية */}
+        <LiveWarRoomMap />
+
+        {/* 6. مركز تغطيات فلسطين الميدانية التفاعلي (غزة، القدس، الضفة، الشتات) */}
         <PalestineCoverageHub />
 
-        {/* 5. نافذة الوطن الاقتصادي */}
+        {/* 7. نافذة الوطن الاقتصادي */}
         {feed.quotes.length > 0 && (
           <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
             <div className="flex items-center justify-between mb-4">
@@ -88,10 +105,13 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* 6. قسم الرأي والتحليلات الاستراتيجية (أقلام الوطن) */}
+        {/* 8. قسم الرأي والتحليلات الاستراتيجية (أقلام الوطن) */}
         <OpinionSection />
 
-        {/* 7. وحدة فلسطين الرئيسية (Palestine First) */}
+        {/* 9. في مثل هذا اليوم · ذاكرة الوطن والتاريخ */}
+        <HistoryTodayWidget />
+
+        {/* 10. وحدة فلسطين الرئيسية (Palestine First) */}
         <section>
           <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2 mb-6">
             <div className="flex items-center gap-2">
@@ -113,16 +133,19 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 8. بودكاست وإيجاز الوطن الصوتي (صوت الوطن) */}
+        {/* 11. بودكاست وإيجاز الوطن الصوتي (صوت الوطن) */}
         <PodcastWidget />
 
-        {/* 9. بطاقة تصريح وموقف اليوم */}
+        {/* 12. بطاقة تصريح وموقف اليوم */}
         <QuoteOfTheDay />
 
-        {/* 10. بيانات وإحصاءات الوطن (صحافة الأرقام والإنفوجرافيك) */}
+        {/* 13. رادار الحقيقة وكشف الشائعات وفحص الأخبار */}
+        <AskNewsroomWidget />
+
+        {/* 14. بيانات وإحصاءات الوطن (صحافة الأرقام والإنفوجرافيك) */}
         <InfographicSection />
 
-        {/* 11. العالم العربي، العالم، والأكثر قراءة */}
+        {/* 15. العالم العربي، العالم، والأكثر قراءة */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">
@@ -158,10 +181,13 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 12. استطلاع رأي القراء التفاعلي */}
+        {/* 16. تحدي اليوم الذكي · لعبة العقل والذاكرة اليومية */}
+        <DailyMindGames />
+
+        {/* 17. استطلاع رأي القراء التفاعلي */}
         <InteractivePoll />
 
-        {/* 13. التقنية والرياضة */}
+        {/* 18. التقنية والرياضة */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">

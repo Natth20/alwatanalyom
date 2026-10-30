@@ -3,6 +3,7 @@ import { QuoteTile } from "@/components/QuoteTile";
 import { CurrencyConverter } from "@/components/CurrencyConverter";
 import { GoldCalculator } from "@/components/GoldCalculator";
 import { PalestineCommoditiesWidget } from "@/components/PalestineCommoditiesWidget";
+import { EconomicCalendarWidget } from "@/components/EconomicCalendarWidget";
 import { TrendingUp, Coins, Fuel, Banknote, ShieldAlert } from "lucide-react";
 import { Metadata } from "next";
 
@@ -84,6 +85,9 @@ export default async function EconomyPage() {
 
       {/* سلة المحروقات والسلع الحيوية بالسوق الفلسطيني */}
       <PalestineCommoditiesWidget />
+
+      {/* التقويم الاقتصادي ومواعيد القرارات العالمية */}
+      <EconomicCalendarWidget />
 
       {/* أقسام المؤشرات العالمية التفصيلية */}
       <div className="space-y-8">

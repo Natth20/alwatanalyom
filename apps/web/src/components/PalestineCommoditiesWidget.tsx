@@ -124,3 +124,4 @@ export function PalestineCommoditiesWidget() {
     </section>
   );
 }
+
