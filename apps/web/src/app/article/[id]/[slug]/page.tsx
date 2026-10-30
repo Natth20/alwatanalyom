@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { getArticleById } from "@/lib/dal";
 import { SportsLinkCard } from "@/components/SportsLinkCard";
 import { ArticleActions } from "@/components/ArticleActions";
+import { ReadingToolbar } from "@/components/ReadingToolbar";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -92,7 +93,7 @@ export default async function ArticlePage({ params }: PageProps) {
       />
 
       {/* مسار التنقل (Breadcrumb) */}
-      <nav className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6">
+      <nav className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-4">
         <Link href="/" className="hover:text-[var(--primary)]">الرئيسية</Link>
         <span>/</span>
         <Link href={`/${article.section.slug}`} className="hover:text-[var(--primary)] font-semibold text-[var(--primary)]">
@@ -101,6 +102,17 @@ export default async function ArticlePage({ params }: PageProps) {
         <span>/</span>
         <span className="truncate max-w-xs">{article.titleAr}</span>
       </nav>
+
+      {/* شريط أدوات القراءة التفاعلي */}
+      <ReadingToolbar
+        article={{
+          id: article.id,
+          slug: article.slug,
+          titleAr: article.titleAr,
+          sectionNameAr: article.section.nameAr,
+          wordCount: (article.summaryAr?.length || 0) + (article.bodyHtml?.length || 0) / 4,
+        }}
+      />
 
       {/* العنوان والتصنيف */}
       <div className="space-y-4 mb-6">
@@ -184,7 +196,7 @@ export default async function ArticlePage({ params }: PageProps) {
       </div>
 
       {/* جسم المقال حسب سياسة العرض (Display Policy) */}
-      <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+      <div id="article-content-body" className="prose prose-lg dark:prose-invert max-w-none mb-12 transition-all">
         {article.displayPolicy === "LICENSED_FULL" && article.bodyHtml ? (
           <div dangerouslySetInnerHTML={{ __html: article.bodyHtml }} />
         ) : (

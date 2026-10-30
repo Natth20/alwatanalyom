@@ -3,6 +3,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SearchModal } from "@/components/SearchModal";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "الوطن اليوم — المكان الرئيسي لجميع الأخبار بمصادرها الأصلية",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <main className="flex-1 pb-16">{children}</main>
         <Footer />
         <SearchModal />
+        <BottomNav />
       </body>
     </html>
   );
