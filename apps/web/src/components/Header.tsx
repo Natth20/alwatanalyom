@@ -3,6 +3,7 @@ import { SITE_SECTIONS } from "@awt/shared";
 import { SearchTrigger } from "@/components/SearchTrigger";
 import { TopBarInfo } from "@/components/TopBarInfo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SavedCounterBadge } from "@/components/SavedCounterBadge";
 
 export function Header() {
   return (
@@ -46,6 +47,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <SearchTrigger />
+          <SavedCounterBadge />
           <Link
             href="/newsletter"
             className="hidden sm:inline-flex px-4 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-colors shadow-sm"

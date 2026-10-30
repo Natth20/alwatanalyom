@@ -6,6 +6,11 @@ import { QuoteTile } from "@/components/QuoteTile";
 import { TrendingRibbon } from "@/components/TrendingRibbon";
 import { MostReadWidget } from "@/components/MostReadWidget";
 import { QuoteOfTheDay } from "@/components/QuoteOfTheDay";
+import { OpinionSection } from "@/components/OpinionSection";
+import { PalestineCoverageHub } from "@/components/PalestineCoverageHub";
+import { InfographicSection } from "@/components/InfographicSection";
+import { PodcastWidget } from "@/components/PodcastWidget";
+import { InteractivePoll } from "@/components/InteractivePoll";
 
 export const revalidate = 30; // ISR 30 ثانية
 
@@ -25,7 +30,7 @@ export default async function HomePage() {
       <TrendingRibbon />
 
       <div className="container-custom mt-6 space-y-12">
-        {/* 3. وحدة البطل (Hero) مع قائمة الأكثر قراءة */}
+        {/* 3. وحدة البطل (Hero) مع قائمة المتابعات الفورية */}
         {heroMainArticle ? (
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -59,7 +64,10 @@ export default async function HomePage() {
           </div>
         )}
 
-        {/* 3. نافذة الوطن الاقتصادي */}
+        {/* 4. مركز تغطيات فلسطين الميدانية التفاعلي (غزة، القدس، الضفة، الشتات) */}
+        <PalestineCoverageHub />
+
+        {/* 5. نافذة الوطن الاقتصادي */}
         {feed.quotes.length > 0 && (
           <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
             <div className="flex items-center justify-between mb-4">
@@ -80,13 +88,16 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* 4. وحدة فلسطين (Palestine First) */}
+        {/* 6. قسم الرأي والتحليلات الاستراتيجية (أقلام الوطن) */}
+        <OpinionSection />
+
+        {/* 7. وحدة فلسطين الرئيسية (Palestine First) */}
         <section>
           <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2 mb-6">
             <div className="flex items-center gap-2">
               <span className="text-xl">🇵🇸</span>
               <h2 className="text-2xl font-black text-[var(--text)]">فلسطين</h2>
-              <span className="text-xs text-[var(--text-muted)]">| غزة، القدس، والضفة الغربية</span>
+              <span className="text-xs text-[var(--text-muted)]">| رصد شامل للأخبار والتقارير</span>
             </div>
             <Link href="/palestine" className="text-xs font-bold text-[var(--primary)] hover:underline">
               كل تغطيات فلسطين ←
@@ -102,10 +113,16 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 5. بطاقة تصريح وموقف اليوم */}
+        {/* 8. بودكاست وإيجاز الوطن الصوتي (صوت الوطن) */}
+        <PodcastWidget />
+
+        {/* 9. بطاقة تصريح وموقف اليوم */}
         <QuoteOfTheDay />
 
-        {/* 6. العالم العربي، العالم، والأكثر قراءة */}
+        {/* 10. بيانات وإحصاءات الوطن (صحافة الأرقام والإنفوجرافيك) */}
+        <InfographicSection />
+
+        {/* 11. العالم العربي، العالم، والأكثر قراءة */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">
@@ -141,7 +158,10 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 6. التقنية والرياضة */}
+        {/* 12. استطلاع رأي القراء التفاعلي */}
+        <InteractivePoll />
+
+        {/* 13. التقنية والرياضة */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">
@@ -174,4 +194,3 @@ export default async function HomePage() {
     </div>
   );
 }
-
