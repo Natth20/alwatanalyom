@@ -3,6 +3,9 @@ import { getHomeFeed } from "@/lib/dal";
 import { BreakingBar } from "@/components/BreakingBar";
 import { ArticleCard } from "@/components/ArticleCard";
 import { QuoteTile } from "@/components/QuoteTile";
+import { TrendingRibbon } from "@/components/TrendingRibbon";
+import { MostReadWidget } from "@/components/MostReadWidget";
+import { QuoteOfTheDay } from "@/components/QuoteOfTheDay";
 
 export const revalidate = 30; // ISR 30 ثانية
 
@@ -15,11 +18,14 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* 1. شريط العاجل */}
+      {/* 1. شريط العاجل المتدفق */}
       <BreakingBar articles={feed.breaking} />
 
+      {/* 2. شريط الموضوعات الأكثر تداولاً */}
+      <TrendingRibbon />
+
       <div className="container-custom mt-6 space-y-12">
-        {/* 2. وحدة البطل (Hero) */}
+        {/* 3. وحدة البطل (Hero) مع قائمة الأكثر قراءة */}
         {heroMainArticle ? (
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -96,8 +102,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 5. العالم العربي والعالم */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* 5. بطاقة تصريح وموقف اليوم */}
+        <QuoteOfTheDay />
+
+        {/* 6. العالم العربي، العالم، والأكثر قراءة */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">
               <h3 className="text-lg font-bold text-[var(--text)]">العالم العربي</h3>
@@ -120,6 +129,15 @@ export default async function HomePage() {
                 <ArticleCard key={art.id} article={art} variant="compact" />
               ))}
             </div>
+          </div>
+
+          <div>
+            <MostReadWidget
+              articles={feed.palestineStories
+                .flatMap((s) => s.articles)
+                .concat(feed.worldArticles)
+                .concat(feed.arabWorldArticles)}
+            />
           </div>
         </section>
 

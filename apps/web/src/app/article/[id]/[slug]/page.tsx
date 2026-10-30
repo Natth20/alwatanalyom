@@ -7,6 +7,8 @@ import { ArticleActions } from "@/components/ArticleActions";
 import { ReadingToolbar } from "@/components/ReadingToolbar";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { AudioReader } from "@/components/AudioReader";
+import { KeyTakeaways } from "@/components/KeyTakeaways";
+import { ArticleReactions } from "@/components/ArticleReactions";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -219,6 +221,9 @@ export default async function ArticlePage({ params }: PageProps) {
           summary={article.summaryAr}
           bodyHtml={article.bodyHtml}
         />
+
+        {/* أبرز محاور التغطية الصحفية */}
+        <KeyTakeaways summary={article.summaryAr} />
       </div>
 
       {/* صندوق الشفافية والمسؤولية التحريرية (Transparency Box) */}
@@ -292,6 +297,9 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* شريط مشاعر وانطباعات القراء */}
+      <ArticleReactions articleId={article.id} />
 
       {/* بطاقة يلا سبورت للكيانات الرياضية */}
       {article.sportsLinks && article.sportsLinks.length > 0 && (

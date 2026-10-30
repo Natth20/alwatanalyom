@@ -1,6 +1,7 @@
 import { getLatestQuotes } from "@/lib/dal";
 import { QuoteTile } from "@/components/QuoteTile";
 import { CurrencyConverter } from "@/components/CurrencyConverter";
+import { GoldCalculator } from "@/components/GoldCalculator";
 
 export const revalidate = 30; // ISR 30 ثانية
 
@@ -11,6 +12,11 @@ export default async function EconomyPage() {
   const metals = quotes.filter((q) => q.category === "metals");
   const fx = quotes.filter((q) => q.category === "fx");
   const crypto = quotes.filter((q) => q.category === "crypto");
+
+  const goldQuote = quotes.find((q) => q.symbol === "XAUUSD");
+  const ilsQuote = quotes.find((q) => q.symbol === "USDILS");
+  const ouncePrice = goldQuote?.price ? parseFloat(goldQuote.price) : 2735.4;
+  const ilsRate = ilsQuote?.price ? parseFloat(ilsQuote.price) : 3.75;
 
   return (
     <div className="container-custom py-8 space-y-10">
@@ -33,8 +39,11 @@ export default async function EconomyPage() {
         </div>
       </div>
 
-      {/* حاسبة أسعار الصرف والذهب */}
+      {/* حاسبة أسعار الصرف والعملات */}
       <CurrencyConverter quotes={quotes} />
+
+      {/* حاسبة أسعار الذهب الفورية بالأعيرة */}
+      <GoldCalculator initialOuncePrice={ouncePrice} usdToIlsRate={ilsRate} />
 
       {/* أقسام المؤشرات */}
       <div className="space-y-8">
