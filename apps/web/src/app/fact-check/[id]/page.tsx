@@ -267,3 +267,4 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
     </div>
   );
 }
+
