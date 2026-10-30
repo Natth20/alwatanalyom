@@ -70,19 +70,73 @@ export default async function ArticlePage({ params }: PageProps) {
     redirect(`/article/${article.id}/${article.slug}`);
   }
 
+  const canonicalUrl = `https://alwatantoday.net/article/${article.id}/${article.slug}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
     headline: article.titleAr,
-    description: article.summaryAr,
+    description: article.summaryAr || article.titleAr,
+    image: [
+      (article as any).coverImageUrl || "https://alwatantoday.net/og-default.png",
+    ],
     datePublished: article.publishedAt,
     dateModified: article.updatedAtPub || article.publishedAt,
+    inLanguage: "ar",
+    articleSection: article.section.nameAr,
+    keywords: article.tags?.map((t) => t.nameAr).join(", ") || "",
+    author: article.author
+      ? {
+          "@type": "Person",
+          name: article.author.nameAr,
+          url: `https://alwatantoday.net/author/${article.author.slug}`,
+        }
+      : {
+          "@type": "Organization",
+          name: article.source?.nameAr || "محرر الوطن اليوم",
+          url: article.source?.homepageUrl || "https://alwatantoday.net",
+        },
     publisher: {
-      "@type": "Organization",
+      "@type": "NewsMediaOrganization",
       name: "الوطن اليوم",
       url: "https://alwatantoday.net",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://alwatantoday.net/icon-512.png",
+        width: 512,
+        height: 512,
+      },
     },
     isAccessibleForFree: true,
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "الرئيسية",
+        item: "https://alwatantoday.net",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: article.section.nameAr,
+        item: `https://alwatantoday.net/${article.section.slug}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.titleAr,
+        item: canonicalUrl,
+      },
+    ],
   };
 
   return (
@@ -90,6 +144,10 @@ export default async function ArticlePage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
       {/* مسار التنقل (Breadcrumb) */}

@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SearchModal } from "@/components/SearchModal";
 import { BottomNav } from "@/components/BottomNav";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 export const metadata: Metadata = {
   title: "الوطن اليوم — المكان الرئيسي لجميع الأخبار بمصادرها الأصلية",
@@ -27,6 +28,7 @@ export default function RootLayout({
         <Footer />
         <SearchModal />
         <BottomNav />
+        <PwaInstallPrompt />
       </body>
     </html>
   );
