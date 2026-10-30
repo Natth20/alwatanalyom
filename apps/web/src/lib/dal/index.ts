@@ -1,6 +1,17 @@
 import { prisma } from "@awt/db";
-import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, SITE_SECTIONS } from "@awt/shared";
 import { searchClient } from "@awt/search";
+import {
+  MOCK_BREAKING,
+  MOCK_QUOTES,
+  MOCK_CHANNELS,
+  MOCK_HERO_STORY,
+  MOCK_PALESTINE_STORIES,
+  MOCK_SECTION_ARTICLES,
+  getMockArticleById,
+  getMockSectionFeed,
+  getMockStoryById,
+} from "./mock-data";
 
 /**
  * جلب شريط الأخبار العاجلة النشطة (آخر 60 دقيقة)
@@ -21,7 +32,7 @@ export async function getActiveBreaking(): Promise<ArticleCard[]> {
       take: 5,
     });
 
-    return articles.map((a) => ({
+    const mapped = articles.map((a) => ({
       id: a.id,
       slug: a.slug,
       titleAr: a.titleAr,
@@ -44,8 +55,10 @@ export async function getActiveBreaking(): Promise<ArticleCard[]> {
           }
         : null,
     }));
+
+    return mapped.length > 0 ? mapped : MOCK_BREAKING;
   } catch {
-    return [];
+    return MOCK_BREAKING;
   }
 }
 
@@ -135,6 +148,21 @@ export async function getHomeFeed() {
     // 6. أسعار المؤشرات لنافذة الاقتصاد
     const quotes = await getLatestQuotes(["BRENT", "XAUUSD", "USDILS", "BTCUSD"]);
 
+    if (heroStoriesRaw.length === 0 && palestineStoriesRaw.length === 0) {
+      return {
+        breaking: breaking.length > 0 ? breaking : MOCK_BREAKING,
+        heroStories: [MOCK_HERO_STORY],
+        trendingStories: MOCK_PALESTINE_STORIES,
+        palestineStories: MOCK_PALESTINE_STORIES,
+        arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
+        worldArticles: MOCK_SECTION_ARTICLES.world,
+        economyArticles: MOCK_SECTION_ARTICLES.economy,
+        techArticles: MOCK_SECTION_ARTICLES.tech,
+        sportsArticles: MOCK_SECTION_ARTICLES.sports,
+        quotes: quotes.length > 0 ? quotes : MOCK_QUOTES,
+      };
+    }
+
     return {
       breaking,
       heroStories: heroStoriesRaw.map(mapStoryToSummary),
@@ -148,18 +176,17 @@ export async function getHomeFeed() {
       quotes,
     };
   } catch (error) {
-    console.error("Failed to load home feed:", error);
     return {
-      breaking: [],
-      heroStories: [],
-      trendingStories: [],
-      palestineStories: [],
-      arabWorldArticles: [],
-      worldArticles: [],
-      economyArticles: [],
-      techArticles: [],
-      sportsArticles: [],
-      quotes: [],
+      breaking: MOCK_BREAKING,
+      heroStories: [MOCK_HERO_STORY],
+      trendingStories: MOCK_PALESTINE_STORIES,
+      palestineStories: MOCK_PALESTINE_STORIES,
+      arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
+      worldArticles: MOCK_SECTION_ARTICLES.world,
+      economyArticles: MOCK_SECTION_ARTICLES.economy,
+      techArticles: MOCK_SECTION_ARTICLES.tech,
+      sportsArticles: MOCK_SECTION_ARTICLES.sports,
+      quotes: MOCK_QUOTES,
     };
   }
 }
@@ -182,7 +209,7 @@ export async function getSectionFeed(
       },
     });
 
-    if (!section) return null;
+    if (!section) return getMockSectionFeed(sectionSlug, subSlug);
 
     // جلب المقالات التابعة للقسم أو أقسامه الفرعية
     const sectionIds = [section.id, ...section.children.map((c) => c.id)];
@@ -246,8 +273,8 @@ export async function getSectionFeed(
       nextCursor,
     };
   } catch (error) {
-    console.error("Failed to load section feed:", error);
-    return null;
+    console.error("Failed to load section feed, returning mock fallback:", error);
+    return getMockSectionFeed(sectionSlug, subSlug);
   }
 }
 
@@ -268,7 +295,7 @@ export async function getStoryById(id: string) {
       },
     });
 
-    if (!story) return null;
+    if (!story) return getMockStoryById(id);
 
     return {
       id: story.id,
@@ -301,7 +328,7 @@ export async function getStoryById(id: string) {
       })),
     };
   } catch {
-    return null;
+    return getMockStoryById(id);
   }
 }
 
@@ -394,7 +421,7 @@ export async function getArticleById(id: string) {
       },
     });
 
-    if (!article) return null;
+    if (!article) return getMockArticleById(id);
 
     return {
       ...article,
@@ -412,7 +439,7 @@ export async function getArticleById(id: string) {
       })) || [],
     };
   } catch {
-    return null;
+    return getMockArticleById(id);
   }
 }
 
@@ -477,7 +504,7 @@ export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuo
       },
     });
 
-    return instruments.map((inst) => {
+    const mapped = instruments.map((inst) => {
       const q = inst.quotes[0];
       return {
         symbol: inst.symbol,
@@ -494,8 +521,10 @@ export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuo
         provider: inst.providerKey,
       };
     });
+
+    return mapped.length > 0 ? mapped : MOCK_QUOTES;
   } catch {
-    return [];
+    return MOCK_QUOTES;
   }
 }
 
@@ -508,7 +537,7 @@ export async function getChannels(): Promise<ChannelCard[]> {
       orderBy: { nameAr: "asc" },
     });
 
-    return channels.map((c) => ({
+    const mapped = channels.map((c) => ({
       id: c.id,
       slug: c.slug,
       nameAr: c.nameAr,
@@ -524,8 +553,10 @@ export async function getChannels(): Promise<ChannelCard[]> {
       status: c.status as any,
       lastCheckedAt: c.lastCheckedAt?.toISOString(),
     }));
+
+    return mapped.length > 0 ? mapped : MOCK_CHANNELS;
   } catch {
-    return [];
+    return MOCK_CHANNELS;
   }
 }
 
