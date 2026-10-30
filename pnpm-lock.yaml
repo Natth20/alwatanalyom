@@ -23,6 +23,9 @@ importers:
       '@awt/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@awt/ingest':
+        specifier: workspace:*
+        version: link:../../packages/ingest
       '@awt/search':
         specifier: workspace:*
         version: link:../../packages/search

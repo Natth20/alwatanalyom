@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { KillSwitchButton } from "@/components/KillSwitchButton";
 
 export const metadata: Metadata = {
   title: "غرفة الأخبار والتحرير — الوطن اليوم",
@@ -83,9 +84,7 @@ export default function AdminLayout({
               <span className="text-xs text-[var(--text-muted)]">نظام المعالجة المستمر: يعمل بصحة جيدة</span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded font-bold cursor-pointer hover:bg-rose-500/20">
-                🛑 مفتاح الإيقاف الطارئ (Kill Switch)
-              </span>
+              <KillSwitchButton />
             </div>
           </header>
 
