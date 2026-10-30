@@ -80,3 +80,4 @@ export function MostReadWidget({ articles }: Props) {
     </div>
   );
 }
+

@@ -29,3 +29,4 @@ export function KeyTakeaways({ summary, items }: Props) {
     </div>
   );
 }
+
