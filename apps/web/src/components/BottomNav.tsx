@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Zap, TrendingUp, Search, Bookmark } from "lucide-react";
+import { Home, Zap, TrendingUp, Search, Bookmark, Sparkles, Bot } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -14,8 +14,9 @@ export function BottomNav() {
   const navItems = [
     { label: "الرئيسية", href: "/", icon: Home },
     { label: "عاجل", href: "/breaking", icon: Zap, isBreaking: true },
-    { label: "فلسطين", href: "/palestine", icon: null, isPalestine: true },
-    { label: "الاقتصاد", href: "/economy", icon: TrendingUp },
+    { label: "ستوري", href: "/stories", icon: Sparkles, isStory: true },
+    { label: "أطلس", href: "/atlas", icon: null, isPalestine: true },
+    { label: "اسأل الوطن", href: "/ask", icon: Bot, isAi: true },
     { label: "محفوظاتي", href: "/saved", icon: Bookmark },
   ];
 

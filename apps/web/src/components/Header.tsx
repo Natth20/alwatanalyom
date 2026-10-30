@@ -58,7 +58,7 @@ export function Header() {
       </div>
 
       {/* شريط الأقسام الرئيسي */}
-      <nav className="container-custom flex items-center gap-1 overflow-x-auto py-2 text-sm font-semibold text-[var(--text)] scrollbar-none">
+      <nav className="container-custom flex items-center gap-1 overflow-x-auto py-2 text-sm font-semibold text-[var(--text)] scrollbar-none border-b border-[var(--border)]/40">
         <Link href="/" className="px-3 py-1.5 rounded-md hover:bg-[var(--surface)] text-[var(--primary)] whitespace-nowrap">
           الرئيسية
         </Link>
@@ -79,6 +79,72 @@ export function Header() {
           البث الحي
         </Link>
       </nav>
+
+      {/* شريط المنصات النوعية والميزات الحصرية */}
+      <div className="bg-[var(--surface)] border-b border-[var(--border)] py-1.5">
+        <div className="container-custom flex items-center gap-2 overflow-x-auto text-xs font-bold scrollbar-none">
+          <Link
+            href="/fact-check"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:border-amber-500 whitespace-nowrap transition-colors"
+          >
+            🔎 رادار الحقيقة
+          </Link>
+          <Link
+            href="/ask"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--primary)]/30 text-[var(--primary)] hover:border-[var(--primary)] whitespace-nowrap transition-colors"
+          >
+            🤖 اسأل الوطن
+          </Link>
+          <Link
+            href="/live-360"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-red-500/30 text-red-600 dark:text-red-400 hover:border-red-500 whitespace-nowrap transition-colors"
+          >
+            🔀 تغطية 360°
+          </Link>
+          <Link
+            href="/atlas"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500 whitespace-nowrap transition-colors"
+          >
+            🗺️ أطلس فلسطين
+          </Link>
+          <Link
+            href="/stories"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-purple-500/30 text-purple-600 dark:text-purple-400 hover:border-purple-500 whitespace-nowrap transition-colors"
+          >
+            📱 موجز الستوري
+          </Link>
+          <Link
+            href="/pulse"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:border-indigo-500 whitespace-nowrap transition-colors"
+          >
+            📊 نبض البيانات
+          </Link>
+          <Link
+            href="/podcast"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-sky-500/30 text-sky-600 dark:text-sky-400 hover:border-sky-500 whitespace-nowrap transition-colors"
+          >
+            🎙️ البودكاست
+          </Link>
+          <Link
+            href="/history"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] whitespace-nowrap transition-colors"
+          >
+            📜 ذاكرة الوطن
+          </Link>
+          <Link
+            href="/games"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] whitespace-nowrap transition-colors"
+          >
+            🧠 تحدي اليوم
+          </Link>
+          <Link
+            href="/my-watan"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20 whitespace-nowrap transition-colors mr-auto"
+          >
+            👤 مساحتي الخاصة
+          </Link>
+        </div>
+      </div>
     </header>
   );
 }
