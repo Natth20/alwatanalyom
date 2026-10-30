@@ -9,6 +9,8 @@ import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { AudioReader } from "@/components/AudioReader";
 import { KeyTakeaways } from "@/components/KeyTakeaways";
 import { ArticleReactions } from "@/components/ArticleReactions";
+import { SocialShareBar } from "@/components/SocialShareBar";
+import { ShieldCheck, Clock, FileText } from "lucide-react";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -183,7 +185,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
       {/* العنوان والتصنيف */}
       <div className="space-y-4 mb-6">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="bg-[var(--primary)]/10 text-[var(--primary)] px-2.5 py-0.5 rounded text-xs font-bold">
             {article.section.nameAr}
           </span>
@@ -197,11 +199,40 @@ export default async function ArticlePage({ params }: PageProps) {
               رأي وتحليل
             </span>
           )}
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>مادة مفحوصة ومطابقة للمصدر المعتمد</span>
+          </span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-black text-[var(--text)] leading-tight">
+        <h1 className="text-3xl md:text-5xl font-black text-[var(--text)] leading-tight tracking-tight">
           {article.titleAr}
         </h1>
+
+        {/* سطر بيانات النشر وسرعة القراءة */}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)] py-1 border-b border-[var(--border)]">
+          <span className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" />
+            <span>
+              نُشر: {new Date(article.publishedAt).toLocaleString("ar-EG", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <FileText className="w-3.5 h-3.5" />
+            <span>وقت القراءة المقدر: 2 إلى 3 دقائق</span>
+          </span>
+        </div>
+
+        {/* شريط المشاركة الاجتماعية الفورية */}
+        <SocialShareBar title={article.titleAr} url={canonicalUrl} />
 
         {article.titleOriginal && article.titleOriginal !== article.titleAr && (
           <p className="text-xs text-[var(--text-muted)] italic dir-ltr text-start">

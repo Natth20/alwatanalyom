@@ -43,3 +43,4 @@ export function SavedCounterBadge() {
     </Link>
   );
 }
+
