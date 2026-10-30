@@ -41,7 +41,7 @@ export default async function HomePage() {
       <TrendingRibbon />
 
       <div className="container-custom mt-6 space-y-12">
-        {/* 3. الموجز الصوتي السريع للمنصة (استمع للجريدة في 3 دقائق) */}
+        {/* 3. الموجز الإذاعي في 3 دقائق (اسمع أهم أخبار اليوم في 3 دقائق ▶ استمع الآن) */}
         <FrontpageAudioBrief headlines={headlinesForAudio.slice(0, 5)} />
 
         {/* 4. وحدة البطل (Hero) مع قائمة المتابعات الفورية */}
@@ -78,40 +78,19 @@ export default async function HomePage() {
           </div>
         )}
 
-        {/* 5. رادار الميدان وغرفة المتابعة الإنسانية والأمنية */}
-        <LiveWarRoomMap />
-
-        {/* 6. مركز تغطيات فلسطين الميدانية التفاعلي (غزة، القدس، الضفة، الشتات) */}
+        {/* 5. مركز تغطيات فلسطين الميدانية التفاعلي (غزة، القدس، الضفة، الشتات) */}
         <PalestineCoverageHub />
 
-        {/* 7. نافذة الوطن الاقتصادي */}
-        {feed.quotes.length > 0 && (
-          <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></span>
-                <h3 className="font-bold text-base text-[var(--text)]">نافذة الوطن الاقتصادي</h3>
-                <span className="text-xs text-[var(--text-muted)]">(أسعار معتمدة ومحدثة)</span>
-              </div>
-              <Link href="/economy" className="text-xs text-[var(--primary)] font-semibold hover:underline">
-                مركز الأسواق الكامل ←
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {feed.quotes.map((quote) => (
-                <QuoteTile key={quote.symbol} quote={quote} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* 6. رادار الحقيقة ومكافحة الشائعات وفحص الأخبار (الأولوية 1) */}
+        <AskNewsroomWidget />
 
-        {/* 8. قسم الرأي والتحليلات الاستراتيجية (أقلام الوطن) */}
+        {/* 7. قسم الرأي والتحليلات الاستراتيجية (أقلام الوطن) */}
         <OpinionSection />
 
-        {/* 9. في مثل هذا اليوم · ذاكرة الوطن والتاريخ */}
+        {/* 8. في مثل هذا اليوم · ذاكرة الوطن والتاريخ (الأولوية 3) */}
         <HistoryTodayWidget />
 
-        {/* 10. وحدة فلسطين الرئيسية (Palestine First) */}
+        {/* 9. وحدة فلسطين الرئيسية (Palestine First) */}
         <section>
           <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2 mb-6">
             <div className="flex items-center gap-2">
@@ -133,19 +112,43 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 11. بودكاست وإيجاز الوطن الصوتي (صوت الوطن) */}
+        {/* 10. بودكاست وإيجاز الوطن الصوتي (صوت الوطن) */}
         <PodcastWidget />
 
-        {/* 12. بطاقة تصريح وموقف اليوم */}
+        {/* 11. تحدي اليوم الذكي · لعبة العقل والذاكرة اليومية (الأولوية 4) */}
+        <DailyMindGames />
+
+        {/* 12. رادار الميدان · غرفة المتابعة الإنسانية والخدماتية (الأولوية 6) */}
+        <LiveWarRoomMap />
+
+        {/* 13. بطاقة تصريح وموقف اليوم */}
         <QuoteOfTheDay />
 
-        {/* 13. رادار الحقيقة وكشف الشائعات وفحص الأخبار */}
-        <AskNewsroomWidget />
+        {/* 14. نافذة الوطن الاقتصادي */}
+        {feed.quotes.length > 0 && (
+          <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></span>
+                <h3 className="font-bold text-base text-[var(--text)]">نافذة الوطن الاقتصادي</h3>
+                <span className="text-xs text-[var(--text-muted)]">(أسعار معتمدة ومحدثة)</span>
+              </div>
+              <Link href="/economy" className="text-xs text-[var(--primary)] font-semibold hover:underline">
+                مركز الأسواق الكامل ←
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {feed.quotes.map((quote) => (
+                <QuoteTile key={quote.symbol} quote={quote} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* 14. بيانات وإحصاءات الوطن (صحافة الأرقام والإنفوجرافيك) */}
+        {/* 15. بيانات وإحصاءات الوطن (صحافة الأرقام والإنفوجرافيك) */}
         <InfographicSection />
 
-        {/* 15. العالم العربي، العالم، والأكثر قراءة */}
+        {/* 16. العالم العربي، العالم، والأكثر قراءة */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-4">
@@ -180,9 +183,6 @@ export default async function HomePage() {
             />
           </div>
         </section>
-
-        {/* 16. تحدي اليوم الذكي · لعبة العقل والذاكرة اليومية */}
-        <DailyMindGames />
 
         {/* 17. استطلاع رأي القراء التفاعلي */}
         <InteractivePoll />

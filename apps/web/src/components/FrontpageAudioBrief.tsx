@@ -69,11 +69,12 @@ export function FrontpageAudioBrief({ headlines }: Props) {
 
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-[var(--text)]">
-              استمع لملخص الجريدة اليومية في 3 دقائق
+            <span className="text-sm font-black text-[var(--text)] flex items-center gap-1.5">
+              <span>🎧</span>
+              <span>اسمع أهم أخبار اليوم في 3 دقائق</span>
             </span>
-            <span className="text-[10px] bg-[var(--primary)]/10 text-[var(--primary)] font-bold px-2 py-0.2 rounded-full">
-              صوت الوطن
+            <span className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full">
+              بث صوتي فوري
             </span>
           </div>
           <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
@@ -95,12 +96,12 @@ export function FrontpageAudioBrief({ headlines }: Props) {
           {isPlaying ? (
             <>
               <VolumeX className="w-3.5 h-3.5 text-rose-500" />
-              <span>إيقاف الصوت</span>
+              <span>إيقاف البث</span>
             </>
           ) : (
             <>
-              <Volume2 className="w-3.5 h-3.5 text-[var(--primary)]" />
-              <span>تشغيل الموجز</span>
+              <Play className="w-3.5 h-3.5 text-[var(--primary)] fill-[var(--primary)]" />
+              <span>▶ استمع الآن</span>
             </>
           )}
         </button>
@@ -108,3 +109,4 @@ export function FrontpageAudioBrief({ headlines }: Props) {
     </div>
   );
 }
+
