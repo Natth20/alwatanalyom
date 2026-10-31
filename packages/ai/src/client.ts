@@ -8,9 +8,25 @@ export interface AIClientOptions {
 
 export class AIClient {
   private apiKey: string;
+  private provider: "gemini" | "claude" | "mock";
 
   constructor(options?: AIClientOptions) {
-    this.apiKey = options?.apiKey || process.env["ANTHROPIC_API_KEY"] || "";
+    const geminiKey = process.env["GEMINI_API_KEY"] || process.env["GOOGLE_AI_KEY"] || "";
+    const anthropicKey = process.env["ANTHROPIC_API_KEY"] || "";
+    
+    if (options?.apiKey) {
+      this.apiKey = options.apiKey;
+      this.provider = options.apiKey.startsWith("sk-ant") ? "claude" : "gemini";
+    } else if (geminiKey) {
+      this.apiKey = geminiKey;
+      this.provider = "gemini";
+    } else if (anthropicKey && !anthropicKey.startsWith("sk-ant-api...")) {
+      this.apiKey = anthropicKey;
+      this.provider = "claude";
+    } else {
+      this.apiKey = "";
+      this.provider = "mock";
+    }
   }
 
   /**
@@ -19,34 +35,60 @@ export class AIClient {
   async classifyAndTranslate(title: string, summary?: string, lang = "ar"): Promise<AIOutput> {
     const prompt = buildClassificationPrompt(title, summary, lang);
 
-    // إذا لم يكن مفتاح API متوفراً، نستخدم وضع المحاكاة الذكي للتطوير المحلي (Mock Provider)
-    if (!this.apiKey) {
+    if (this.provider === "mock" || !this.apiKey) {
       return this.mockClassify(title, summary, lang);
     }
 
     try {
-      // الاتصال بـ Anthropic Claude API
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": this.apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-latest",
-          max_tokens: 1000,
-          temperature: 0.1,
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
+      let text = "";
 
-      if (!response.ok) {
-        throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+      if (this.provider === "gemini") {
+        // الاتصال بنموذج Google Gemini Flash
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                responseMimeType: "application/json",
+                temperature: 0.1,
+              },
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = (await response.json()) as any;
+        text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      } else {
+        // الاتصال بـ Anthropic Claude API
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": this.apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-3-5-haiku-latest",
+            max_tokens: 1000,
+            temperature: 0.1,
+            messages: [{ role: "user", content: prompt }],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = (await response.json()) as any;
+        text = data.content?.[0]?.text || "";
       }
-
-      const data = (await response.json()) as any;
-      const text = data.content?.[0]?.text || "";
 
       // استخراج JSON من الرد
       const jsonMatch = text.match(/\{[\s\S]*\}/);
