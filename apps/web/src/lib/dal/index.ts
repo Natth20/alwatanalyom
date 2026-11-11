@@ -1,5 +1,5 @@
 import { prisma } from "@awt/db";
-import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, SITE_SECTIONS } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import {
   MOCK_BREAKING,
@@ -560,6 +560,18 @@ export async function getChannels(): Promise<ChannelCard[]> {
   }
 }
 
+function safeIso(val: unknown, fallback?: string): string {
+  if (!val) return fallback || new Date().toISOString();
+  if (val instanceof Date) return val.toISOString();
+  if (typeof val === "string") return val;
+  try {
+    const d = new Date(val as any);
+    return isNaN(d.getTime()) ? (fallback || new Date().toISOString()) : d.toISOString();
+  } catch {
+    return fallback || new Date().toISOString();
+  }
+}
+
 function mapStoryToSummary(s: any): StorySummary {
   return {
     id: s.id,
@@ -569,9 +581,10 @@ function mapStoryToSummary(s: any): StorySummary {
     importance: s.importance,
     trendingScore: s.trendingScore,
     pinned: s.pinned,
-    firstSeenAt: s.firstSeenAt.toISOString(),
-    lastUpdatedAt: s.lastUpdatedAt.toISOString(),
+    firstSeenAt: safeIso(s.firstSeenAt),
+    lastUpdatedAt: safeIso(s.lastUpdatedAt),
     sectionSlug: s.section?.slug,
+    coverImageUrl: s.articles[0]?.coverMedia?.url || null,
     coverageCount: s.articles.length,
     sources: s.articles.map((a: any) => ({
       id: a.source?.id || "",
@@ -585,13 +598,88 @@ function mapStoryToSummary(s: any): StorySummary {
       slug: a.slug,
       titleAr: a.titleAr,
       kind: a.kind,
-      publishedAt: a.publishedAt?.toISOString() || "",
+      publishedAt: safeIso(a.publishedAt, ""),
       displayPolicy: a.displayPolicy,
       isBreaking: a.isBreaking,
+      coverImageUrl: a.coverMedia?.url || null,
       sectionSlug: a.section?.slug || "",
       sectionNameAr: a.section?.nameAr || "",
       source: a.source ? { id: a.source.id, slug: a.source.slug, nameAr: a.source.nameAr, logoUrl: a.source.logoUrl, homepageUrl: a.source.homepageUrl } : null,
     })),
   };
+}
+
+/**
+ * جلب الحملة الإعلانية الفعالة لموقع محدد
+ */
+export async function getAdCampaign(position: string) {
+  try {
+    const campaign = await (prisma as any).adCampaign.findFirst({
+      where: {
+        position,
+        enabled: true,
+        startsAt: { lte: new Date() },
+        OR: [{ endsAt: null }, { endsAt: { gte: new Date() } }],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!campaign) return null;
+
+    return {
+      id: campaign.id,
+      name: campaign.name,
+      type: campaign.type as "GOOGLE_ADSENSE" | "CUSTOM_BANNER" | "HTML_SCRIPT" | "SPONSORED_POST",
+      position: campaign.position,
+      clientName: campaign.clientName,
+      imageUrl: campaign.imageUrl,
+      targetUrl: campaign.targetUrl,
+      altText: campaign.altText,
+      scriptCode: campaign.scriptCode,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * جلب التغطية الحية المباشرة للأحداث وتحديثاتها اللحظية
+ */
+export async function getActiveLiveCoverage() {
+  try {
+    const coverage = await (prisma as any).liveCoverage.findFirst({
+      where: { isActive: true },
+      include: {
+        updates: {
+          orderBy: { publishedAt: "desc" },
+          take: 30,
+        },
+      },
+      orderBy: [{ pinned: "desc" }, { startedAt: "desc" }],
+    });
+
+    if (!coverage) return null;
+
+    return {
+      id: coverage.id,
+      slug: coverage.slug,
+      title: coverage.title,
+      summary: coverage.summary,
+      streamUrl: coverage.streamUrl,
+      coverImage: coverage.coverImage,
+      startedAt: safeIso(coverage.startedAt),
+      updates: coverage.updates.map((u: any) => ({
+        id: u.id,
+        title: u.title,
+        bodyText: u.bodyText,
+        isUrgent: u.isUrgent,
+        mediaUrl: u.mediaUrl,
+        sourceName: u.sourceName,
+        publishedAt: safeIso(u.publishedAt),
+      })),
+    };
+  } catch {
+    return null;
+  }
 }
 

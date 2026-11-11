@@ -7,7 +7,7 @@ import { EconomicCalendarWidget } from "@/components/EconomicCalendarWidget";
 import { TrendingUp, Coins, Fuel, Banknote, ShieldAlert } from "lucide-react";
 import { Metadata } from "next";
 
-export const revalidate = 30; // ISR 30 ثانية
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "الوطن الاقتصادي — أسعار الصرف، الذهب، والأسواق الحية في فلسطين",

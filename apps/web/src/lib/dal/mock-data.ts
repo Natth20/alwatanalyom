@@ -1,4 +1,4 @@
-import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, ArticleFull, SITE_SECTIONS, PALESTINE_SUBSECTIONS } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, SITE_SECTIONS, PALESTINE_SUBSECTIONS } from "@awt/shared";
 
 const now = new Date();
 const isoNow = now.toISOString();

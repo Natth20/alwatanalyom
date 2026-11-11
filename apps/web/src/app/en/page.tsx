@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getHomeFeed } from "@/lib/dal";
 import { Globe, ExternalLink, ShieldCheck, Flame, Radio } from "lucide-react";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Al-Watan Today — Independent Arab World News & Fact Aggregator",

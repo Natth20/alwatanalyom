@@ -1,7 +1,7 @@
 import { getChannels } from "@/lib/dal";
 import { LiveChannelsFilter } from "@/components/LiveChannelsFilter";
 
-export const revalidate = 300; // ISR 5 دقائق
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "دليل البث المباشر المعتمد — الوطن اليوم",

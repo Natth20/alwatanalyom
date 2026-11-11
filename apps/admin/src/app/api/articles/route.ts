@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
       sectionSlug = "palestine",
       kind = "NEWS",
       summaryAr = "",
-      content = "",
       isBreaking = false,
       status = "PUBLISHED",
       authorName,

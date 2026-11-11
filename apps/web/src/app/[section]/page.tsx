@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { getSectionFeed } from "@/lib/dal";
 import { ArticleCard } from "@/components/ArticleCard";
 
-export const revalidate = 60; // ISR 60 ثانية
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{

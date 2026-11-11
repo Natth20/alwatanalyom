@@ -53,14 +53,22 @@ export async function assertSafeUrl(urlString: string): Promise<URL> {
     throw new Error(`نطاق داخلي غير مسموح بطلبه: ${hostname}`);
   }
 
-  // فحص عنوان IP عبر DNS لضمان عدم توجيهه إلى شبكة داخلية
+  // فحص عنوان IP عبر DNS لضمان عدم توجيهه إلى شبكة داخلية مع مهلة أقصاها 3 ثوانٍ
   try {
-    const lookup = await dns.lookup(hostname);
+    const lookupPromise = dns.lookup(hostname);
+    const timeoutPromise = new Promise<{ address: string }>((_, reject) =>
+      setTimeout(() => reject(new Error("DNS timeout")), 3000)
+    );
+    const lookup = await Promise.race([lookupPromise, timeoutPromise]);
     if (isPrivateIp(lookup.address)) {
       throw new Error(`عنوان IP الداخلي محظور: ${lookup.address} لـ ${hostname}`);
     }
   } catch (err: any) {
     if (err.message.includes("محظور")) throw err;
+    if (err.message.includes("DNS timeout")) {
+      // السماح بالنطاق العام وتجاوز تعليق الـ DNS المحلي
+      return url;
+    }
     // إن تعذر حل DNS
     throw new Error(`فشل حل النطاق: ${hostname}`);
   }

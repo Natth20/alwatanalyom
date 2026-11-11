@@ -13,7 +13,7 @@ interface Props {
 export default async function NewsroomPage({ searchParams }: Props) {
   const { status, sourceId } = await searchParams;
 
-  const [items, sources, counts] = await Promise.all([
+  const [items, counts] = await Promise.all([
     prisma.item.findMany({
       where: {
         ...(status ? { status: status as any } : {}),
@@ -26,10 +26,6 @@ export default async function NewsroomPage({ searchParams }: Props) {
       },
       orderBy: { fetchedAt: "desc" },
       take: 40,
-    }),
-    prisma.source.findMany({
-      select: { id: true, nameAr: true },
-      orderBy: { nameAr: "asc" },
     }),
     prisma.item.groupBy({
       by: ["status"],

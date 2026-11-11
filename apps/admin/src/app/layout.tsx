@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { KillSwitchButton } from "@/components/KillSwitchButton";
+import { InstantIngestButton } from "@/components/InstantIngestButton";
 
 export const metadata: Metadata = {
   title: "غرفة الأخبار والتحرير — الوطن اليوم",
@@ -33,10 +34,16 @@ export default function AdminLayout({
               <Link href="/" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📊 لوحة القيادة
               </Link>
+              <Link href="/ads" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-amber-400 bg-amber-500/10 font-bold">
+                📢 إدارة الإعلانات والرعايات
+              </Link>
+              <Link href="/live" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-rose-400 bg-rose-500/10 font-bold">
+                🔴 التغطيات المباشرة اللحظية
+              </Link>
               <Link href="/newsroom" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📰 غرفة الأخبار والمسار
               </Link>
-              <Link href="/newsroom/review" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-amber-400 bg-amber-500/10">
+              <Link href="/newsroom/review" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-rose-400">
                 ⏳ قائمة المراجعة البشرية
               </Link>
               <Link href="/articles" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
@@ -82,8 +89,14 @@ export default function AdminLayout({
           <header className="h-14 border-b border-[var(--border)] bg-[var(--surface)] px-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-xs text-[var(--text-muted)]">نظام المعالجة المستمر: يعمل بصحة جيدة</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                متصل بالمصادر الحية
+              </span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <InstantIngestButton />
+              <div className="h-4 w-px bg-[var(--border)]" />
               <KillSwitchButton />
             </div>
           </header>

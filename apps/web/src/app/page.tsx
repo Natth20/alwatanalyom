@@ -17,7 +17,7 @@ import { HistoryTodayWidget } from "@/components/HistoryTodayWidget";
 import { DailyMindGames } from "@/components/DailyMindGames";
 import { AskNewsroomWidget } from "@/components/AskNewsroomWidget";
 
-export const revalidate = 30; // ISR 30 ثانية
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const feed = await getHomeFeed();

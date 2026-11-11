@@ -3,7 +3,7 @@ import { getActiveBreaking } from "@/lib/dal";
 import { Radio, Bell, Flame, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 
-export const revalidate = 15; // ISR 15 ثانية
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "شريط العواجل والتحديثات الفورية — الوطن اليوم",

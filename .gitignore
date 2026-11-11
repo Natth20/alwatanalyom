@@ -37,3 +37,6 @@ packages/db/src/generated/
 # OS
 Thumbs.db
 
+# TypeScript
+*.tsbuildinfo
+

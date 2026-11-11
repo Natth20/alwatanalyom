@@ -10,7 +10,16 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "**" },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        crypto: false,
+        "node:crypto": false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
-

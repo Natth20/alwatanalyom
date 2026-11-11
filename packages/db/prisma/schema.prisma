@@ -231,6 +231,7 @@ model Article {
   sectionId         String
   authorId          String?
   coverMediaId      String?
+  coverMedia        Media?           @relation(fields: [coverMediaId], references: [id])
   isBreaking        Boolean          @default(false)
   breakingUntil     DateTime?
   publishedAt       DateTime?
@@ -342,6 +343,7 @@ model Media {
   width       Int?
   height      Int?
   altAr       String?
+  articles    Article[]
 }
 
 // ---------- الاقتصاد ----------
@@ -479,4 +481,79 @@ model PublishPolicy {
   enabled   Boolean  @default(true)
   updatedAt DateTime @updatedAt
 }
+
+// ---------- نظام الإعلانات والرعايات ----------
+enum AdSlotPosition {
+  HEADER_TOP_LEADERBOARD
+  STICKY_MOBILE_FOOTER
+  SIDEBAR_TOP_RECTANGLE
+  SIDEBAR_STICKY_SKYSCRAPER
+  IN_ARTICLE_PARAGRAPH_3
+  IN_ARTICLE_PARAGRAPH_6
+  BETWEEN_HOMEPAGE_SECTIONS
+  BREAKING_BAR_SPONSOR
+  STORY_TIMELINE_BANNER
+}
+
+enum AdType {
+  GOOGLE_ADSENSE
+  CUSTOM_BANNER
+  HTML_SCRIPT
+  SPONSORED_POST
+}
+
+model AdCampaign {
+  id              String         @id @default(cuid())
+  name            String
+  type            AdType         @default(GOOGLE_ADSENSE)
+  position        AdSlotPosition
+  enabled         Boolean        @default(true)
+  clientName      String?
+  imageUrl        String?
+  targetUrl       String?
+  altText         String?
+  scriptCode      String?        @db.Text
+  targetSections  String[]       @default([])
+  targetCountries String[]       @default([])
+  startsAt        DateTime       @default(now())
+  endsAt          DateTime?
+  impressions     Int            @default(0)
+  clicks          Int            @default(0)
+  maxImpressions  Int?
+  maxClicks       Int?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([position, enabled])
+}
+
+// ---------- التغطيات المباشرة اللحظية ----------
+model LiveCoverage {
+  id         String       @id @default(cuid())
+  slug       String       @unique
+  title      String
+  summary    String?
+  isActive   Boolean      @default(true)
+  pinned     Boolean      @default(false)
+  coverImage String?
+  streamUrl  String?
+  startedAt  DateTime     @default(now())
+  endedAt    DateTime?
+  updates    LiveUpdate[]
+}
+
+model LiveUpdate {
+  id          String       @id @default(cuid())
+  coverageId  String
+  title       String?
+  bodyText    String       @db.Text
+  isUrgent    Boolean      @default(false)
+  mediaUrl    String?
+  sourceName  String?
+  publishedAt DateTime     @default(now())
+  coverage    LiveCoverage @relation(fields: [coverageId], references: [id], onDelete: Cascade)
+
+  @@index([coverageId, publishedAt])
+}
+
 

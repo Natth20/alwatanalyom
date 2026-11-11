@@ -107,3 +107,52 @@ export interface ChannelCard {
   lastCheckedAt?: string | null;
 }
 
+export type AdSlotPosition =
+  | "HEADER_TOP_LEADERBOARD"
+  | "STICKY_MOBILE_FOOTER"
+  | "SIDEBAR_TOP_RECTANGLE"
+  | "SIDEBAR_STICKY_SKYSCRAPER"
+  | "IN_ARTICLE_PARAGRAPH_3"
+  | "IN_ARTICLE_PARAGRAPH_6"
+  | "BETWEEN_HOMEPAGE_SECTIONS"
+  | "BREAKING_BAR_SPONSOR"
+  | "STORY_TIMELINE_BANNER";
+
+export type AdType = "GOOGLE_ADSENSE" | "CUSTOM_BANNER" | "HTML_SCRIPT" | "SPONSORED_POST";
+
+export interface AdCampaignData {
+  id: string;
+  name: string;
+  type: AdType;
+  position: AdSlotPosition;
+  enabled: boolean;
+  clientName?: string | null;
+  imageUrl?: string | null;
+  targetUrl?: string | null;
+  altText?: string | null;
+  scriptCode?: string | null;
+  targetSections: string[];
+  targetCountries: string[];
+  startsAt: string;
+  endsAt?: string | null;
+  impressions: number;
+  clicks: number;
+  maxImpressions?: number | null;
+  maxClicks?: number | null;
+}
+
+export interface LiveCoverageData {
+  id: string;
+  slug: string;
+  title: string;
+  summary?: string | null;
+  isActive: boolean;
+  pinned: boolean;
+  coverImage?: string | null;
+  streamUrl?: string | null;
+  startedAt: string;
+  endedAt?: string | null;
+  updatesCount?: number;
+}
+
+

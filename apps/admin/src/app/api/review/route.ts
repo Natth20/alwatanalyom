@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, DisplayPolicy, ArticleKind, ArticleStatus } from "@awt/db";
+import { prisma, ArticleKind, ArticleStatus } from "@awt/db";
 import { generateArabicSlug } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import { getSessionUser } from "@/lib/auth";
