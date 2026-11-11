@@ -61,7 +61,7 @@ export function HistoryTodayWidget() {
   };
 
   return (
-    <section className="relative rounded-2xl border border-[var(--border)] bg-gradient-to-br from-[var(--surface)] via-[var(--bg)] to-[var(--surface)] p-6 md:p-8 overflow-hidden shadow-sm">
+    <section className="card-luxury relative rounded-3xl p-6 md:p-8 overflow-hidden shadow-lg">
       <div className="absolute top-0 end-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* الترويسة الرئيسية */}

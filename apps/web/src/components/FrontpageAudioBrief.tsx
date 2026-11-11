@@ -53,14 +53,17 @@ export function FrontpageAudioBrief({ headlines }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--primary)]/30 bg-gradient-to-r from-[var(--primary)]/10 via-[var(--surface)] to-[var(--surface)] p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-      <div className="flex items-center gap-3">
+    <div className="relative rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-950/20 via-[var(--surface-elevated)] to-[var(--surface)] p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md overflow-hidden">
+      {/* هالة تدرج خفيفة */}
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
+
+      <div className="relative z-10 flex items-center gap-3">
         <button
           onClick={handleToggle}
-          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all shrink-0 shadow-md ${
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shrink-0 shadow-lg ${
             isPlaying
               ? "bg-rose-600 text-white animate-pulse"
-              : "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
+              : "bg-gradient-to-br from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 border border-emerald-400/30"
           }`}
           aria-label={isPlaying ? "إيقاف الموجز" : "استمع لموجز الجريدة"}
         >
@@ -71,27 +74,35 @@ export function FrontpageAudioBrief({ headlines }: Props) {
           <div className="flex items-center gap-2">
             <span className="text-sm font-black text-[var(--text)] flex items-center gap-1.5">
               <span>🎧</span>
-              <span>اسمع أهم أخبار اليوم في 3 دقائق</span>
+              <span>الموجز الإذاعي الصوتي · في 3 دقائق</span>
             </span>
-            <span className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full">
-              بث صوتي فوري
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+              بث فوري ذكي
             </span>
           </div>
           <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
             {isPlaying
-              ? "جارٍ بث الموجز الإذاعي لأهم العناوين والتطورات..."
-              : "قراءة صوتية ذكية لأبرز 5 عناوين في الصفحة الرئيسية مباشرة دون عناء القراءة."}
+              ? "جارٍ الآن بث الموجز الإذاعي لأهم العناوين والتطورات الميدانية..."
+              : "قراءة صوتية ذكية لأبرز عناوين الساعة بصوت واضح وبدون إعلانات."}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="text-xs font-semibold text-[var(--text-muted)] hidden md:inline">
-          سرعة البث: 1.0x
+      <div className="relative z-10 flex items-center gap-3 shrink-0">
+        {isPlaying && (
+          <div className="flex items-end gap-1 h-5 pe-2">
+            <span className="w-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:0ms] h-3" />
+            <span className="w-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:150ms] h-5" />
+            <span className="w-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:300ms] h-4" />
+            <span className="w-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:75ms] h-2" />
+          </div>
+        )}
+        <span className="text-xs font-mono font-semibold text-[var(--text-muted)] hidden md:inline">
+          1.0x
         </span>
         <button
           onClick={handleToggle}
-          className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-xs font-bold text-[var(--text)] hover:border-[var(--primary)] transition-colors flex items-center gap-1.5 shadow-sm"
+          className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-bold text-[var(--text)] hover:border-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
         >
           {isPlaying ? (
             <>
@@ -100,7 +111,7 @@ export function FrontpageAudioBrief({ headlines }: Props) {
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5 text-[var(--primary)] fill-[var(--primary)]" />
+              <Play className="w-3.5 h-3.5 text-[var(--primary)] fill-current" />
               <span>▶ استمع الآن</span>
             </>
           )}

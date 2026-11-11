@@ -37,7 +37,7 @@ export function PodcastWidget() {
   };
 
   return (
-    <section className="relative rounded-2xl overflow-hidden border border-[var(--border)] bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 text-white p-6 md:p-8 shadow-lg">
+    <section className="relative rounded-3xl overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-emerald-950/70 to-slate-950 text-white p-6 md:p-8 shadow-xl">
       <div className="absolute top-0 end-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

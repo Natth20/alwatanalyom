@@ -1,61 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 :root {
   --font-arabic: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Arabic', sans-serif;
-  --bg: #ffffff;
-  --surface: #f5f6f8;
-  --text: #14171c;
-  --text-muted: #5a6270;
-  --primary: #0b5d3b;
-  --primary-hover: #08492e;
-  --breaking: #c62828;
-  --up: #1b7f3b;
-  --down: #c62828;
-  --border: #e2e5ea;
-}
+  --font-reading: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
+  --font-serif: 'Amiri', serif;
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --bg: #0f1115;
-    --surface: #171a21;
-    --text: #eceff4;
-    --text-muted: #9aa3b2;
-    --primary: #2fbf7a;
-    --primary-hover: #26a367;
-    --breaking: #ff6b6b;
-    --up: #3ddc84;
-    --down: #ff6b6b;
-    --border: #2a2f3a;
-  }
+  /* النمط الفاتح الورقي الفاخر (Imperial Alabaster) */
+  --bg: #fafbfc;
+  --bg-subtle: #f1f4f8;
+  --surface: #ffffff;
+  --surface-header: rgba(255, 255, 255, 0.92);
+  --surface-card: #ffffff;
+  --surface-hover: #f3f6fa;
+  --text: #090d16;
+  --text-secondary: #2d3748;
+  --text-muted: #5a6679;
+  
+  /* ألوان الهوية السيادية */
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-light: #ecfdf5;
+  --primary-glow: rgba(5, 150, 105, 0.25);
+
+  /* الياقوتي للعواجل والنبض الميداني */
+  --breaking: #e11d48;
+  --breaking-hover: #be123c;
+  --breaking-light: #fff1f2;
+  --breaking-glow: rgba(225, 29, 72, 0.3);
+
+  /* الكهرماني الذهبي لأسواق المال والاقتصاد */
+  --economy: #d97706;
+  --economy-hover: #b45309;
+  --economy-light: #fffbeb;
+  --economy-glow: rgba(217, 119, 6, 0.25);
+
+  --up: #10b981;
+  --down: #f43f5e;
+  --border: #e2e8f0;
+  --border-subtle: #edf2f7;
+  --border-card: rgba(226, 232, 240, 0.8);
+  --shadow-luxury: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
 }
 
 html.dark,
 [data-theme='dark'] {
-  --bg: #0f1115;
-  --surface: #171a21;
-  --text: #eceff4;
-  --text-muted: #9aa3b2;
-  --primary: #2fbf7a;
-  --primary-hover: #26a367;
-  --breaking: #ff6b6b;
-  --up: #3ddc84;
-  --down: #ff6b6b;
-  --border: #2a2f3a;
+  /* النمط الليلي الفخم (Obsidian Luxury Dark) */
+  --bg: #030712;
+  --bg-subtle: #080d1a;
+  --surface: #0b1120;
+  --surface-header: rgba(11, 17, 32, 0.88);
+  --surface-card: #0f172a;
+  --surface-hover: #1e293b;
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8492a6;
+
+  --primary: #10b981;
+  --primary-hover: #34d399;
+  --primary-light: rgba(16, 185, 129, 0.12);
+  --primary-glow: rgba(16, 185, 129, 0.35);
+
+  --breaking: #f43f5e;
+  --breaking-hover: #fb7185;
+  --breaking-light: rgba(244, 63, 94, 0.14);
+  --breaking-glow: rgba(244, 63, 94, 0.4);
+
+  --economy: #fbbf24;
+  --economy-hover: #fcd34d;
+  --economy-light: rgba(251, 191, 36, 0.14);
+  --economy-glow: rgba(251, 191, 36, 0.35);
+
+  --up: #34d399;
+  --down: #fb7185;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-html.light,
-[data-theme='light'] {
-  --bg: #ffffff;
-  --surface: #f5f6f8;
-  --text: #14171c;
-  --text-muted: #5a6270;
-  --primary: #0b5d3b;
-  --primary-hover: #08492e;
-  --breaking: #c62828;
-  --up: #1b7f3b;
-  --down: #c62828;
-  --border: #e2e5ea;
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: #030712;
+    --bg-subtle: #080d1a;
+    --surface: #0b1120;
+    --surface-header: rgba(11, 17, 32, 0.88);
+    --surface-card: #0f172a;
+    --surface-hover: #1e293b;
+    --text: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #8492a6;
+
+    --primary: #10b981;
+    --primary-hover: #34d399;
+    --primary-light: rgba(16, 185, 129, 0.12);
+    --primary-glow: rgba(16, 185, 129, 0.35);
+
+    --breaking: #f43f5e;
+    --breaking-hover: #fb7185;
+    --breaking-light: rgba(244, 63, 94, 0.14);
+    --breaking-glow: rgba(244, 63, 94, 0.4);
+
+    --economy: #fbbf24;
+    --economy-hover: #fcd34d;
+    --economy-light: rgba(251, 191, 36, 0.14);
+    --economy-glow: rgba(251, 191, 36, 0.35);
+
+    --up: #34d399;
+    --down: #fb7185;
+    --border: rgba(255, 255, 255, 0.09);
+    --border-subtle: rgba(255, 255, 255, 0.04);
+    --border-card: rgba(255, 255, 255, 0.08);
+    --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  }
 }
 
 body {
@@ -64,16 +121,84 @@ body {
   font-family: var(--font-arabic);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* Logical spacing utilities for RTL */
+/* تنسيقات الحاوية المتجاوبة الفاخرة */
 .container-custom {
-  max-width: 1280px;
+  max-width: 1360px;
   margin-inline: auto;
   padding-inline: 1rem;
 }
 
-/* Hide scrollbar for clean horizontal tickers */
+@media (min-width: 768px) {
+  .container-custom {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* تأثيرات الزجاج الفاخر (Glassmorphism) */
+.glass-panel {
+  background: var(--surface-header);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+}
+
+/* بطاقات الفخامة مع تأثير الحركة عند التحويم (60-120fps) */
+.card-luxury {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-luxury);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.28s ease;
+  will-change: transform, box-shadow;
+}
+
+.card-luxury:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px -15px var(--primary-glow), var(--shadow-luxury);
+}
+
+/* بطاقة عاجلة خاصة */
+.card-breaking-hover:hover {
+  border-color: var(--breaking);
+  box-shadow: 0 20px 40px -15px var(--breaking-glow), var(--shadow-luxury);
+}
+
+/* مانشيتات صحفية ملكية */
+.editorial-title {
+  font-family: var(--font-arabic);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.editorial-reading {
+  font-family: var(--font-reading);
+  line-height: 1.85;
+}
+
+/* شريط تمرير ناعم وأنيق */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
@@ -82,7 +207,35 @@ body {
   scrollbar-width: none;
 }
 
-/* Print styles for clean articles */
+/* وضع الطوارئ والإنترنت الضعيف لغزة والميدان */
+.low-bandwidth-mode img,
+.low-bandwidth-mode video,
+.low-bandwidth-mode iframe {
+  display: none !important;
+}
+
+.low-bandwidth-mode .low-bandwidth-hide {
+  display: none !important;
+}
+
+.low-bandwidth-mode * {
+  animation: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* أنيميشن الماركيه والنبض */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.96); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* نمط الطباعة الصحفية النظيفة */
 @media print {
   header, footer, nav, aside, .no-print {
     display: none !important;

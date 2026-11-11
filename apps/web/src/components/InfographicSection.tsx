@@ -57,7 +57,7 @@ const STATS_DATA: StatItem[] = [
 
 export function InfographicSection() {
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 shadow-sm">
+    <section className="card-luxury rounded-3xl p-6 md:p-8 shadow-lg">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-[var(--border)] pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center shadow-md">

@@ -45,7 +45,9 @@ export function AskNewsroomWidget() {
   };
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 shadow-sm">
+    <section className="card-luxury relative rounded-3xl p-6 md:p-8 shadow-lg overflow-hidden">
+      {/* هالة جمالية */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-[var(--border)] pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-rose-700 text-white flex items-center justify-center shadow-md">

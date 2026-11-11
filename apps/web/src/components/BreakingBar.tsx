@@ -82,11 +82,14 @@ export function BreakingBar({ articles: initialArticles }: Props) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <div className="bg-[var(--breaking)] text-white text-sm font-medium py-2 px-4 shadow-sm border-b border-rose-700/30">
-      <div className="container-custom flex items-center justify-between gap-3">
+    <div className="relative bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white text-sm font-medium py-2 px-4 shadow-md border-b border-rose-500/30 overflow-hidden">
+      {/* خلفية جمالية خفيفة */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent pointer-events-none" />
+
+      <div className="container-custom flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
-          <span className="bg-white/20 text-white px-2.5 py-0.5 rounded text-xs font-black animate-pulse flex items-center gap-1.5 shrink-0">
-            <span className="w-2 h-2 rounded-full bg-white inline-block" />
+          <span className="bg-gradient-to-r from-rose-600 to-red-600 text-white px-2.5 py-0.5 rounded-full text-xs font-black shadow-sm flex items-center gap-1.5 shrink-0 border border-rose-400/30">
+            <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping" />
             <span>عاجل</span>
           </span>
 
@@ -95,12 +98,12 @@ export function BreakingBar({ articles: initialArticles }: Props) {
               <Link
                 key={item.id}
                 href={`/article/${item.id}/${item.slug}`}
-                className="inline-flex items-center gap-2 hover:underline me-8 text-white/95 text-xs md:text-sm font-semibold transition-opacity hover:opacity-90"
+                className="inline-flex items-center gap-2 hover:underline me-8 text-white/95 text-xs md:text-sm font-semibold transition-opacity hover:opacity-100 group"
               >
-                <span>{item.titleAr}</span>
+                <span className="group-hover:text-amber-200 transition-colors">{item.titleAr}</span>
                 {item.source && (
-                  <span className="text-white/70 text-[11px] font-normal">
-                    ({item.source.nameAr})
+                  <span className="text-white/60 text-[11px] font-normal bg-black/20 px-1.5 py-0.2 rounded">
+                    {item.source.nameAr}
                   </span>
                 )}
               </Link>
@@ -113,13 +116,13 @@ export function BreakingBar({ articles: initialArticles }: Props) {
           <button
             onClick={toggleSound}
             title={soundEnabled ? "إيقاف صوت تنبيه العاجل" : "تشغيل صوت تنبيه للعاجل"}
-            className="p-1 rounded bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-colors text-xs flex items-center gap-1"
+            className="p-1 px-2 rounded-lg bg-black/25 hover:bg-black/40 border border-white/10 text-white/90 hover:text-white transition-all text-xs flex items-center gap-1.5"
             aria-label="تنبيه صوتي للعاجل"
           >
             {soundEnabled ? (
               <>
                 <Bell className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-                <span className="hidden sm:inline text-[11px] font-semibold text-amber-200">صوت العاجل</span>
+                <span className="hidden sm:inline text-[11px] font-bold text-amber-200">صوت العاجل مفعّل</span>
               </>
             ) : (
               <>
@@ -131,7 +134,7 @@ export function BreakingBar({ articles: initialArticles }: Props) {
 
           <Link
             href="/breaking"
-            className="text-xs text-white/90 hover:text-white underline underline-offset-2 flex items-center gap-1 font-bold"
+            className="text-xs text-white/90 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 font-bold transition-colors"
           >
             <span>كل العاجل</span>
             <ChevronLeft className="w-3.5 h-3.5" />

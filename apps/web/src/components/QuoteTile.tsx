@@ -17,21 +17,21 @@ export function QuoteTile({ quote }: { quote: InstrumentQuote }) {
   return (
     <Link
       href={`/economy/instrument/${quote.symbol}`}
-      className="block p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] transition-colors"
+      className="card-luxury block p-3.5 rounded-2xl transition-all group"
     >
       <div className="flex items-center justify-between text-xs mb-1">
-        <span className="font-bold text-[var(--text)]">{quote.nameAr}</span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${statusInfo?.class}`}>
+        <span className="font-bold text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">{quote.nameAr}</span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${statusInfo?.class}`}>
           {statusInfo?.label}
         </span>
       </div>
 
       <div className="flex items-baseline justify-between mt-2">
-        <div className="text-lg font-black tracking-tight text-[var(--text)]">
+        <div className="text-lg font-black tracking-tight text-[var(--text)] font-mono">
           {quote.price !== null ? (
             <span>
               {quote.price}{" "}
-              <span className="text-[10px] font-normal text-[var(--text-muted)]">
+              <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">
                 {quote.currency || ""}
               </span>
             </span>
@@ -42,8 +42,12 @@ export function QuoteTile({ quote }: { quote: InstrumentQuote }) {
 
         {quote.changePct && quote.price !== null && (
           <div
-            className={`text-xs font-bold flex items-center gap-0.5 ${
-              isUp ? "text-[var(--up)]" : isDown ? "text-[var(--down)]" : "text-[var(--text-muted)]"
+            className={`text-xs font-mono font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded ${
+              isUp
+                ? "text-emerald-500 bg-emerald-500/10"
+                : isDown
+                ? "text-rose-500 bg-rose-500/10"
+                : "text-[var(--text-muted)]"
             }`}
           >
             <span>{isUp ? "▲ +" : isDown ? "▼ " : ""}</span>
@@ -52,8 +56,8 @@ export function QuoteTile({ quote }: { quote: InstrumentQuote }) {
         )}
       </div>
 
-      <div className="text-[10px] text-[var(--text-muted)] mt-1 flex justify-between">
-        <span>{quote.symbol}</span>
+      <div className="text-[10px] text-[var(--text-muted)] mt-1.5 flex justify-between font-mono">
+        <span className="opacity-70">{quote.symbol}</span>
         <span>{quote.unit ? quote.unit : ""}</span>
       </div>
     </Link>

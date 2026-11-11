@@ -29,7 +29,7 @@ export function MostReadWidget({ articles }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4 shadow-sm">
+    <div className="card-luxury rounded-3xl p-5 space-y-4 shadow-md">
       <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">

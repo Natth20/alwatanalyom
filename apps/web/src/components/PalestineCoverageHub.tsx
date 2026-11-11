@@ -135,31 +135,34 @@ export function PalestineCoverageHub() {
   const currentRegion = REGION_DATA[activeTab];
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 shadow-sm">
+    <section className="relative rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-[var(--surface-elevated)] via-[var(--surface)] to-[var(--surface)] p-6 md:p-8 shadow-lg overflow-hidden">
+      {/* هالة خضراء ملكية خفيفة في الخلفية */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
       {/* الترويسة الرئيسية */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-[var(--border)] pb-4">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-[var(--border)] pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white flex items-center justify-center shadow-md text-xl font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg text-2xl font-bold border border-emerald-400/30">
             🇵🇸
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl md:text-2xl font-black text-[var(--text)]">
-                مركز تغطيات فلسطين الميدانية
+              <h2 className="text-xl md:text-2xl font-black text-[var(--text)] tracking-tight">
+                نبض فلسطين · التغطية الميدانية الشاملة
               </h2>
-              <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full animate-pulse">
-                متابعة حية
+              <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full animate-pulse">
+                مباشر دقيقة بدقيقة
               </span>
             </div>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              تغطية جغرافية تفاعلية شاملة لكافة المحافظات والمخيمات وشتات العودة
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              تغطية جغرافية موثقة وشاملة لكافة المحافظات والمخيمات والقدس الشريف والشتات
             </p>
           </div>
         </div>
 
         <Link
           href="/palestine"
-          className="text-xs font-bold text-[var(--primary)] hover:underline inline-flex items-center gap-1 group"
+          className="text-xs font-bold text-[var(--primary)] hover:underline inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 transition-colors group"
         >
           <span>كل أرشيف فلسطين</span>
           <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
@@ -203,28 +206,28 @@ export function PalestineCoverageHub() {
         {currentRegion.items.map((item) => (
           <article
             key={item.id}
-            className="group rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 hover:border-[var(--primary)]/50 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+            className="card-luxury rounded-2xl p-5 flex flex-col justify-between group"
           >
             <div>
               <div className="flex items-center justify-between gap-2 text-xs mb-3">
-                <span className="font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 rounded text-[11px]">
+                <span className="font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-2.5 py-0.5 rounded-full text-[11px] border border-[var(--primary)]/20">
                   {item.tag}
                 </span>
-                <span className="text-[10px] font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                   {item.badge}
                 </span>
               </div>
 
-              <h3 className="font-bold text-sm md:text-base text-[var(--text)] leading-snug group-hover:text-[var(--primary)] transition-colors mb-3">
+              <h3 className="font-black text-sm md:text-base text-[var(--text)] leading-snug group-hover:text-[var(--primary)] transition-colors mb-3">
                 <Link href={`/article/hub-${item.id}/${item.slug}`}>
                   {item.title}
                 </Link>
               </h3>
             </div>
 
-            <div className="pt-3 border-t border-[var(--border)]/70 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-              <span>{item.source}</span>
-              <span>{item.time}</span>
+            <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+              <span className="font-semibold">{item.source}</span>
+              <span className="font-mono">{item.time}</span>
             </div>
           </article>
         ))}

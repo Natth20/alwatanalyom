@@ -93,7 +93,7 @@ export function OpinionSection() {
         {FEATURED_COLUMNISTS.map((col) => (
           <article
             key={col.id}
-            className="group relative flex flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 hover:border-[var(--primary)]/40 hover:shadow-lg transition-all duration-300"
+            className="card-luxury group relative flex flex-col justify-between rounded-2xl p-5 transition-all duration-300"
           >
             <div>
               {/* ترويسة الكاتب */}

@@ -15,7 +15,7 @@ export function QuoteOfTheDay({
   sourceUrl = "/palestine",
 }: Props) {
   return (
-    <div className="relative rounded-2xl overflow-hidden p-6 md:p-8 bg-gradient-to-l from-emerald-950 via-[var(--surface)] to-[var(--surface)] border border-emerald-500/30 shadow-md">
+    <div className="card-luxury relative rounded-3xl overflow-hidden p-6 md:p-8 bg-gradient-to-l from-emerald-950/40 via-[var(--surface-elevated)] to-[var(--surface)] border border-emerald-500/30 shadow-lg">
       {/* علامة الاقتباس المائية بالخلفية */}
       <span className="absolute -top-6 start-4 text-8xl text-emerald-500/10 font-serif select-none pointer-events-none">
         “

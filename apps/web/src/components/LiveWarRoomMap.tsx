@@ -77,7 +77,7 @@ export function LiveWarRoomMap() {
   const [selectedSector, setSelectedSector] = useState<SectorStatus>(SECTORS[0]);
 
   return (
-    <section className="relative rounded-2xl border border-[var(--border)] bg-gradient-to-br from-[var(--surface)] via-[var(--bg)] to-[var(--surface)] p-6 md:p-8 overflow-hidden shadow-sm">
+    <section className="card-luxury relative rounded-3xl p-6 md:p-8 overflow-hidden shadow-lg">
       {/* الترويسة الإنسانية والمهنية */}
       <div className="relative flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-[var(--border)] pb-4">
         <div className="flex items-center gap-3">

@@ -91,14 +91,14 @@ export default async function HomePage() {
         <HistoryTodayWidget />
 
         {/* 9. وحدة فلسطين الرئيسية (Palestine First) */}
-        <section>
-          <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🇵🇸</span>
-              <h2 className="text-2xl font-black text-[var(--text)]">فلسطين</h2>
-              <span className="text-xs text-[var(--text-muted)]">| رصد شامل للأخبار والتقارير</span>
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🇵🇸</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[var(--text)] tracking-tight">فلسطين أولاً</h2>
+              <span className="text-xs text-[var(--text-muted)] hidden sm:inline">| رصد استقصائي وميداني شامل للأخبار والتقارير</span>
             </div>
-            <Link href="/palestine" className="text-xs font-bold text-[var(--primary)] hover:underline">
+            <Link href="/palestine" className="text-xs font-bold text-[var(--primary)] hover:underline px-3 py-1.5 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 transition-colors">
               كل تغطيات فلسطين ←
             </Link>
           </div>
@@ -126,18 +126,18 @@ export default async function HomePage() {
 
         {/* 14. نافذة الوطن الاقتصادي */}
         {feed.quotes.length > 0 && (
-          <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></span>
-                <h3 className="font-bold text-base text-[var(--text)]">نافذة الوطن الاقتصادي</h3>
-                <span className="text-xs text-[var(--text-muted)]">(أسعار معتمدة ومحدثة)</span>
+          <section className="card-luxury rounded-3xl p-6 md:p-8 shadow-lg">
+            <div className="flex items-center justify-between mb-6 pb-3 border-b border-[var(--border)]">
+              <div className="flex items-center gap-2.5">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h3 className="font-black text-lg md:text-xl text-[var(--text)]">نافذة الوطن الاقتصادي · أسواق فلسطين والعالم</h3>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">أسعار معتمدة ولحظية</span>
               </div>
-              <Link href="/economy" className="text-xs text-[var(--primary)] font-semibold hover:underline">
+              <Link href="/economy" className="text-xs text-[var(--primary)] font-bold hover:underline">
                 مركز الأسواق الكامل ←
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {feed.quotes.map((quote) => (
                 <QuoteTile key={quote.symbol} quote={quote} />
               ))}
