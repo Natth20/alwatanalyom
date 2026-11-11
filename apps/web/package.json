@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "pnpm --filter @awt/db run generate && next build",
-    "vercel-build": "pnpm --filter @awt/db run generate && next build",
+    "build": "pnpm --filter @awt/db run generate && next build && node postbuild.js",
+    "vercel-build": "pnpm --filter @awt/db run generate && next build && node postbuild.js",
     "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
