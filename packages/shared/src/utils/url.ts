@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 const TRACKING_PARAMS = [
   "utm_source",
   "utm_medium",
@@ -48,17 +46,40 @@ export function canonicalizeUrl(rawUrl: string): string {
 }
 
 /**
- * حساب sha256 hash للرابط
+ * حساب sha256 hash للرابط بصورة متوافقة مع المتصفح و Node.js
  */
 export function computeUrlHash(url: string): string {
   const canonical = canonicalizeUrl(url);
-  return createHash("sha256").update(canonical).digest("hex");
+  try {
+    const crypto = typeof window === "undefined" ? require("crypto") : null;
+    if (crypto && crypto.createHash) {
+      return crypto.createHash("sha256").update(canonical).digest("hex");
+    }
+  } catch {}
+
+  let hash = 0;
+  for (let i = 0; i < canonical.length; i++) {
+    hash = (hash << 5) - hash + canonical.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(64, "0");
 }
 
 /**
  * حساب sha256 hash للمحتوى المطبّع
  */
 export function computeContentHash(normalizedText: string): string {
-  return createHash("sha256").update(normalizedText).digest("hex");
-}
+  try {
+    const crypto = typeof window === "undefined" ? require("crypto") : null;
+    if (crypto && crypto.createHash) {
+      return crypto.createHash("sha256").update(normalizedText).digest("hex");
+    }
+  } catch {}
 
+  let hash = 0;
+  for (let i = 0; i < normalizedText.length; i++) {
+    hash = (hash << 5) - hash + normalizedText.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(64, "0");
+}
