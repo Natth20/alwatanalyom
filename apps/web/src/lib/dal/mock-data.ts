@@ -446,63 +446,49 @@ export const MOCK_SECTION_ARTICLES = {
 export function getMockArticleById(id: string): ArticleDetail {
   return {
     id,
-    slug: "استمرار-حصار-مستشفى-كمال-عدوان-في-شمال-غزة",
-    titleAr: "استمرار حصار مستشفى كمال عدوان ومناشدات دولية لإنقاذ الجرحى والطواقم الطبية في شمال غزة",
-    titleOriginal: "Besieged Kamal Adwan Hospital in Northern Gaza warns of total collapse",
-    summaryAr: "حذرت وزارة الصحة وإدارة مستشفى كمال عدوان في شمال قطاع غزة من خروج المرفق الطبي بالكامل عن الخدمة جراء الحصار المتواصل ونفاد الأوكسجين والمستلزمات الأساسية، مع منع وصول مركبات الإسعاف.",
+    slug: "مقال-تجريبي-لاختبار-التصميم-في-بيئة-التطوير",
+    titleAr: "[DEMO] مادة صحفية تجريبية مخصصة لاختبار الواجهات والتصميم المحلي",
+    titleOriginal: "Demo article for local development testing",
+    summaryAr: "هذه مادة استرشادية تظهر حصراً في بيئة التطوير المحلية لاختبار مكونات القراءة والتنسيق ولا تمثل خبراً حقيقياً.",
     bodyHtml: `
-      <p>أكدت مصادر طبية فلسطينية أن قوات الاحتلال الإسرائيلي تواصل فرض حصار خانق ومطبق على مستشفى كمال عدوان في بلدة بيت لاهيا شمال قطاع غزة، مع استهداف مباشر للمباني ومحطات توليد الطاقة والأكسجين.</p>
-      <h3>شهادات من داخل المرفق الطبي</h3>
-      <p>وأفاد مدير المستشفى بأن الطواقم الطبية تجري العمليات الجراحية للمصابين في ظروف قاسية للغاية وبأبسط الأدوات المتوفرة ودون تخدير في بعض الأحيان، مناشداً الصليب الأحمر الدولي ومنظمة الصحة العالمية التدخل العاجل لفتح ممر إنساني آمن لإجلاء الحالات الحرجة.</p>
-      <blockquote>"المستشفى يضم عشرات الأطفال الخدج والمصابين بحروق وإصابات بالغة، وتوقف المولدات الكهربائية يعني حكماً بالإعدام على من تبقى على قيد الحياة."</blockquote>
-      <p>وتشير المعطيات الميدانية إلى أن مناطق شمال قطاع غزة تخضع لعملية تهجير قسري وتجويع ممنهج منذ أكثر من ثلاثة أسابيع، حيث تم تدمير آبار المياه ومحطات ضخ الصرف الصحي، في محاولة لعزل المنطقة بالكامل.</p>
+      <p>تُستخدم هذه المادة التجريبية في بيئة التطوير لفحص جودة التنسيق الطباعي، ومحاذاة النصوص، وأحجام الخطوط، وشريط تقدم القراءة في منصة الوطن اليوم.</p>
+      <h3>فحص العناوين الفرعية</h3>
+      <p>الالتزام التام بقواعد النزاهة يقتضي عدم نسبة أي خبر تجريبي لمصدر حقيقي كوكالة وفا أو الجزيرة في أي بيئة كانت.</p>
     `,
     kind: "NEWS",
     status: "PUBLISHED",
     displayPolicy: "LICENSED_FULL",
     translatedBy: "human",
-    sourceUrl: "https://www.wafa.ps/Pages/Details/102941",
+    sourceUrl: "https://alwatantoday.net/editorial-policy",
     publishedAt: isoNow,
     sourcePublishedAt: isoNow,
     updatedAtPub: isoNow,
     withdrawnReason: null,
-    isBreaking: true,
+    isBreaking: false,
     section: {
       id: "sec-pal",
       slug: "palestine",
       nameAr: "فلسطين",
     },
     source: {
-      id: "src-wafa",
-      slug: "wafa-ps",
-      nameAr: "وكالة الأنباء الفلسطينية (وفا)",
+      id: "src-demo",
+      slug: "demo-source",
+      nameAr: "بيئة التطوير التجريبية (DEMO)",
       logoUrl: null,
-      homepageUrl: "https://www.wafa.ps",
+      homepageUrl: "https://alwatantoday.net/sources-policy",
     },
     author: {
-      id: "auth-1",
-      nameAr: "محرر التغطية الميدانية",
-      slug: "field-editor",
+      id: "auth-demo",
+      nameAr: "فريق التطوير البرمجي",
+      slug: "dev-team",
     },
     tags: [
-      { id: "t1", nameAr: "غزة", slug: "gaza" },
-      { id: "t2", nameAr: "شمال غزة", slug: "north-gaza" },
-      { id: "t3", nameAr: "كمال عدوان", slug: "kamal-adwan" },
-      { id: "t4", nameAr: "وزارة الصحة", slug: "moh" },
-      { id: "t5", nameAr: "حصار", slug: "siege" },
+      { id: "t1", nameAr: "تجريبي", slug: "demo" },
+      { id: "t2", nameAr: "فحص", slug: "test" },
     ],
     countries: ["فلسطين"],
     corrections: [],
-    otherCoverages: [
-      {
-        id: "art-hero-2",
-        slug: "شهداء-وجرحى-في-قصف-مدفعي-على-مخيم-جباليا",
-        titleAr: "استشهاد وجرح العشرات في قصف مدفعي استهدف مراكز الإيواء في جباليا",
-        publishedAt: isoNow,
-        sourceNameAr: "الجزيرة نت",
-        sourceUrl: "https://www.aljazeera.net",
-      },
-    ],
+    otherCoverages: [],
     sportsLinks: [],
   };
 }

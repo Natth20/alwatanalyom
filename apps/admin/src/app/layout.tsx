@@ -34,6 +34,9 @@ export default function AdminLayout({
               <Link href="/" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text)]">
                 📊 لوحة القيادة
               </Link>
+              <Link href="/excellence" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-[var(--gold,#F5B900)] bg-[var(--gold,#F5B900)]/10 font-bold">
+                🎯 مؤشرات التميز الخمسة
+              </Link>
               <Link href="/ads" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] text-amber-400 bg-amber-500/10 font-bold">
                 📢 إدارة الإعلانات والرعايات
               </Link>

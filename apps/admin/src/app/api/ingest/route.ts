@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runLiveIngest } from "@awt/ingest";
 import { prisma } from "@awt/db";
+import { triggerWebRevalidation } from "@/lib/revalidate";
 
 export const maxDuration = 60; // 60 seconds max
 
@@ -28,6 +29,11 @@ export async function POST(req: Request) {
         after: report as any,
       },
     });
+
+    // إعادة التحقق اللحظي لكاش الواجهة الأمامية إن تم نشر مواد جديدة
+    if (report.totalNewArticles > 0) {
+      triggerWebRevalidation({ paths: ["/", "/palestine", "/breaking"] }).catch(() => {});
+    }
 
     return NextResponse.json({
       ok: true,

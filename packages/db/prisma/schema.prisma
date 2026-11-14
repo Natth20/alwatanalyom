@@ -97,21 +97,22 @@ enum Lang {
 
 // ---------- المستخدمون والتدقيق ----------
 model User {
-  id          String     @id @default(cuid())
-  email       String     @unique
+  id          String      @id @default(cuid())
+  email       String      @unique
   name        String
-  role        Role       @default(EDITOR)
-  twoFactorOn Boolean    @default(false)
-  active      Boolean    @default(true)
-  createdAt   DateTime   @default(now())
+  role        Role        @default(EDITOR)
+  twoFactorOn Boolean     @default(false)
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
   authored    Author?
   audits      AuditLog[]
+  factChecks  FactCheck[]
 }
 
 model AuditLog {
   id         String   @id @default(cuid())
   userId     String?
-  action     String   // publish, withdraw, merge-story, edit-source...
+  action     String // publish, withdraw, merge-story, edit-source...
   entityType String
   entityId   String
   before     Json?
@@ -249,6 +250,7 @@ model Article {
   countries         ArticleCountry[]
   corrections       Correction[]
   sportsLinks       SportsLink[]
+  savedBy           SavedArticle[]
 
   @@index([status, publishedAt])
   @@index([sectionId, publishedAt])
@@ -282,12 +284,12 @@ model Section {
 }
 
 model Topic {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String  @id @default(cuid())
+  slug      String  @unique
   titleAr   String
   titleEn   String?
   summaryAr String?
-  active    Boolean  @default(true)
+  active    Boolean @default(true)
   stories   Story[]
 }
 
@@ -309,10 +311,10 @@ model ArticleTag {
 }
 
 model Country {
-  code      String           @id
-  nameAr    String
-  nameEn    String
-  articles  ArticleCountry[]
+  code     String           @id
+  nameAr   String
+  nameEn   String
+  articles ArticleCountry[]
 }
 
 model ArticleCountry {
@@ -335,9 +337,9 @@ model Author {
 }
 
 model Media {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   url         String
-  kind        String  // image | video-embed
+  kind        String // image | video-embed
   credit      String?
   licenseNote String?
   width       Int?
@@ -348,16 +350,16 @@ model Media {
 
 // ---------- الاقتصاد ----------
 model Instrument {
-  id          String   @id @default(cuid())
-  symbol      String   @unique // BRENT, XAUUSD, EURUSD, BTCUSD...
+  id          String  @id @default(cuid())
+  symbol      String  @unique // BRENT, XAUUSD, EURUSD, BTCUSD...
   nameAr      String
   nameEn      String
-  category    String   // energy | metals | fx | crypto | index | stock
+  category    String // energy | metals | fx | crypto | index | stock
   unit        String?
   currency    String?
   providerKey String
   termsUrl    String?
-  enabled     Boolean  @default(true)
+  enabled     Boolean @default(true)
   quotes      Quote[]
 }
 
@@ -368,7 +370,7 @@ model Quote {
   change       Decimal?   @db.Decimal(20, 6)
   changePct    Decimal?   @db.Decimal(10, 4)
   status       DataStatus
-  asOf         DateTime   // وقت السعر لدى المزود
+  asOf         DateTime // وقت السعر لدى المزود
   fetchedAt    DateTime   @default(now())
   instrument   Instrument @relation(fields: [instrumentId], references: [id])
 
@@ -384,7 +386,7 @@ model Channel {
   logoUrl           String?
   countryCode       String?
   lang              Lang           @default(AR)
-  category          String         // arabic | international
+  category          String // arabic | international
   descriptionAr     String?
   officialSiteUrl   String
   officialStreamUrl String?
@@ -407,8 +409,8 @@ model ChannelCheck {
 // ---------- يلا سبورت ----------
 model SportsEntity {
   id         String       @id @default(cuid())
-  kind       String       // team | player | competition | match
-  externalId String       // المعرف الثابت في yallasport.com
+  kind       String // team | player | competition | match
+  externalId String // المعرف الثابت في yallasport.com
   nameAr     String
   nameEn     String
   aliases    String[]     @default([])
@@ -464,8 +466,8 @@ model Event {
 model PipelineEvent {
   id       String   @id @default(cuid())
   itemId   String?
-  stage    String   // fetch|normalize|dedupe|cluster|translate|classify|rights|publish
-  decision String   // pass|duplicate|reject|review|publish|error
+  stage    String // fetch|normalize|dedupe|cluster|translate|classify|rights|publish
+  decision String // pass|duplicate|reject|review|publish|error
   reason   String?
   meta     Json?
   at       DateTime @default(now())
@@ -477,7 +479,7 @@ model PipelineEvent {
 model PublishPolicy {
   id        String   @id @default(cuid())
   name      String
-  rules     Json     // قواعد قابلة للتعديل
+  rules     Json // قواعد قابلة للتعديل
   enabled   Boolean  @default(true)
   updatedAt DateTime @updatedAt
 }
@@ -556,4 +558,95 @@ model LiveUpdate {
   @@index([coverageId, publishedAt])
 }
 
+// ---------- نظام التحويلات والسيو (Redirects Engine) ----------
+model Redirect {
+  id         String    @id @default(cuid())
+  fromPath   String    @unique // المسار القديم أو الجديد المطلوب تحويله
+  toPath     String // المسار الوجهة الجديد
+  statusCode Int       @default(301) // 301 دائم أو 302 مؤقت
+  hitCount   Int       @default(0) // عداد استخدام الرابط
+  lastHitAt  DateTime? // توقيت آخر استخدام
+  enabled    Boolean   @default(true)
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
+  @@index([fromPath])
+}
+
+// ---------- مرصد فحص الحقائق (Fact Checking) ----------
+model FactCheck {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  claim           String // الادعاء المتداول
+  claimSource     String // مصدر الشائعة أو الادعاء
+  verdict         String // fake | misleading | out_of_context | verified
+  verdictLabel    String // زائف | مضلل ومجتزأ | صحيح وموثق
+  summary         String // ملخص سريع
+  fullAnalysis    String   @db.Text // التحليل الاستقصائي الكامل
+  sourceProof     String? // إثبات المصادر الرسمية
+  officialSources Json? // [{ name: string, url: string, date: string }]
+  evidences       Json? // [{ tool: string, finding: string, status: string }]
+  views           Int      @default(0)
+  reviewedById    String?
+  reviewedBy      User?    @relation(fields: [reviewedById], references: [id])
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([verdict])
+}
+
+// ---------- استطلاعات الرأي التفاعلية (Interactive Polls) ----------
+model Poll {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  question    String
+  description String?
+  active      Boolean      @default(true)
+  startsAt    DateTime     @default(now())
+  endsAt      DateTime?
+  createdAt   DateTime     @default(now())
+  options     PollOption[]
+  votes       PollVote[]
+
+  @@index([active])
+}
+
+model PollOption {
+  id        String     @id @default(cuid())
+  pollId    String
+  text      String
+  sortOrder Int        @default(0)
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     PollVote[]
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  pollId    String
+  optionId  String
+  voterHash String // تجزئة SHA-256 لمنع تكرار التصويت دون حفظ بيانات تتبع شخصية
+  createdAt DateTime   @default(now())
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, voterHash])
+  @@index([pollId, optionId])
+}
+
+// ---------- المقالات المحفوظة (Saved Articles) ----------
+model SavedArticle {
+  id        String   @id @default(cuid())
+  userId    String?
+  clientKey String // مفتاح تعريفي للعميل أو المستخدم
+  articleId String
+  createdAt DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([clientKey, articleId])
+  @@index([clientKey])
+}

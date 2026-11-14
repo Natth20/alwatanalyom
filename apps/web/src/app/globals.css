@@ -6,112 +6,158 @@
   --font-reading: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
   --font-serif: 'Amiri', serif;
 
-  /* النمط الفاتح الورقي الفاخر (Imperial Alabaster) */
-  --bg: #fafbfc;
-  --bg-subtle: #f1f4f8;
+  /* النمط الفاتح المعتمد لهوية «الوطن اليوم» */
+  --bg: #faf7f5;
+  --bg-subtle: #f4eee9;
   --surface: #ffffff;
-  --surface-header: rgba(255, 255, 255, 0.92);
+  --surface-header: rgba(255, 255, 255, 0.96);
   --surface-card: #ffffff;
-  --surface-hover: #f3f6fa;
-  --text: #090d16;
-  --text-secondary: #2d3748;
-  --text-muted: #5a6679;
-  
-  /* ألوان الهوية السيادية */
-  --primary: #059669;
-  --primary-hover: #047857;
-  --primary-light: #ecfdf5;
-  --primary-glow: rgba(5, 150, 105, 0.25);
+  --surface-hover: #fcf9f7;
+  --text: #1a1518;
+  --text-secondary: #3d3438;
+  --text-muted: #6e6268;
 
-  /* الياقوتي للعواجل والنبض الميداني */
-  --breaking: #e11d48;
-  --breaking-hover: #be123c;
-  --breaking-light: #fff1f2;
-  --breaking-glow: rgba(225, 29, 72, 0.3);
+  /* لوحة الألوان الرسمية المعتمدة (60% عنابي، 25% أبيض، 10% ذهبي، 5% مساعد) */
+  --maroon: #590018;
+  --maroon-deep: #3d0010;
+  --maroon-darkest: #26000a;
+  --primary: #590018;
+  --primary-hover: #730020;
+  --primary-light: #fbf0f2;
+  --primary-glow: rgba(89, 0, 24, 0.25);
 
-  /* الكهرماني الذهبي لأسواق المال والاقتصاد */
-  --economy: #d97706;
-  --economy-hover: #b45309;
-  --economy-light: #fffbeb;
-  --economy-glow: rgba(217, 119, 6, 0.25);
+  /* الذهبي الملكي (10%) للعناوين والأزرار والأيقونات وإبراز المهم */
+  --gold: #f5b900;
+  --gold-hover: #dca600;
+  --gold-light: #fff9e6;
+  --gold-glow: rgba(245, 185, 0, 0.35);
 
+  /* الأبيض الصريح (25%) للنصوص وعناصر القراءة المريحة */
+  --white: #ffffff;
+
+  /* الألوان المساعدة (5%) للتوازن والتفاصيل الهادئة */
+  --beige: #d9c6a3;
+  --beige-alt: #d9bfa0;
+  --navy: #0f2a44;
+  --navy-alt: #263b52;
+  --silver-gray: #e4e7eb;
+  --silver-gray-alt: #c9d2dc;
+
+  /* أحمر مرجاني عاجل (Breaking) */
+  --breaking: #e84a5f;
+  --breaking-hover: #d23a4e;
+  --breaking-light: #fff1f3;
+  --breaking-glow: rgba(232, 74, 95, 0.35);
+
+  /* مؤشرات الأسواق */
+  --economy: #f5b900;
   --up: #10b981;
-  --down: #f43f5e;
-  --border: #e2e8f0;
-  --border-subtle: #edf2f7;
-  --border-card: rgba(226, 232, 240, 0.8);
-  --shadow-luxury: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  --down: #e84a5f;
+
+  --border: #e8ded7;
+  --border-subtle: #f1eae4;
+  --border-card: rgba(232, 222, 215, 0.85);
+  --border-gold: rgba(245, 185, 0, 0.4);
+  --shadow-luxury: 0 10px 30px -10px rgba(89, 0, 24, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
 }
 
 html.dark,
 [data-theme='dark'] {
-  /* النمط الليلي الفخم (Obsidian Luxury Dark) */
-  --bg: #030712;
-  --bg-subtle: #080d1a;
-  --surface: #0b1120;
-  --surface-header: rgba(11, 17, 32, 0.88);
-  --surface-card: #0f172a;
-  --surface-hover: #1e293b;
-  --text: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #8492a6;
+  /* النمط الليلي الملكي الفخم لهوية «الوطن اليوم» */
+  --bg: #140106;
+  --bg-subtle: #1f030b;
+  --surface: #24050e;
+  --surface-header: rgba(36, 5, 14, 0.94);
+  --surface-card: #2c0712;
+  --surface-hover: #3d0a19;
+  --text: #ffffff;
+  --text-secondary: #f0e6e9;
+  --text-muted: #baa8ae;
 
-  --primary: #10b981;
-  --primary-hover: #34d399;
-  --primary-light: rgba(16, 185, 129, 0.12);
-  --primary-glow: rgba(16, 185, 129, 0.35);
+  --maroon: #590018;
+  --maroon-deep: #3d0010;
+  --maroon-darkest: #140106;
+  --primary: #f5b900; /* في النمط الليلي يبرز الذهبي الملكي كعنصر توجيهي ساطع */
+  --primary-hover: #ffd043;
+  --primary-light: rgba(245, 185, 0, 0.12);
+  --primary-glow: rgba(245, 185, 0, 0.4);
 
-  --breaking: #f43f5e;
-  --breaking-hover: #fb7185;
-  --breaking-light: rgba(244, 63, 94, 0.14);
-  --breaking-glow: rgba(244, 63, 94, 0.4);
+  --gold: #f5b900;
+  --gold-hover: #ffd043;
+  --gold-light: rgba(245, 185, 0, 0.15);
+  --gold-glow: rgba(245, 185, 0, 0.45);
 
-  --economy: #fbbf24;
-  --economy-hover: #fcd34d;
-  --economy-light: rgba(251, 191, 36, 0.14);
-  --economy-glow: rgba(251, 191, 36, 0.35);
+  --white: #ffffff;
+  --beige: #d9c6a3;
+  --beige-alt: #d9bfa0;
+  --navy: #0f2a44;
+  --navy-alt: #263b52;
+  --silver-gray: #e4e7eb;
+  --silver-gray-alt: #c9d2dc;
 
+  --breaking: #e84a5f;
+  --breaking-hover: #ff6075;
+  --breaking-light: rgba(232, 74, 95, 0.15);
+  --breaking-glow: rgba(232, 74, 95, 0.45);
+
+  --economy: #f5b900;
   --up: #34d399;
-  --down: #fb7185;
-  --border: rgba(255, 255, 255, 0.09);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-card: rgba(255, 255, 255, 0.08);
-  --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  --down: #e84a5f;
+
+  --border: rgba(245, 185, 0, 0.2);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(245, 185, 0, 0.18);
+  --border-gold: rgba(245, 185, 0, 0.35);
+  --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(245, 185, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --bg: #030712;
-    --bg-subtle: #080d1a;
-    --surface: #0b1120;
-    --surface-header: rgba(11, 17, 32, 0.88);
-    --surface-card: #0f172a;
-    --surface-hover: #1e293b;
-    --text: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #8492a6;
+    --bg: #140106;
+    --bg-subtle: #1f030b;
+    --surface: #24050e;
+    --surface-header: rgba(36, 5, 14, 0.94);
+    --surface-card: #2c0712;
+    --surface-hover: #3d0a19;
+    --text: #ffffff;
+    --text-secondary: #f0e6e9;
+    --text-muted: #baa8ae;
 
-    --primary: #10b981;
-    --primary-hover: #34d399;
-    --primary-light: rgba(16, 185, 129, 0.12);
-    --primary-glow: rgba(16, 185, 129, 0.35);
+    --maroon: #590018;
+    --maroon-deep: #3d0010;
+    --maroon-darkest: #140106;
+    --primary: #f5b900;
+    --primary-hover: #ffd043;
+    --primary-light: rgba(245, 185, 0, 0.12);
+    --primary-glow: rgba(245, 185, 0, 0.4);
 
-    --breaking: #f43f5e;
-    --breaking-hover: #fb7185;
-    --breaking-light: rgba(244, 63, 94, 0.14);
-    --breaking-glow: rgba(244, 63, 94, 0.4);
+    --gold: #f5b900;
+    --gold-hover: #ffd043;
+    --gold-light: rgba(245, 185, 0, 0.15);
+    --gold-glow: rgba(245, 185, 0, 0.45);
 
-    --economy: #fbbf24;
-    --economy-hover: #fcd34d;
-    --economy-light: rgba(251, 191, 36, 0.14);
-    --economy-glow: rgba(251, 191, 36, 0.35);
+    --white: #ffffff;
+    --beige: #d9c6a3;
+    --beige-alt: #d9bfa0;
+    --navy: #0f2a44;
+    --navy-alt: #263b52;
+    --silver-gray: #e4e7eb;
+    --silver-gray-alt: #c9d2dc;
 
+    --breaking: #e84a5f;
+    --breaking-hover: #ff6075;
+    --breaking-light: rgba(232, 74, 95, 0.15);
+    --breaking-glow: rgba(232, 74, 95, 0.45);
+
+    --economy: #f5b900;
     --up: #34d399;
-    --down: #fb7185;
-    --border: rgba(255, 255, 255, 0.09);
-    --border-subtle: rgba(255, 255, 255, 0.04);
-    --border-card: rgba(255, 255, 255, 0.08);
-    --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+    --down: #e84a5f;
+
+    --border: rgba(245, 185, 0, 0.2);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-card: rgba(245, 185, 0, 0.18);
+    --border-gold: rgba(245, 185, 0, 0.35);
+    --shadow-luxury: 0 16px 40px -12px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(245, 185, 0, 0.1);
   }
 }
 
@@ -138,15 +184,7 @@ body {
   }
 }
 
-/* تأثيرات الزجاج الفاخر (Glassmorphism) */
-.glass-panel {
-  background: var(--surface-header);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-card);
-}
-
-/* بطاقات الفخامة مع تأثير الحركة عند التحويم (60-120fps) */
+/* بطاقات الفخامة مع تأثير الحركة عند التحويم */
 .card-luxury {
   background-color: var(--surface-card);
   border: 1px solid var(--border-card);
@@ -160,8 +198,17 @@ body {
 
 .card-luxury:hover {
   transform: translateY(-3px);
-  border-color: var(--primary);
-  box-shadow: 0 20px 40px -15px var(--primary-glow), var(--shadow-luxury);
+  border-color: var(--gold);
+  box-shadow: 0 20px 40px -15px var(--gold-glow), var(--shadow-luxury);
+}
+
+/* تأثير التوهج العنابي الملكي */
+.bg-maroon-royal {
+  background: linear-gradient(135deg, #590018 0%, #3d0010 60%, #26000a 100%);
+}
+
+.border-gold-accent {
+  border-color: var(--gold);
 }
 
 /* بطاقة عاجلة خاصة */
@@ -196,7 +243,7 @@ body {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--gold);
 }
 
 .scrollbar-none::-webkit-scrollbar {

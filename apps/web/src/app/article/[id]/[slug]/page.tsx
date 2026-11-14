@@ -10,7 +10,7 @@ import { AudioReader } from "@/components/AudioReader";
 import { KeyTakeaways } from "@/components/KeyTakeaways";
 import { ArticleReactions } from "@/components/ArticleReactions";
 import { SocialShareBar } from "@/components/SocialShareBar";
-import { ShieldCheck, Clock, FileText } from "lucide-react";
+import { ShieldCheck, Clock, FileText, Hash } from "lucide-react";
 
 export const revalidate = 300; // ISR 5 دقائق
 
@@ -328,6 +328,25 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* الوسوم والكلمات المفتاحية (Tags) */}
+      {article.tags && article.tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-8 pt-4 border-t border-[var(--border)]">
+          <span className="text-xs font-bold text-[var(--text-muted)] flex items-center gap-1">
+            <Hash className="w-3.5 h-3.5" />
+            <span>الوسوم:</span>
+          </span>
+          {article.tags.map((tag: any) => (
+            <Link
+              key={tag.id}
+              href={`/tag/${tag.slug}`}
+              className="px-3 py-1 rounded-full text-xs font-medium border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
+            >
+              #{tag.nameAr}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* شريط مشاعر وانطباعات القراء */}
       <ArticleReactions articleId={article.id} />

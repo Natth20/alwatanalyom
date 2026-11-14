@@ -3,6 +3,7 @@ import { prisma, ArticleKind, ArticleStatus } from "@awt/db";
 import { generateArabicSlug } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import { getSessionUser } from "@/lib/auth";
+import { triggerWebRevalidation } from "@/lib/revalidate";
 
 export async function POST(request: NextRequest) {
   try {
@@ -120,6 +121,13 @@ export async function POST(request: NextRequest) {
           importance: 7,
         },
       ]).catch(console.warn);
+
+      // إعادة التحقق الفوري لكاش الواجهة الأمامية (On-demand Revalidation)
+      triggerWebRevalidation({
+        sectionSlug: section.slug,
+        isBreaking: article.isBreaking,
+        paths: ["/", `/${section.slug}`, `/article/${article.id}/${article.slug}`],
+      }).catch((err) => console.warn("Revalidation warning:", err));
 
       // 7. توثيق في سجل التدقيق
       await prisma.auditLog.create({

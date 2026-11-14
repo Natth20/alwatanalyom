@@ -25,12 +25,16 @@ async function main() {
     { slug: "arab-world", nameAr: "العالم العربي", nameEn: "Arab World", sortOrder: 2, showInNav: true },
     { slug: "world", nameAr: "دولياً", nameEn: "World", sortOrder: 3, showInNav: true },
     { slug: "economy", nameAr: "الاقتصاد", nameEn: "Economy", sortOrder: 4, showInNav: true },
-    { slug: "tech", nameAr: "التقنية والابتكار", nameEn: "Technology", sortOrder: 5, showInNav: true },
-    { slug: "sports", nameAr: "الرياضة", nameEn: "Sports", sortOrder: 6, showInNav: true },
-    { slug: "cars", nameAr: "السيارات", nameEn: "Cars", sortOrder: 7, showInNav: false },
-    { slug: "society", nameAr: "المجتمع والحياة", nameEn: "Society", sortOrder: 8, showInNav: false },
-    { slug: "arts", nameAr: "الفن والمشاهير", nameEn: "Arts", sortOrder: 9, showInNav: false },
-    { slug: "opinion", nameAr: "الرأي والتحليل", nameEn: "Opinion", sortOrder: 10, showInNav: false },
+    { slug: "aid", nameAr: "المساعدات", nameEn: "Aid", sortOrder: 5, showInNav: true },
+    { slug: "jobs", nameAr: "الوظائف", nameEn: "Jobs", sortOrder: 6, showInNav: true },
+    { slug: "sports", nameAr: "الرياضة", nameEn: "Sports", sortOrder: 7, showInNav: true },
+    { slug: "tech", nameAr: "التقنية والابتكار", nameEn: "Technology", sortOrder: 8, showInNav: true },
+    { slug: "lifestyle", nameAr: "نمط الحياة والصحة", nameEn: "Lifestyle", sortOrder: 9, showInNav: true },
+    { slug: "videos", nameAr: "فيديو", nameEn: "Videos", sortOrder: 10, showInNav: false },
+    { slug: "opinion", nameAr: "الرأي والتحليل", nameEn: "Opinion", sortOrder: 11, showInNav: false },
+    { slug: "society", nameAr: "المجتمع والحياة", nameEn: "Society", sortOrder: 12, showInNav: false },
+    { slug: "arts", nameAr: "الفن والمشاهير", nameEn: "Arts", sortOrder: 13, showInNav: false },
+    { slug: "cars", nameAr: "السيارات", nameEn: "Cars", sortOrder: 14, showInNav: false },
   ];
 
   const createdSections: Record<string, string> = {};

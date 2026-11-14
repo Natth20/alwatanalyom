@@ -1,5 +1,5 @@
 import { prisma } from "@awt/db";
-import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, isMockDataAllowed } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import {
   MOCK_BREAKING,
@@ -56,9 +56,10 @@ export async function getActiveBreaking(): Promise<ArticleCard[]> {
         : null,
     }));
 
-    return mapped.length > 0 ? mapped : MOCK_BREAKING;
+    if (mapped.length > 0) return mapped;
+    return isMockDataAllowed() ? MOCK_BREAKING : [];
   } catch {
-    return MOCK_BREAKING;
+    return isMockDataAllowed() ? MOCK_BREAKING : [];
   }
 }
 
@@ -148,18 +149,56 @@ export async function getHomeFeed() {
     // 6. أسعار المؤشرات لنافذة الاقتصاد
     const quotes = await getLatestQuotes(["BRENT", "XAUUSD", "USDILS", "BTCUSD"]);
 
+    // 7. التدفق اللحظي المباشر لأحدث الأخبار (Fast-Stream Wire)
+    const fastStreamArticles = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      include: { section: true, source: true },
+      orderBy: { publishedAt: "desc" },
+      take: 15,
+    }).then((list) => list.map(mapArticleToCard));
+
+    // 8. تقارير الفيديو الصحفية
+    const videoArticles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { kind: "VIDEO" },
+          { section: { slug: "videos" } },
+        ],
+      },
+      include: { section: true, source: true },
+      orderBy: { publishedAt: "desc" },
+      take: 6,
+    }).then((list) => list.map(mapArticleToCard));
+
     if (heroStoriesRaw.length === 0 && palestineStoriesRaw.length === 0) {
+      if (isMockDataAllowed()) {
+        return {
+          breaking: breaking.length > 0 ? breaking : MOCK_BREAKING,
+          heroStories: [MOCK_HERO_STORY],
+          trendingStories: MOCK_PALESTINE_STORIES,
+          palestineStories: MOCK_PALESTINE_STORIES,
+          arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
+          worldArticles: MOCK_SECTION_ARTICLES.world,
+          economyArticles: MOCK_SECTION_ARTICLES.economy,
+          techArticles: MOCK_SECTION_ARTICLES.tech,
+          sportsArticles: MOCK_SECTION_ARTICLES.sports,
+          quotes: quotes.length > 0 ? quotes : MOCK_QUOTES,
+        };
+      }
       return {
-        breaking: breaking.length > 0 ? breaking : MOCK_BREAKING,
-        heroStories: [MOCK_HERO_STORY],
-        trendingStories: MOCK_PALESTINE_STORIES,
-        palestineStories: MOCK_PALESTINE_STORIES,
-        arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
-        worldArticles: MOCK_SECTION_ARTICLES.world,
-        economyArticles: MOCK_SECTION_ARTICLES.economy,
-        techArticles: MOCK_SECTION_ARTICLES.tech,
-        sportsArticles: MOCK_SECTION_ARTICLES.sports,
-        quotes: quotes.length > 0 ? quotes : MOCK_QUOTES,
+        breaking,
+        heroStories: [],
+        trendingStories: [],
+        palestineStories: [],
+        arabWorldArticles,
+        worldArticles,
+        economyArticles,
+        techArticles,
+        sportsArticles,
+        quotes,
+        fastStreamArticles,
+        videoArticles,
       };
     }
 
@@ -174,19 +213,39 @@ export async function getHomeFeed() {
       techArticles,
       sportsArticles,
       quotes,
+      fastStreamArticles,
+      videoArticles,
     };
   } catch (error) {
+    if (isMockDataAllowed()) {
+      return {
+        breaking: MOCK_BREAKING,
+        heroStories: [MOCK_HERO_STORY],
+        trendingStories: MOCK_PALESTINE_STORIES,
+        palestineStories: MOCK_PALESTINE_STORIES,
+        arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
+        worldArticles: MOCK_SECTION_ARTICLES.world,
+        economyArticles: MOCK_SECTION_ARTICLES.economy,
+        techArticles: MOCK_SECTION_ARTICLES.tech,
+        sportsArticles: MOCK_SECTION_ARTICLES.sports,
+        quotes: MOCK_QUOTES,
+        fastStreamArticles: [],
+        videoArticles: [],
+      };
+    }
     return {
-      breaking: MOCK_BREAKING,
-      heroStories: [MOCK_HERO_STORY],
-      trendingStories: MOCK_PALESTINE_STORIES,
-      palestineStories: MOCK_PALESTINE_STORIES,
-      arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
-      worldArticles: MOCK_SECTION_ARTICLES.world,
-      economyArticles: MOCK_SECTION_ARTICLES.economy,
-      techArticles: MOCK_SECTION_ARTICLES.tech,
-      sportsArticles: MOCK_SECTION_ARTICLES.sports,
-      quotes: MOCK_QUOTES,
+      breaking: [],
+      heroStories: [],
+      trendingStories: [],
+      palestineStories: [],
+      arabWorldArticles: [],
+      worldArticles: [],
+      economyArticles: [],
+      techArticles: [],
+      sportsArticles: [],
+      quotes: [],
+      fastStreamArticles: [],
+      videoArticles: [],
     };
   }
 }
@@ -209,7 +268,7 @@ export async function getSectionFeed(
       },
     });
 
-    if (!section) return getMockSectionFeed(sectionSlug, subSlug);
+    if (!section) return isMockDataAllowed() ? getMockSectionFeed(sectionSlug, subSlug) : null;
 
     // جلب المقالات التابعة للقسم أو أقسامه الفرعية
     const sectionIds = [section.id, ...section.children.map((c) => c.id)];
@@ -273,8 +332,8 @@ export async function getSectionFeed(
       nextCursor,
     };
   } catch (error) {
-    console.error("Failed to load section feed, returning mock fallback:", error);
-    return getMockSectionFeed(sectionSlug, subSlug);
+    console.error("Failed to load section feed:", error);
+    return isMockDataAllowed() ? getMockSectionFeed(sectionSlug, subSlug) : null;
   }
 }
 
@@ -295,7 +354,7 @@ export async function getStoryById(id: string) {
       },
     });
 
-    if (!story) return getMockStoryById(id);
+    if (!story) return isMockDataAllowed() ? getMockStoryById(id) : null;
 
     return {
       id: story.id,
@@ -328,7 +387,7 @@ export async function getStoryById(id: string) {
       })),
     };
   } catch {
-    return getMockStoryById(id);
+    return isMockDataAllowed() ? getMockStoryById(id) : null;
   }
 }
 
@@ -421,7 +480,7 @@ export async function getArticleById(id: string) {
       },
     });
 
-    if (!article) return getMockArticleById(id);
+    if (!article) return isMockDataAllowed() ? getMockArticleById(id) : null;
 
     return {
       ...article,
@@ -439,8 +498,37 @@ export async function getArticleById(id: string) {
       })) || [],
     };
   } catch {
-    return getMockArticleById(id);
+    return isMockDataAllowed() ? getMockArticleById(id) : null;
   }
+}
+
+/**
+ * تحويل كائن المقال من بريزما إلى بطاقة مقال قياسية (ArticleCard)
+ */
+export function mapArticleToCard(a: any): ArticleCard {
+  return {
+    id: a.id,
+    slug: a.slug,
+    titleAr: a.titleAr,
+    titleOriginal: a.titleOriginal,
+    summaryAr: a.summaryAr,
+    kind: a.kind as any,
+    publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+    sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+    displayPolicy: a.displayPolicy as any,
+    isBreaking: a.isBreaking,
+    sectionSlug: a.section?.slug || "world",
+    sectionNameAr: a.section?.nameAr || "أخبار",
+    source: a.source
+      ? {
+          id: a.source.id,
+          slug: a.source.slug,
+          nameAr: a.source.nameAr,
+          logoUrl: a.source.logoUrl,
+          homepageUrl: a.source.homepageUrl,
+        }
+      : null,
+  };
 }
 
 /**
@@ -461,29 +549,7 @@ async function getSectionArticles(sectionSlug: string, take: number, shownStoryI
     take,
   });
 
-  return articles.map((a) => ({
-    id: a.id,
-    slug: a.slug,
-    titleAr: a.titleAr,
-    titleOriginal: a.titleOriginal,
-    summaryAr: a.summaryAr,
-    kind: a.kind as any,
-    publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
-    sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
-    displayPolicy: a.displayPolicy as any,
-    isBreaking: a.isBreaking,
-    sectionSlug: a.section.slug,
-    sectionNameAr: a.section.nameAr,
-    source: a.source
-      ? {
-          id: a.source.id,
-          slug: a.source.slug,
-          nameAr: a.source.nameAr,
-          logoUrl: a.source.logoUrl,
-          homepageUrl: a.source.homepageUrl,
-        }
-      : null,
-  }));
+  return articles.map(mapArticleToCard);
 }
 
 /**
@@ -522,9 +588,10 @@ export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuo
       };
     });
 
-    return mapped.length > 0 ? mapped : MOCK_QUOTES;
+    if (mapped.length > 0) return mapped;
+    return isMockDataAllowed() ? MOCK_QUOTES : [];
   } catch {
-    return MOCK_QUOTES;
+    return isMockDataAllowed() ? MOCK_QUOTES : [];
   }
 }
 
@@ -554,9 +621,10 @@ export async function getChannels(): Promise<ChannelCard[]> {
       lastCheckedAt: c.lastCheckedAt?.toISOString(),
     }));
 
-    return mapped.length > 0 ? mapped : MOCK_CHANNELS;
+    if (mapped.length > 0) return mapped;
+    return isMockDataAllowed() ? MOCK_CHANNELS : [];
   } catch {
-    return MOCK_CHANNELS;
+    return isMockDataAllowed() ? MOCK_CHANNELS : [];
   }
 }
 
@@ -682,4 +750,446 @@ export async function getActiveLiveCoverage() {
     return null;
   }
 }
+
+/**
+ * =========================================================================
+ * دوال المرحلة 2: الأقسام المتخصصة (المساعدات، الوظائف، الفيديو، الوسوم، الكتّاب)
+ * =========================================================================
+ */
+
+export interface VerifiedAidItem {
+  id: string;
+  titleAr: string;
+  organization: string;
+  orgType: "UN" | "GOV" | "NGO" | "RED_CRESCENT";
+  category: "CASH" | "FOOD" | "MEDICAL" | "SHELTER" | "WINTER";
+  targetAudience: string;
+  status: "OPEN" | "UPDATING" | "VERIFIED_INFO";
+  officialUrl: string;
+  verifiedAt: string;
+  notesAr: string;
+  requirements: string[];
+}
+
+/**
+ * جلب بيانات بوابة المساعدات الإنسانية والروابط الرسمية الموثقة
+ */
+export async function getAidData() {
+  try {
+    // 1. جلب المقالات الإخبارية المرتبطة بالمساعدات الإنسانية
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { section: { slug: { in: ["aid", "palestine-humanitarian"] } } },
+          { titleAr: { contains: "مساعدات", mode: "insensitive" } },
+          { titleAr: { contains: "إغاث", mode: "insensitive" } },
+          { titleAr: { contains: "أونروا", mode: "insensitive" } },
+        ],
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 12,
+    });
+
+    // 2. قائمة الأدلة والروابط الرسمية الموثقة للجهات الإغاثية المعتمدة
+    // جميع الروابط تنتهي بنطاقات رسمية معتمدة (.org, .int, .gov.ps) بدون أي روابط وسيطة
+    const verifiedOfficialPrograms: VerifiedAidItem[] = [
+      {
+        id: "unrwa-cash-verification",
+        titleAr: "بوابة الأونروا: تحديث بيانات المستفيدين وتدقيق المساعدات النقدية الطارئة",
+        organization: "وكالة غوث وتشغيل اللاجئين الفلسطينيين (UNRWA)",
+        orgType: "UN",
+        category: "CASH",
+        targetAudience: "اللاجئون والأسر المتضررة والنازحة المسجلة في سجلات الوكالة",
+        status: "UPDATING",
+        officialUrl: "https://www.unrwa.org/ar",
+        verifiedAt: new Date().toISOString(),
+        notesAr: "التسجيل وتحديث البيانات يتم حصراً عبر المنظومة الرسمية للوكالة مجاناً دون أي وسيط.",
+        requirements: ["رقم بطاقة التسجيل (كرت المؤن)", "الرقم الوطني / الهوية", "رقم هاتف فعّال لاستقبال رسائل SMS"],
+      },
+      {
+        id: "wfp-food-assistance",
+        titleAr: "برنامج الأغذية العالمي (WFP): منصة التحقق من القسائم الغذائية والطرود",
+        organization: "برنامج الأغذية العالمي التابع للأمم المتحدة",
+        orgType: "UN",
+        category: "FOOD",
+        targetAudience: "الأسر المصنفة تحت خط انعدام الأمن الغذائي الحاد",
+        status: "VERIFIED_INFO",
+        officialUrl: "https://ar.wfp.org",
+        verifiedAt: new Date().toISOString(),
+        notesAr: "تُصرف المساعدات والطرود عبر نقاط التوزيع المعتمدة ونظام الرسائل النصية القصيرة.",
+        requirements: ["الهوية الشخصية لمستلم الرسالة", "رمز القسيمة المستلم عبر SMS الرسمي"],
+      },
+      {
+        id: "prcs-emergency-medical",
+        titleAr: "جمعية الهلال الأحمر الفلسطيني: خدمات الإسعاف والإغاثة والتحويلات الطبية",
+        organization: "جمعية الهلال الأحمر الفلسطيني (PRCS)",
+        orgType: "RED_CRESCENT",
+        category: "MEDICAL",
+        targetAudience: "المصابون والمرضى والحالات الإنسانية الحرجة",
+        status: "OPEN",
+        officialUrl: "https://www.palestinercs.org/ar",
+        verifiedAt: new Date().toISOString(),
+        notesAr: "الخط الساخن الوطني للطوارئ: 101. الإسعاف والإغاثة الطبية متواصلة مجاناً على مدار الساعة.",
+        requirements: ["التواصل المباشر مع غرفة العمليات المركزية", "تحديد الموقع بدقة"],
+      },
+      {
+        id: "mops-social-registry",
+        titleAr: "وزارة التنمية الاجتماعية: البوابة الموحدة للمساعدات النقدية والطارئة",
+        organization: "وزارة التنمية الاجتماعية",
+        orgType: "GOV",
+        category: "CASH",
+        targetAudience: "أسر الشهداء، ذوو الإعاقة، والأسر الأشد فقراً",
+        status: "VERIFIED_INFO",
+        officialUrl: "http://www.mosa.gov.ps",
+        verifiedAt: new Date().toISOString(),
+        notesAr: "الاستعلام يتم عبر نظام الدخول الموحد الحكومي المعتمد.",
+        requirements: ["حساب الدخول الموحد الحكومي", "رقم الهوية وتاريخ الميلاد"],
+      },
+    ];
+
+    return {
+      articles: articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        titleOriginal: a.titleOriginal,
+        summaryAr: a.summaryAr,
+        kind: a.kind as any,
+        publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+        sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+        displayPolicy: a.displayPolicy as any,
+        isBreaking: a.isBreaking,
+        sectionSlug: a.section.slug,
+        sectionNameAr: a.section.nameAr,
+        source: a.source
+          ? {
+              id: a.source.id,
+              slug: a.source.slug,
+              nameAr: a.source.nameAr,
+              logoUrl: a.source.logoUrl,
+              homepageUrl: a.source.homepageUrl,
+            }
+          : null,
+      })),
+      verifiedPrograms: verifiedOfficialPrograms,
+    };
+  } catch (error) {
+    console.error("Failed to fetch aid data:", error);
+    return { articles: [], verifiedPrograms: [] };
+  }
+}
+
+export interface VerifiedJobItem {
+  id: string;
+  titleAr: string;
+  organization: string;
+  sector: "UN_INGO" | "GOV" | "TECH" | "HEALTH" | "EDUCATION";
+  location: string;
+  employmentType: "FULL_TIME" | "CONTRACT" | "REMOTE" | "PART_TIME";
+  deadline: string;
+  officialApplyUrl: string;
+  verifiedAt: string;
+  requirements: string[];
+}
+
+/**
+ * جلب بيانات بوابة الوظائف وفرص العمل الموثقة
+ */
+export async function getJobsData() {
+  try {
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { section: { slug: "jobs" } },
+          { titleAr: { contains: "وظائف", mode: "insensitive" } },
+          { titleAr: { contains: "وظيفة", mode: "insensitive" } },
+          { titleAr: { contains: "فرص عمل", mode: "insensitive" } },
+          { titleAr: { contains: "شواغر", mode: "insensitive" } },
+        ],
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 12,
+    });
+
+    const verifiedJobs: VerifiedJobItem[] = [
+      {
+        id: "un-careers-portal",
+        titleAr: "بوابة التوظيف الموحدة للأمم المتحدة (UN Careers) في الشرق الأوسط",
+        organization: "الأمم المتحدة (United Nations)",
+        sector: "UN_INGO",
+        location: "فلسطين / الأردن / إقليمياً",
+        employmentType: "FULL_TIME",
+        deadline: "تحديث أسبوعي مستمر",
+        officialApplyUrl: "https://careers.un.org",
+        verifiedAt: new Date().toISOString(),
+        requirements: ["شهادة جامعية معتمدة في التخصص المطلوب", "إتقان اللغتين العربية والإنجليزية", "خبرة عملية موثقة في العمل الإنساني"],
+      },
+      {
+        id: "unrwa-careers",
+        titleAr: "شواغر وكالة الغوث (الأونروا) في التعليم والصحة والخدمات الإغاثية",
+        organization: "وكالة الأمم المتحدة لإغاثة وتشغيل اللاجئين (UNRWA)",
+        sector: "EDUCATION",
+        location: "الضفة الغربية وغزة والأردن",
+        employmentType: "CONTRACT",
+        deadline: "حسب إعلان كل وظيفة عبر Inspira",
+        officialApplyUrl: "https://www.unrwa.org/careers",
+        verifiedAt: new Date().toISOString(),
+        requirements: ["تقديم الطلب عبر منصة Inspira الرسمية", "اجتياز اختبارات الكفاءة والمقابلة المهنية"],
+      },
+      {
+        id: "remote-tech-careers",
+        titleAr: "مبادرات التوظيف الرقمي والعمل الحر عن بعد للكفاءات الفلسطينية والعربية",
+        organization: "مبادرات التمكين الرقمي ومنصات العمل الحر الدولية",
+        sector: "TECH",
+        location: "عن بعد (Remote)",
+        employmentType: "REMOTE",
+        deadline: "متاح ومحدث باستمرار",
+        officialApplyUrl: "https://alwatantoday.net/jobs",
+        verifiedAt: new Date().toISOString(),
+        requirements: ["إتقان مهارات البرمجة أو التصميم أو الترجمة", "معرض أعمال (Portfolio) احترافي", "حساب دفع إلكتروني دولي معتمد"],
+      },
+    ];
+
+    return {
+      articles: articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        titleOriginal: a.titleOriginal,
+        summaryAr: a.summaryAr,
+        kind: a.kind as any,
+        publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+        sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+        displayPolicy: a.displayPolicy as any,
+        isBreaking: a.isBreaking,
+        sectionSlug: a.section.slug,
+        sectionNameAr: a.section.nameAr,
+        source: a.source
+          ? {
+              id: a.source.id,
+              slug: a.source.slug,
+              nameAr: a.source.nameAr,
+              logoUrl: a.source.logoUrl,
+              homepageUrl: a.source.homepageUrl,
+            }
+          : null,
+      })),
+      verifiedJobs,
+    };
+  } catch (error) {
+    console.error("Failed to fetch jobs data:", error);
+    return { articles: [], verifiedJobs: [] };
+  }
+}
+
+/**
+ * جلب تقارير الفيديو والمحتوى المرئي الصحفي
+ */
+export async function getVideosData() {
+  try {
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { kind: "VIDEO" },
+          { section: { slug: "videos" } },
+          { coverMedia: { kind: "video-embed" } },
+        ],
+      },
+      include: {
+        section: true,
+        source: true,
+        coverMedia: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 24,
+    });
+
+    return articles.map((a) => ({
+      id: a.id,
+      slug: a.slug,
+      titleAr: a.titleAr,
+      summaryAr: a.summaryAr,
+      publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+      sectionSlug: a.section.slug,
+      sectionNameAr: a.section.nameAr,
+      videoUrl: a.coverMedia?.url || a.sourceUrl || "",
+      thumbnailUrl: (a as any).coverImageUrl || "https://alwatantoday.net/brand/brand-palette.jpg",
+      duration: "02:45",
+      sourceNameAr: a.source?.nameAr || "الوطن اليوم",
+    }));
+  } catch (error) {
+    console.error("Failed to fetch videos data:", error);
+    return [];
+  }
+}
+
+/**
+ * جلب مقالات وسم محدد
+ */
+export async function getTagFeed(tagSlug: string, limit = 20) {
+  try {
+    const tag = await prisma.tag.findUnique({
+      where: { slug: tagSlug },
+      include: {
+        articles: {
+          where: { article: { status: "PUBLISHED" } },
+          include: {
+            article: {
+              include: {
+                section: true,
+                source: true,
+              },
+            },
+          },
+          take: limit,
+        },
+      },
+    });
+
+    if (!tag) return null;
+
+    return {
+      tag: {
+        id: tag.id,
+        slug: tag.slug,
+        nameAr: tag.nameAr,
+        nameEn: tag.nameEn,
+      },
+      articles: tag.articles.map((item) => {
+        const a = item.article;
+        return {
+          id: a.id,
+          slug: a.slug,
+          titleAr: a.titleAr,
+          titleOriginal: a.titleOriginal,
+          summaryAr: a.summaryAr,
+          kind: a.kind as any,
+          publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+          sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+          displayPolicy: a.displayPolicy as any,
+          isBreaking: a.isBreaking,
+          sectionSlug: a.section.slug,
+          sectionNameAr: a.section.nameAr,
+          source: a.source
+            ? {
+                id: a.source.id,
+                slug: a.source.slug,
+                nameAr: a.source.nameAr,
+                logoUrl: a.source.logoUrl,
+                homepageUrl: a.source.homepageUrl,
+              }
+            : null,
+        };
+      }),
+    };
+  } catch (error) {
+    console.error(`Failed to fetch tag feed for ${tagSlug}:`, error);
+    return null;
+  }
+}
+
+/**
+ * جلب مقالات كاتب محدد
+ */
+export async function getAuthorFeed(authorSlug: string, limit = 20) {
+  try {
+    const author = await prisma.author.findUnique({
+      where: { slug: authorSlug },
+      include: {
+        articles: {
+          where: { status: "PUBLISHED" },
+          include: {
+            section: true,
+            source: true,
+          },
+          orderBy: { publishedAt: "desc" },
+          take: limit,
+        },
+      },
+    });
+
+    if (!author) return null;
+
+    return {
+      author: {
+        id: author.id,
+        slug: author.slug,
+        nameAr: author.nameAr,
+        bioAr: author.bioAr,
+      },
+      articles: author.articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        titleOriginal: a.titleOriginal,
+        summaryAr: a.summaryAr,
+        kind: a.kind as any,
+        publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+        sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+        displayPolicy: a.displayPolicy as any,
+        isBreaking: a.isBreaking,
+        sectionSlug: a.section.slug,
+        sectionNameAr: a.section.nameAr,
+        source: a.source
+          ? {
+              id: a.source.id,
+              slug: a.source.slug,
+              nameAr: a.source.nameAr,
+              logoUrl: a.source.logoUrl,
+              homepageUrl: a.source.homepageUrl,
+            }
+          : null,
+      })),
+    };
+  } catch (error) {
+    console.error(`Failed to fetch author feed for ${authorSlug}:`, error);
+    return null;
+  }
+}
+
+/**
+ * جلب أحدث المقالات المنشورة لتغذية خلاصة RSS الرئيسية
+ */
+export async function getGlobalRssArticles(limit = 50) {
+  try {
+    const articles = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      include: {
+        section: true,
+        source: true,
+        author: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
+    });
+
+    return articles.map((a) => ({
+      id: a.id,
+      slug: a.slug,
+      titleAr: a.titleAr,
+      summaryAr: a.summaryAr || "",
+      publishedAt: a.publishedAt || new Date(),
+      sectionNameAr: a.section.nameAr,
+      sectionSlug: a.section.slug,
+      sourceNameAr: a.source?.nameAr || "الوطن اليوم",
+      authorNameAr: a.author?.nameAr,
+      sourceUrl: a.sourceUrl,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch global RSS articles:", error);
+    return [];
+  }
+}
+
 

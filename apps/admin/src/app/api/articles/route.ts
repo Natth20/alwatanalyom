@@ -3,6 +3,7 @@ import { prisma, ArticleKind, ArticleStatus, DisplayPolicy } from "@awt/db";
 import { generateArabicSlug } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import { getSessionUser } from "@/lib/auth";
+import { triggerWebRevalidation } from "@/lib/revalidate";
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,6 +106,13 @@ export async function POST(request: NextRequest) {
       ]).catch((err) => {
         console.warn("⚠️ Meilisearch indexing warning:", err);
       });
+
+      // إعادة التحقق اللحظي الفوري لكاش الواجهة الأمامية (On-demand Revalidation)
+      triggerWebRevalidation({
+        sectionSlug: section.slug,
+        isBreaking: article.isBreaking,
+        paths: ["/", `/${section.slug}`, `/article/${article.id}/${article.slug}`],
+      }).catch((err) => console.warn("Revalidation warning:", err));
     }
 
     // 6. تسجيل في سجل التدقيق

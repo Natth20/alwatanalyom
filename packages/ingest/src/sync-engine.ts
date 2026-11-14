@@ -7,8 +7,9 @@ interface IngestReport {
   timestamp: string;
   sourcesProcessed: number;
   totalNewArticles: number;
+  totalReviewItems?: number;
   errors: { sourceSlug: string; error: string }[];
-  details: { sourceName: string; count: number }[];
+  details: { sourceName: string; count: number; reviewCount?: number }[];
 }
 
 function classifySection(title: string, summary: string | undefined, hints: string[]): string {
@@ -80,10 +81,24 @@ export async function runLiveIngest(
   options?: {
     sourceId?: string;
     limitPerSource?: number;
+    requireReview?: boolean;
   }
 ): Promise<IngestReport> {
   const limit = options?.limitPerSource || 15;
   const whereClause = options?.sourceId ? { id: options.sourceId } : { enabled: true };
+
+  // فحص حالة مفتاح الإيقاف التحريري العام (Kill Switch)
+  let isKillSwitchActive = false;
+  try {
+    const killPolicy = await prisma.publishPolicy.findFirst({
+      where: { name: "MASTER_KILL_SWITCH" },
+    });
+    if (killPolicy && !killPolicy.enabled) {
+      isKillSwitchActive = true;
+    }
+  } catch {
+    // ignore
+  }
 
   const sources = await prisma.source.findMany({
     where: whereClause,
@@ -93,6 +108,7 @@ export async function runLiveIngest(
     timestamp: new Date().toISOString(),
     sourcesProcessed: 0,
     totalNewArticles: 0,
+    totalReviewItems: 0,
     errors: [],
     details: [],
   };
@@ -138,6 +154,7 @@ export async function runLiveIngest(
       const parsedItems = parseFeedXml(fetchResult.bodyText);
       const itemsToProcess = parsedItems.slice(0, limit);
       let newCount = 0;
+      let reviewCount = 0;
 
       for (const raw of itemsToProcess) {
         if (!raw.title || !raw.canonicalUrl) continue;
@@ -157,6 +174,45 @@ export async function runLiveIngest(
         const isBreaking = checkIsBreaking(raw.title);
         const now = new Date();
         const publishedDate = raw.publishedAt || now;
+
+        // فحص معايير المراجعة البشرية المزدوجة
+        const hasSensitivity = /شهيد|شهداء|حصيلة|قتلى|ضحايا|مجزرة|انفجار|اغتيال/.test(raw.title);
+        const needsReview =
+          isKillSwitchActive ||
+          options?.requireReview ||
+          (source.trustLevel && source.trustLevel < 4) ||
+          hasSensitivity;
+
+        if (needsReview) {
+          // المادة المجمعة تسجل بحالة REVIEW للمراجعة التحريرية مع نسبة صحيحة للمصدر
+          await prisma.item.create({
+            data: {
+              sourceId: source.id,
+              externalId: raw.externalId,
+              url: raw.url,
+              canonicalUrl: raw.canonicalUrl,
+              urlHash,
+              titleOriginal: raw.title,
+              titleAr: raw.title,
+              summaryOrig: raw.summary,
+              lang: source.lang,
+              publishedAtSource: publishedDate,
+              contentHash: urlHash,
+              sectionGuess: targetSectionSlug,
+              isBreaking,
+              status: "REVIEW",
+              rejectReason: isKillSwitchActive
+                ? "مفتاح الإيقاف الطارئ مفعل: بانتظار المراجعة البشرية"
+                : hasSensitivity
+                ? "مراجعة حساسية أرقام الشهداء والمصطلحات الميدانية"
+                : "مراجعة تحريرية دورية",
+            },
+          });
+
+          reviewCount++;
+          report.totalReviewItems = (report.totalReviewItems || 0) + 1;
+          continue;
+        }
 
         // إنشاء صورة الغلاف إن وجدت
         let coverMediaId: string | null = null;
@@ -245,6 +301,7 @@ export async function runLiveIngest(
       report.details.push({
         sourceName: source.nameAr,
         count: newCount,
+        reviewCount,
       });
     } catch (err: any) {
       report.errors.push({
