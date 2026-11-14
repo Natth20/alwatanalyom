@@ -8,12 +8,39 @@ export default function ContactPage() {
   const [email, setEmail] = useState("");
   const [dept, setDept] = useState("editorial");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) return;
-    setSent(true);
+    setSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          department: dept,
+          message,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error?.message || "تعذر إرسال الرسالة، يرجى المحاولة لاحقاً.");
+      }
+
+      setSent(true);
+    } catch (err: any) {
+      setErrorMsg(err.message || "حدث خطأ أثناء الإرسال");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -120,12 +147,19 @@ export default function ContactPage() {
                 />
               </div>
 
+              {errorMsg && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold">
+                  {errorMsg}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-all flex items-center justify-center gap-2 shadow-sm"
+                disabled={submitting}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>إرسال الرسالة إلى التحرير</span>
+                <span>{submitting ? "جاري الإرسال..." : "إرسال الرسالة إلى التحرير"}</span>
               </button>
             </form>
           )}

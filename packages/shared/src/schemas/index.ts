@@ -80,3 +80,35 @@ export const ReportIssueSchema = z.object({
 
 export type ReportIssue = z.infer<typeof ReportIssueSchema>;
 
+/**
+ * مخطط نموذج التواصل العام
+ */
+export const ContactFormSchema = z.object({
+  name: z.string().min(2, "الاسم مطلوب (حرفان على الأقل)").max(100),
+  email: z.string().email("البريد الإلكتروني غير صحيح"),
+  department: z.enum(["editorial", "opinion", "technical", "advertising", "management"]).default("editorial"),
+  subject: z.string().min(3).max(200).optional(),
+  message: z.string().min(10, "الرسالة قصيرة جداً (10 أحرف على الأقل)").max(4000),
+  phone: z.string().max(30).optional(),
+  turnstileToken: z.string().optional(),
+});
+
+export type ContactForm = z.infer<typeof ContactFormSchema>;
+
+/**
+ * مخطط إرسال خبر أو تسريب لغرفة التحرير
+ */
+export const SubmitNewsTipSchema = z.object({
+  title: z.string().min(5, "عنوان الخبر مطلوب").max(200),
+  details: z.string().min(20, "تفاصيل الخبر يجب ألا تقل عن 20 حرفاً").max(5000),
+  location: z.string().min(2).max(100).optional(),
+  sourceType: z.enum(["eyewitness", "document", "official_source", "other"]).default("eyewitness"),
+  attachmentUrl: z.string().url().optional(),
+  isAnonymous: z.boolean().default(false),
+  senderName: z.string().max(100).optional(),
+  senderContact: z.string().max(150).optional(),
+  turnstileToken: z.string().optional(),
+});
+
+export type SubmitNewsTip = z.infer<typeof SubmitNewsTipSchema>;
+

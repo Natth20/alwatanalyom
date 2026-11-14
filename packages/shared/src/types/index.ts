@@ -90,6 +90,13 @@ export interface InstrumentQuote {
   provider: string;
 }
 
+export interface InstrumentDetail extends InstrumentQuote {
+  history?: { time: string; price: number }[];
+  high24h?: number | null;
+  low24h?: number | null;
+  providerTermsUrl?: string | null;
+}
+
 export interface ChannelCard {
   id: string;
   slug: string;

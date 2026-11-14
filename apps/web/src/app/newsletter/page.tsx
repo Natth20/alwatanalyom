@@ -39,6 +39,8 @@ export default function NewsletterPage() {
   const [email, setEmail] = useState("");
   const [selectedEditions, setSelectedEditions] = useState<string[]>(["morning", "economy"]);
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [serverMessage, setServerMessage] = useState("");
 
   const toggleEdition = (id: string) => {
     if (selectedEditions.includes(id)) {
@@ -50,14 +52,34 @@ export default function NewsletterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes("@")) return;
 
     setStatus("submitting");
-    setTimeout(() => {
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/v1/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          lists: selectedEditions,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error?.message || "تعذر الاشتراك، يرجى المحاولة لاحقاً.");
+      }
+
+      setServerMessage(data.message || "تم تسجيل اشتراكك بنجاح. يرجى مراجعة بريدك الإلكتروني لتأكيد الاشتراك.");
       setStatus("success");
-    }, 800);
+    } catch (err: any) {
+      setErrorMsg(err.message || "حدث خطأ أثناء الاشتراك");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -71,11 +93,11 @@ export default function NewsletterPage() {
         <div className="flex items-center justify-center gap-2">
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>نشرات «الوطن اليوم» الذكية</span>
+            <span>نشرات «الوطن اليوم» التحريرية</span>
           </span>
           <span className="flex items-center gap-1 text-xs text-[var(--text-muted)] bg-[var(--surface)] px-3 py-1 rounded-full border border-[var(--border)]">
-            <Users className="w-3.5 h-3.5 text-emerald-500" />
-            <span>أكثر من 28,400 مشترك</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>تأكيد مزدوج وآمن (Double Opt-in)</span>
           </span>
         </div>
 
@@ -94,11 +116,15 @@ export default function NewsletterPage() {
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-black text-[var(--text)]">
-            أهلاً بك في أسرة قراء الوطن اليوم!
+            خطوة واحدة تفصلك عن إتمام الاشتراك!
           </h2>
           <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-            تم تسجيل بريدك <strong>{email}</strong> بنجاح. أرسلنا لك رسالة ترحيبية قصيرة لتأكيد الاشتراك. ستصلك أول نشرة في الموعد المحدد.
+            {serverMessage || `تم تسجيل بريدك ${email} بنجاح. أرسلنا لك رسالة تأكيد للتحقق المزدوج وحماية خصوصيتك.`}
           </p>
+          <div className="p-4 rounded-xl border border-emerald-500/30 bg-[var(--surface)] text-xs text-[var(--text)] space-y-1">
+            <p className="font-bold text-emerald-600 dark:text-emerald-400">يرجى فحص صندوق الوارد (أو الرسائل الترويجية)</p>
+            <p className="text-[var(--text-muted)]">والضغط على رابط «تأكيد الاشتراك» لتفعيل وصول النشرات اليومية.</p>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto">
@@ -160,6 +186,11 @@ export default function NewsletterPage() {
             <label htmlFor="email" className="block text-xs font-bold text-[var(--text)]">
               عنوان بريدك الإلكتروني المفضل:
             </label>
+            {errorMsg && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold">
+                {errorMsg}
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 id="email"

@@ -1,5 +1,5 @@
 import { prisma } from "@awt/db";
-import { ArticleCard, StorySummary, InstrumentQuote, ChannelCard, isMockDataAllowed } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, InstrumentDetail, ChannelCard, isMockDataAllowed } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import {
   MOCK_BREAKING,
@@ -598,11 +598,111 @@ export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuo
 }
 
 /**
- * جلب قنوات دليل البث
+ * جلب تفاصيل أداة مالية وسجل أسعارها
+ */
+export async function getInstrumentDetails(symbol: string): Promise<InstrumentDetail | null> {
+  const normSymbol = symbol.trim().toUpperCase();
+  try {
+    const inst = await prisma.instrument.findUnique({
+      where: { symbol: normSymbol },
+      include: {
+        quotes: {
+          orderBy: { asOf: "desc" },
+          take: 30,
+        },
+      },
+    });
+
+    if (inst) {
+      const q = inst.quotes[0];
+      const now = Date.now();
+      let status = (q?.status as any) || "UNAVAILABLE";
+
+      // قاعدة 5: إذا تأخر التحديث تظهر حالة "متأخر" بدل "مباشر"
+      if (q?.asOf && status === "LIVE") {
+        const diffMinutes = (now - new Date(q.asOf).getTime()) / (1000 * 60);
+        if (diffMinutes > 20) {
+          status = "DELAYED";
+        }
+      }
+
+      const prices = inst.quotes.map((item) => Number(item.price)).filter((p) => !isNaN(p));
+      const high24h = prices.length > 0 ? Math.max(...prices) : null;
+      const low24h = prices.length > 0 ? Math.min(...prices) : null;
+
+      const history = inst.quotes
+        .slice()
+        .reverse()
+        .map((item) => ({
+          time: item.asOf.toISOString(),
+          price: Number(item.price),
+        }));
+
+      return {
+        symbol: inst.symbol,
+        nameAr: inst.nameAr,
+        nameEn: inst.nameEn,
+        category: inst.category as any,
+        price: q ? q.price.toString() : null,
+        change: q?.change ? q.change.toString() : null,
+        changePct: q?.changePct ? q.changePct.toString() : null,
+        unit: inst.unit,
+        currency: inst.currency,
+        status,
+        asOf: q?.asOf ? q.asOf.toISOString() : null,
+        provider: inst.providerKey,
+        providerTermsUrl: inst.termsUrl,
+        history,
+        high24h,
+        low24h,
+      };
+    }
+
+    if (isMockDataAllowed()) {
+      const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
+      if (mock) {
+        const basePrice = mock.price ? parseFloat(mock.price) : 100;
+        return {
+          ...mock,
+          history: [
+            { time: new Date(Date.now() - 3600000 * 4).toISOString(), price: Number((basePrice * 0.98).toFixed(2)) },
+            { time: new Date(Date.now() - 3600000 * 3).toISOString(), price: Number((basePrice * 0.99).toFixed(2)) },
+            { time: new Date(Date.now() - 3600000 * 2).toISOString(), price: Number((basePrice * 0.985).toFixed(2)) },
+            { time: new Date(Date.now() - 3600000 * 1).toISOString(), price: Number((basePrice * 1.01).toFixed(2)) },
+            { time: new Date().toISOString(), price: basePrice },
+          ],
+          high24h: Number((basePrice * 1.02).toFixed(2)),
+          low24h: Number((basePrice * 0.97).toFixed(2)),
+        };
+      }
+    }
+
+    return null;
+  } catch {
+    if (isMockDataAllowed()) {
+      const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
+      if (mock) {
+        return {
+          ...mock,
+          history: [],
+          high24h: null,
+          low24h: null,
+        };
+      }
+    }
+    return null;
+  }
+}
+
+/**
+ * جلب قنوات دليل البث الرسمي (إخفاء القنوات المعطلة وفق متطلبات المرحلة 5)
  */
 export async function getChannels(): Promise<ChannelCard[]> {
   try {
     const channels = await prisma.channel.findMany({
+      where: {
+        status: { notIn: ["OFFICIAL_DOWN", "UNAVAILABLE"] as any },
+      },
       orderBy: { nameAr: "asc" },
     });
 
@@ -627,6 +727,60 @@ export async function getChannels(): Promise<ChannelCard[]> {
     return isMockDataAllowed() ? MOCK_CHANNELS : [];
   } catch {
     return isMockDataAllowed() ? MOCK_CHANNELS : [];
+  }
+}
+
+/**
+ * فحص دوري لسلامة رابط بث القناة وتحديث حالتها في قاعدة البيانات
+ */
+export async function verifyChannelHealth(channelId: string, url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(url, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: { "User-Agent": "AlwatanToday-HealthCheck/1.0" },
+    });
+    clearTimeout(timeout);
+    const ok = res.status < 400;
+
+    await prisma.channelCheck.create({
+      data: {
+        channelId,
+        ok,
+        httpStatus: res.status,
+        note: ok ? "رابط البث الرسمي متاح ويعمل بنجاح" : `خطأ استجابة الخادم: ${res.status}`,
+      },
+    });
+
+    await prisma.channel.update({
+      where: { id: channelId },
+      data: {
+        status: ok ? ("AVAILABLE" as any) : ("UNAVAILABLE" as any),
+        lastCheckedAt: new Date(),
+      },
+    });
+
+    return ok;
+  } catch (err: any) {
+    try {
+      await prisma.channelCheck.create({
+        data: {
+          channelId,
+          ok: false,
+          note: err?.message || "انتهت مهلة الاتصال أو فشل الرابط",
+        },
+      });
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: {
+          status: "UNAVAILABLE" as any,
+          lastCheckedAt: new Date(),
+        },
+      });
+    } catch {}
+    return false;
   }
 }
 

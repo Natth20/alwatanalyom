@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SearchModal } from "@/components/SearchModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { OFFICIAL_SOCIAL_LINKS, TRACKING_IDS } from "@awt/shared";
 
 export const viewport: Viewport = {
@@ -116,6 +117,7 @@ export default function RootLayout({
         <SearchModal />
         <BottomNav />
         <PwaInstallPrompt />
+        <CookieConsentBanner />
       </body>
     </html>
   );

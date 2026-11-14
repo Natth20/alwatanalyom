@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { getSectionFeed } from "@/lib/dal";
 import { ArticleCard } from "@/components/ArticleCard";
+import { TodayMatchesWidget } from "@/components/sports/TodayMatchesWidget";
+import { YallaSportBanner } from "@/components/sports/YallaSportBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +133,14 @@ export default async function SectionPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* قسم الرياضة: جدول مباريات اليوم المباشر وبانر يلا سبورت */}
+      {sectionSlug === "sports" && (
+        <div className="space-y-6">
+          <TodayMatchesWidget />
+          <YallaSportBanner variant="leaderboard" />
+        </div>
+      )}
 
       {/* المقالات */}
       {articles.length > 0 ? (
