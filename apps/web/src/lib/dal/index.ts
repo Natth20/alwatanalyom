@@ -184,6 +184,8 @@ export async function getHomeFeed() {
           techArticles: MOCK_SECTION_ARTICLES.tech,
           sportsArticles: MOCK_SECTION_ARTICLES.sports,
           quotes: quotes.length > 0 ? quotes : MOCK_QUOTES,
+          fastStreamArticles,
+          videoArticles,
         };
       }
       return {
