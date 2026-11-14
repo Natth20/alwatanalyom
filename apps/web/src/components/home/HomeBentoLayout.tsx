@@ -152,3 +152,4 @@ export function HomeBentoLayout({
     </div>
   );
 }
+

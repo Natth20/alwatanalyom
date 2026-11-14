@@ -89,3 +89,4 @@ export function VisualPrototypeSwitcher({ currentView }: Props) {
     </div>
   );
 }
+

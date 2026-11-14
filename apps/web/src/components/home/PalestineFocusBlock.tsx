@@ -98,3 +98,4 @@ export function PalestineFocusBlock({ stories }: Props) {
     </section>
   );
 }
+

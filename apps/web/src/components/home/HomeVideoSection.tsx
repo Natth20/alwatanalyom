@@ -84,3 +84,4 @@ export function HomeVideoSection({ articles }: Props) {
     </section>
   );
 }
+

@@ -79,3 +79,4 @@ export function LiveFastStreamWire({ articles }: Props) {
     </aside>
   );
 }
+
