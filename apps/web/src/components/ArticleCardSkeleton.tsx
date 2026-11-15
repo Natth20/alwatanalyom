@@ -85,3 +85,4 @@ export function ArticleCardSkeleton({ variant = "medium" }: Props) {
     </div>
   );
 }
+
