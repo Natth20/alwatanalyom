@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SITE_SECTIONS } from "@awt/shared";
@@ -29,14 +29,35 @@ import {
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navSections = SITE_SECTIONS.filter((s) => s.showInNav);
   const moreSections = SITE_SECTIONS.filter((s) => !s.showInNav);
 
   return (
     <header className="border-b border-[var(--border)] bg-[var(--surface-header)] backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-xs">
-      {/* 1. الشريط العلوي الرئاسي (Top Utility Bar) */}
-      <div className="border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]/80 text-xs text-[var(--text-muted)] py-1.5">
+      {/* 0. زر التخطي للمحتوى الرئيسي لتعزيز إمكانية الوصول (WCAG AA Accessibility) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--gold)] focus:text-[var(--maroon-dark)] focus:font-black focus:text-xs focus:rounded-xl focus:shadow-lg focus:outline-none"
+      >
+        تخطي إلى المحتوى الرئيسي
+      </a>
+
+      {/* 1. الشريط العلوي الرئاسي القابل للانكماش عند التمرير (Shrinking Top Utility Bar) */}
+      <div
+        className={`border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]/80 text-xs text-[var(--text-muted)] transition-all duration-300 ease-in-out ${
+          scrolled ? "max-h-0 opacity-0 overflow-hidden py-0 border-none" : "max-h-16 opacity-100 py-1.5"
+        }`}
+      >
         <div className="container-custom flex flex-wrap items-center justify-between gap-3">
           {/* معلومات التوقيت، القدس وغزة، والطقس الموثق */}
           <div className="flex items-center gap-3">
@@ -74,7 +95,11 @@ export function Header() {
       </div>
 
       {/* 2. الترويسة الرئيسية بهوية الوطن اليوم الجديدة (Royal Masthead) */}
-      <div className="container-custom py-4 flex items-center justify-between gap-4 border-b border-[var(--border-subtle)]">
+      <div
+        className={`container-custom flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] transition-all duration-300 ease-in-out ${
+          scrolled ? "py-2.5" : "py-4"
+        }`}
+      >
         <BrandLogo variant="header" />
 
         {/* الإجراءات السريعة: البحث، المحفوظات، وزر النشرة */}

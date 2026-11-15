@@ -112,7 +112,7 @@ export default function RootLayout({
         </noscript>
 
         <Header />
-        <main className="flex-1 pb-16">{children}</main>
+        <main id="main-content" tabIndex={-1} className="flex-1 pb-16 focus:outline-none">{children}</main>
         <Footer />
         <SearchModal />
         <BottomNav />

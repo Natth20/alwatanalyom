@@ -93,21 +93,23 @@ export function BreakingBar({ articles: initialArticles }: Props) {
             <span>عاجل</span>
           </span>
 
-          <div className="flex-1 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5">
-            {articles.map((item) => (
-              <Link
-                key={item.id}
-                href={`/article/${item.id}/${item.slug}`}
-                className="inline-flex items-center gap-2 hover:underline me-8 text-white/95 text-xs md:text-sm font-semibold transition-opacity hover:opacity-100 group"
-              >
-                <span className="group-hover:text-amber-200 transition-colors">{item.titleAr}</span>
-                {item.source && (
-                  <span className="text-white/60 text-[11px] font-normal bg-black/20 px-1.5 py-0.2 rounded">
-                    {item.source.nameAr}
-                  </span>
-                )}
-              </Link>
-            ))}
+          <div className="flex-1 overflow-hidden whitespace-nowrap py-0.5">
+            <div className="ticker-track">
+              {articles.concat(articles).map((item, idx) => (
+                <Link
+                  key={`${item.id}-${idx}`}
+                  href={`/article/${item.id}/${item.slug}`}
+                  className="inline-flex items-center gap-2 hover:underline me-10 text-white/95 text-xs md:text-sm font-semibold transition-opacity hover:opacity-100 group"
+                >
+                  <span className="group-hover:text-amber-200 transition-colors">{item.titleAr}</span>
+                  {item.source && (
+                    <span className="text-white/60 text-[11px] font-normal bg-black/20 px-1.5 py-0.2 rounded">
+                      {item.source.nameAr}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 

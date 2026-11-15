@@ -272,7 +272,7 @@ body {
   text-shadow: none !important;
 }
 
-/* أنيميشن الماركيه والنبض */
+/* أنيميشن الماركيه والنبض والحركة المقيدة (Section 8 Motion) */
 @keyframes pulseGlow {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.96); }
@@ -280,6 +280,101 @@ body {
 
 .animate-pulse-glow {
   animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* حركة الظهور التدريجي المتدرج (Fade + Small Translate) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.delay-75 { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* توهج الأسعار عند التغير اللحظي (Price Glow Flash) */
+@keyframes flashGreen {
+  0% { background-color: rgba(16, 185, 129, 0.25); color: #10b981; }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background-color: rgba(239, 68, 68, 0.25); color: #ef4444; }
+  100% { background-color: transparent; }
+}
+
+.price-flash-up {
+  animation: flashGreen 1.2s ease-out;
+}
+
+.price-flash-down {
+  animation: flashRed 1.2s ease-out;
+}
+
+/* شريط الأخبار العاجلة المتدفق (Ticker Track) مع الإيقاف عند التحويم */
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+
+.ticker-track {
+  display: inline-flex;
+  animation: tickerScroll 40s linear infinite;
+  will-change: transform;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* دعم انتقالات الصفحات السلسة (View Transitions API) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* دعم مؤشرات التركيز الواضحة للوصول (WCAG AA Focus Ring) */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* قاعدة تقليل الحركة الصارمة (WCAG AA & Section 8 prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker-track {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce,
+  .animate-pulse-glow,
+  .animate-fade-in-up {
+    animation: none !important;
+  }
 }
 
 /* نمط الطباعة الصحفية النظيفة */

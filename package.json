@@ -20,6 +20,7 @@
     "db:studio": "pnpm --filter @awt/db exec prisma studio"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "prettier": "^3.5.1",
     "turbo": "^2.4.2",
     "typescript": "^5.7.3"
