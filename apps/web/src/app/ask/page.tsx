@@ -7,94 +7,52 @@ import {
   Send,
   Bot,
   User,
-  BookOpen,
-  ArrowRight,
-  ExternalLink,
   ShieldCheck,
   RotateCcw,
   Copy,
   Check,
-  Search,
-  MessageSquare,
+  HelpCircle,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react";
+
+interface SourceItem {
+  title: string;
+  url: string;
+  date: string;
+}
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  sources?: { title: string; url: string; date: string }[];
+  sources?: SourceItem[];
+  suggestedTopics?: string[];
+  disclaimer?: string;
   timestamp: string;
 }
 
 const PRESET_QUERIES = [
   "ما هي حقيقة مزاعم فتح المعابر وما حكم مرصد الحقيقة عليها؟",
-  "لخص لي مسار المساعدات الإنسانية التي دخلت غزة اليوم وأين وُزعت؟",
-  "ما هي أبرز قرارات محكمة العدل الدولية بخصوص فلسطين؟",
+  "ما هي القرارات والتدابير الصادرة عن محكمة العدل الدولية بخصوص فلسطين؟",
+  "كيف يجري التحقق من الصور والمقاطع المولدة بالذكاء الاصطناعي؟",
   "ما هو التسلسل التاريخي لأطول إضراب عام في فلسطين عام 1936؟",
 ];
-
-const KNOWLEDGE_BASE_RESPONSES: Record<
-  string,
-  {
-    answer: string;
-    sources: { title: string; url: string; date: string }[];
-  }
-> = {
-  default: {
-    answer:
-      "بناءً على الأرشيف والبيانات الرسمية لـ «الوطن اليوم»: كافة المعلومات الميدانية والسياسية تخضع لبروتوكول التحقق الصارم بمطابقة مصادر الهلال الأحمر، الدفاع المدني، ووكالة وفا. يمكنك طرح أسئلة استقصائية حول تطورات الميدان، الشائعات المفندة، أو محطات الذاكرة التاريخية.",
-    sources: [
-      { title: "سياسة التحرير ومصادر المنصة المعتمدة", url: "/editorial-policy", date: "أرشيف 2026" },
-      { title: "مرصد رادار الحقيقة ومكافحة الشائعات", url: "/fact-check", date: "محدث باستمرار" },
-    ],
-  },
-  "ما هي حقيقة مزاعم فتح المعابر وما حكم مرصد الحقيقة عليها؟": {
-    answer:
-      "أثبت مرصد «رادار الحقيقة» في تحقيقه اليوم أن وثيقة الاتفاق المتداولة حول فتح المعابر بدون قيود هي «مضللة ومجتزأة»، ومطابقة بنسبة 94% لمسودة مفاوضات قديمة تعود لأواخر عام 2024. وأكدت هيئة المعابر والحدود الفلسطينية والوسطاء عدم صدور أي إعلان رسمي جديد، وأن التشغيل ما زال محكوماً بالإجراءات المقيدة القائمة.",
-    sources: [
-      { title: "تقرير التحقق: مزاعم اتفاق المعابر الشامل", url: "/fact-check/fc-1", date: "اليوم 14:30" },
-      { title: "بيان هيئة المعابر والحدود الفلسطينية", url: "https://wafa.ps", date: "30 أكتوبر 2026" },
-    ],
-  },
-  "لخص لي مسار المساعدات الإنسانية التي دخلت غزة اليوم وأين وُزعت؟": {
-    answer:
-      "وفق بيانات «رادار الميدان الإنساني» وغرفة العمليات المشتركة: دخلت اليوم 114 شاحنة إغاثية محملة بـ 42 طناً من المستلزمات الجراحية وأكياس الطحين عبر معبري رفح وكرم أبو سالم. تم تفريغ 45 شاحنة لصالح مستودعات الهلال الأحمر في خانيونس لتغذية مطابخ التكية، بينما تكفل فريق الأونروا بنقل جزء مخصص لمراكز إيواء وسط القطاع، وسط استمرار المطالبة الدولية بفتح ممرات آمنة للمحافظات الشمالية.",
-    sources: [
-      { title: "رادار الميدان · غرفة المتابعة الإنسانية والخدماتية", url: "/live", date: "اليوم 21:30" },
-      { title: "بيان جمعية الهلال الأحمر الفلسطيني", url: "https://palestinercs.org", date: "اليوم 20:00" },
-    ],
-  },
-  "ما هي أبرز قرارات محكمة العدل الدولية بخصوص فلسطين؟": {
-    answer:
-      "أصدرت محكمة العدل الدولية في لاهاي قرارات تاريخية فاصلة: 1) الرأي الاستشاري لعام 2004 بعدم قانونية جدار الفصل العنصري ووجوب تفكيكه وتعويض المتضررين. 2) التدابير الاحترازية المؤقتة في دعوى جنوب إفريقيا لعام 2024 التي أمرت بمنع ارتكاب أي أعمال إبادة جماعية وضمان تدفق المساعدات فوراً. 3) الفتوى الاستشارية لعام 2024 التي أكدت عدم شرعية استمرار الاحتلال في الضفة والقدس ووجوب إنهائه في أسرع وقت.",
-    sources: [
-      { title: "التغطية القانونية لقرارات محكمة العدل الدولية", url: "/world", date: "أرشيف القانون الدولي" },
-      { title: "سجلات الأمم المتحدة ومجلس الأمن", url: "https://ochaopt.org", date: "توثيق رسمي" },
-    ],
-  },
-  "ما هو التسلسل التاريخي لأطول إضراب عام في فلسطين عام 1936؟": {
-    answer:
-      "شهدت فلسطين في 20 أبريل 1936 انطلاق أطول إضراب عام سلمي في التاريخ الحديث، قادته اللجنة القومية في يافا واللجنة العربية العليا بقيادة الحاج أمين الحسيني. استمر الإضراب 178 يوماً متواصلاً وشل حركة الموانئ والأسواق ووسائل النقل رفضاً لسياسات الانتداب البريطاني وهجرة المستوطنين، ولم يُعلّق إلا في 12 أكتوبر 1936 استجابة لنداء الملوك والأمراء العرب بعد وعود بريطانية بالتحقيق في مطالب الشعب.",
-    sources: [
-      { title: "ذاكرة الوطن: توثيق إضراب 1936 الكبير", url: "/history", date: "أرشيف 12 أكتوبر" },
-      { title: "صحيفة الدفاع ويافا التاريخية (أرشيف 1936)", url: "/history", date: "وثائق وطنية" },
-    ],
-  },
-};
 
 export default function AskNewsroomPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "أهلاً بك في «المساعد الصحفي الذكي» لمنصة الوطن اليوم. أنا مدرب حصراً على أرشيف المنصة، تحقيقات مرصد رادار الحقيقة، وبلاغات الهلال الأحمر والدفاع المدني. اسألني عن أي خبر، شائعة تحتاج تفنيداً، أو حدث تاريخي وسأجيبك مع الإسناد الموثق.",
+        "أهلاً بك في «اسأل الوطن» — المساعد الصحفي الذكي لمنصة الوطن اليوم.\n\nأنا مرتبط مباشرة بالأرشيف الإخباري المعتمد وتحقيقات مرصد رادار الحقيقة وبلاغات المصادر الرسمية. ألتزم بالإسناد الصريح لمصادر حقيقية، وإن لم أجد تغطية كافية في الأرشيف فلن أخترع إجابة.",
       timestamp: "الآن",
+      disclaimer: "الإجابات تعتمد حصراً على المواد المنشورة والموثقة في سجلات المنصة.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
     if (!query.trim() || loading) return;
 
@@ -108,17 +66,43 @@ export default function AskNewsroomPage() {
     if (!textToSend) setInput("");
     setLoading(true);
 
-    setTimeout(() => {
-      const found = KNOWLEDGE_BASE_RESPONSES[query] || KNOWLEDGE_BASE_RESPONSES.default;
-      const botMsg: Message = {
+    try {
+      const res = await fetch("/api/v1/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: query }),
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.data) {
+        const botMsg: Message = {
+          role: "assistant",
+          content: json.data.answer,
+          sources: json.data.sources || [],
+          suggestedTopics: json.data.suggestedTopics || [],
+          disclaimer: json.data.disclaimer,
+          timestamp: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, botMsg]);
+      } else {
+        const errorMsg: Message = {
+          role: "assistant",
+          content: json.error?.message || "لم نتمكن من معالجة السؤال حالياً. يرجى المحاولة لاحقاً.",
+          timestamp: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      }
+    } catch {
+      const fallbackMsg: Message = {
         role: "assistant",
-        content: found.answer,
-        sources: found.sources,
+        content: "تعذر الاتصال بقاعدة بيانات الأرشيف حالياً. تأكد من اتصال الإنترنت ثم أعد المحاولة.",
         timestamp: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
       };
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [...prev, fallbackMsg]);
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   const handleCopy = (text: string, idx: number) => {
@@ -137,13 +121,13 @@ export default function AskNewsroomPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black text-[var(--text)]">اسأل الوطن اليوم</h1>
+              <h1 className="text-xl font-black text-[var(--text)]">اسأل الوطن</h1>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                مساعد صحفي معتمد
+                أرشيف موثق وصفر اختلاق
               </span>
             </div>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              مبني بتقنية RAG المتطورة والموثقة بمصادر المنصة المعتمدة لمنع الهلوسة
+              محرك إجابات صحفي يعتمد على مواد وأرشيف المنصة المنشورة فقط ويشير لمصادره بدقة
             </p>
           </div>
         </div>
@@ -153,8 +137,9 @@ export default function AskNewsroomPage() {
             setMessages([
               {
                 role: "assistant",
-                content: "تمت إعادة تعيين الجلسة. تفضل بطرح أي سؤال جديد في الشأن الميداني، التحقق، أو التاريخ.",
+                content: "تمت إعادة تعيين الجلسة. تفضل بطرح سؤالك في الشأن الميداني، التحقق، أو الملفات التوثيقية.",
                 timestamp: "الآن",
+                disclaimer: "الإجابات تعتمد حصراً على المواد المنشورة والموثقة في سجلات المنصة.",
               },
             ])
           }
@@ -169,7 +154,7 @@ export default function AskNewsroomPage() {
       <div className="mb-4 overflow-x-auto pb-1 scrollbar-none flex items-center gap-2">
         <span className="text-xs font-bold text-[var(--text-muted)] flex items-center gap-1 shrink-0">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          أسئلة مقترحة:
+          أسئلة استرشادية:
         </span>
         {PRESET_QUERIES.map((q, idx) => (
           <button
@@ -213,20 +198,52 @@ export default function AskNewsroomPage() {
                 <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-1.5">
                   <span className="text-[11px] font-bold text-[var(--text-muted)] flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    المصادر والوثائق المعتمدة في الإجابة:
+                    المصادر الأرشيفية المعتمدة في هذه الإجابة:
                   </span>
                   <div className="space-y-1">
                     {msg.sources.map((s, sIdx) => (
                       <Link
                         key={sIdx}
                         href={s.url}
-                        className="text-xs flex items-center justify-between p-2 rounded-lg bg-[var(--surface)] hover:text-[var(--primary)] transition-colors border border-[var(--border)]"
+                        prefetch={false}
+                        className="text-xs flex items-center justify-between p-2 rounded-lg bg-[var(--surface)] hover:text-[var(--primary)] transition-colors border border-[var(--border)] group"
                       >
                         <span className="font-semibold truncate">{s.title}</span>
-                        <span className="text-[10px] text-[var(--text-muted)] shrink-0 mr-2">{s.date}</span>
+                        <span className="text-[10px] text-[var(--text-muted)] shrink-0 mr-2 flex items-center gap-1">
+                          {s.date}
+                          <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </span>
                       </Link>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Suggested Topics if no direct answer */}
+              {msg.suggestedTopics && msg.suggestedTopics.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-[var(--border)]">
+                  <span className="text-[11px] font-bold text-[var(--text-muted)] block mb-1.5">
+                    موضوعات قد تهمك في أرشيف المنصة:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {msg.suggestedTopics.map((topic, tIdx) => (
+                      <button
+                        key={tIdx}
+                        onClick={() => handleSend(`ما هي آخر تغطيات موضوع ${topic}؟`)}
+                        className="text-[11px] px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--primary)] transition-colors"
+                      >
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              {msg.disclaimer && (
+                <div className="mt-2 pt-2 text-[10px] text-[var(--text-muted)] flex items-center gap-1 border-t border-[var(--border)]/40">
+                  <AlertCircle className="w-3 h-3 text-amber-500 shrink-0" />
+                  <span>{msg.disclaimer}</span>
                 </div>
               )}
 
@@ -258,7 +275,7 @@ export default function AskNewsroomPage() {
             </div>
             <div className="p-4 rounded-2xl bg-[var(--bg)] border border-[var(--border)] text-xs text-[var(--text-muted)] flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full bg-[var(--primary)] animate-ping" />
-              جاري الاستعلام ومطابقة أرشيف التحقيقات والمصادر المعتمدة...
+              جاري فحص الأرشيف ومطابقة المصادر والتحقيقات المعتمدة لمنع أي اختلاق...
             </div>
           </div>
         )}
@@ -276,7 +293,7 @@ export default function AskNewsroomPage() {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="اسأل عن أي خبر، شائعة، معركة تاريخية، أو بيان إنساني..."
+          placeholder="ابحث في الأرشيف الموثق (مثال: حقيقة مزاعم المعابر، قرارات محكمة العدل الدولية)..."
           className="flex-1 px-4 py-2.5 text-sm bg-transparent text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none"
         />
         <button
@@ -290,4 +307,3 @@ export default function AskNewsroomPage() {
     </div>
   );
 }
-

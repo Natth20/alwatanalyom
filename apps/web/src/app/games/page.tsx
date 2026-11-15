@@ -15,6 +15,7 @@ import {
   BookOpen,
   MapPin,
   Award,
+  AlertCircle,
 } from "lucide-react";
 
 interface Question {
@@ -113,7 +114,7 @@ export default function GamesPage() {
   };
 
   const handleShare = () => {
-    const text = `أكملت تحدي المعرفة اليومي في «الوطن اليوم» بنتيجة ${score}/${QUESTIONS.length}! سلسلة الأيام المتتالية: 🔥 ${streak} يوم. جرب التحدي الآن: ${window.location.href}`;
+    const text = `أكملت مسابقة الذاكرة الثقافية في «الوطن اليوم» بنتيجة ${score}/${QUESTIONS.length}! سلسلة الإنجاز: 🔥 ${streak} يوم. جرب التحدي الآن: ${window.location.href}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -125,15 +126,21 @@ export default function GamesPage() {
     <div className="container-custom py-8 max-w-4xl">
       {/* Header */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 mb-8 text-center relative overflow-hidden shadow-sm">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)] mb-3">
-          <Sparkles className="w-3.5 h-3.5" />
-          ألعاب العقل وتحدي المعرفة الفلسطينية
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)]">
+            <Sparkles className="w-3.5 h-3.5" />
+            تحدي الذاكرة والمعرفة الوطنية
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20">
+            تجريبي · محتوى ترفيهي ثقافي
+          </span>
         </div>
-        <h1 className="text-2xl md:text-4xl font-black mb-3">
-          تحدي اليوم الثقافي والجغرافي
+
+        <h1 className="text-2xl md:text-4xl font-black mb-3 text-[var(--text)]">
+          تحدي المعرفة الجغرافية والتاريخية
         </h1>
         <p className="text-sm md:text-base text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">
-          اختبر معلوماتك اليومية عن مدن وقرى وتاريخ ومعالم فلسطين، واحتفظ بسلسلة إنجازك اليومية مع آلاف القراء.
+          اختبر معلوماتك التوثيقية عن جغرافيا وتاريخ ومعالم فلسطين، واحتفظ بسلسلة إنجازك الشخصية في حفظ أسماء القرى والمدن.
         </p>
 
         {/* Stats Bar */}
@@ -191,15 +198,11 @@ export default function GamesPage() {
                   key={idx}
                   onClick={() => handleSelect(idx)}
                   disabled={isAnswered}
-                  className={`p-4 rounded-xl border text-sm font-semibold text-right transition-all flex items-center justify-between gap-3 cursor-pointer ${btnStyle}`}
+                  className={`p-4 rounded-xl border text-sm font-semibold text-right transition-all flex items-center justify-between cursor-pointer ${btnStyle}`}
                 >
                   <span>{opt}</span>
-                  {isAnswered && isCorrect && (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                  )}
-                  {isAnswered && isSelected && !isCorrect && (
-                    <XCircle className="w-5 h-5 text-red-600 shrink-0" />
-                  )}
+                  {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
+                  {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-red-600 shrink-0" />}
                 </button>
               );
             })}
@@ -207,87 +210,76 @@ export default function GamesPage() {
 
           {/* Explanation Box */}
           {isAnswered && (
-            <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] mb-6 space-y-2 animate-fadeIn">
-              <div className="flex items-center gap-2 text-xs font-bold text-[var(--primary)]">
-                <BookOpen className="w-4 h-4" />
-                <span>المعلومة والتوثيق التاريخي:</span>
-              </div>
+            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 mb-6 animate-fadeIn">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1 flex items-center gap-1">
+                <BookOpen className="w-3.5 h-3.5" />
+                الإضاءة التوثيقية المعتمدة:
+              </span>
               <p className="text-xs md:text-sm text-[var(--text)] leading-relaxed">
                 {q.explanation}
               </p>
             </div>
           )}
 
-          {/* Next / Finish Button */}
-          {isAnswered && (
-            <div className="flex justify-end">
+          {/* Action Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
+            <div className="text-xs text-[var(--text-muted)]">
+              {isAnswered ? "اضغط للمتابعة إلى المحطة التالية" : "اختر الإجابة الصحيحة للتحقق"}
+            </div>
+
+            {isAnswered && (
               <button
                 onClick={handleNext}
-                className="px-6 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                className="px-6 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
               >
-                <span>{currentIdx + 1 < QUESTIONS.length ? "السؤال التالي" : "عرض النتيجة النهائية"}</span>
+                <span>{currentIdx + 1 === QUESTIONS.length ? "عرض النتيجة النهائية" : "السؤال التالي"}</span>
                 <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : (
-        /* Completion Screen */
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-sm space-y-6">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
+        /* Result Screen */
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center space-y-6 shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
             <Award className="w-8 h-8" />
           </div>
 
-          <div>
-            <h2 className="text-2xl font-black text-[var(--text)] mb-2">
-              تهانينا! أنهيت تحدي المعرفة اليومي
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-[var(--text)]">
+              أحسنت! أتممت تحدي المعرفة لليوم
             </h2>
-            <p className="text-sm text-[var(--text-muted)]">
-              أجبت بشكل صحيح على {score} من أصل {QUESTIONS.length} أسئلة!
+            <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto">
+              حققت {score} إجابات صحيحة من أصل {QUESTIONS.length}. معاً نحافظ على ذاكرة الجغرافيا والتاريخ حية للأجيال القادمة.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] max-w-sm mx-auto text-xs font-bold text-[var(--text)] space-y-1">
-            <span className="block text-amber-500 text-sm">🔥 سلسلة إنجازك: {streak} يوم متواصل!</span>
-            <span className="text-[var(--text-muted)] font-normal">
-              عد غداً صباحاً لتحدٍ جديد ومعالم فلسطينية أخرى لحفظ ذاكرتنا المشتركة.
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={handleShare}
-              className="px-5 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
             >
-              <Share2 className="w-4 h-4" />
-              <span>{copied ? "تم نسخ النتيجة!" : "مشاركة النتيجة مع الأصدقاء"}</span>
+              {copied ? <CheckCircle2 className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              <span>{copied ? "تم نسخ نتيجة التحدي" : "مشاركة النتيجة"}</span>
             </button>
             <button
               onClick={handleReset}
-              className="px-5 py-2.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] hover:bg-[var(--border)] text-xs font-bold text-[var(--text)] flex items-center gap-2 transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:text-[var(--primary)] text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>إعادة التحدي</span>
+              <span>إعادة المحاولة</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Cultural Fact Box */}
-      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 flex items-start gap-4">
-        <div className="p-2 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] shrink-0">
-          <HelpCircle className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="text-sm font-black text-[var(--text)] mb-1">
-            لماذا نبني «ألعاب العقل وتحدي المعرفة» في الوطن اليوم؟
-          </h3>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            لأن الحفاظ على الهوية الوطنية الفلسطينية وأسماء القرى المهجرة وتاريخ المعالم ليس مجرد قراءة أخبار عاجلة، بل معرفة حية تنتقل بين الأجيال بطريقة تفاعلية وممتعة تثبت الحق والحقيقة.
-          </p>
-        </div>
+      {/* Editorial Distinction Disclaimer per Section 11 */}
+      <div className="mt-6 p-3.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-start gap-2.5 text-xs text-[var(--text-muted)]">
+        <AlertCircle className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+        <p className="leading-relaxed">
+          <strong>تنويه تحريري:</strong> قسم المسابقات الثقافية صُمم لأغراض التثقيف الوطني وحفظ الذاكرة التاريخية والجغرافية، وهو مصنف كـ «محتوى ترفيهي ثقافي» منفصل تماماً عن غرف الأخبار والتقارير الصحفية الاستقصائية.
+        </p>
       </div>
     </div>
   );
 }
-

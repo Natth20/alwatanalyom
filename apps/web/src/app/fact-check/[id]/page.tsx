@@ -6,17 +6,15 @@ import {
   XCircle,
   AlertTriangle,
   ArrowRight,
-  Share2,
   Calendar,
-  Eye,
   ExternalLink,
   Search,
   Cpu,
   FileCheck2,
-  Send,
-  Flag,
+  UserCheck,
+  Share2,
 } from "lucide-react";
-import { FACT_CHECKS } from "@/data/factChecks";
+import { getFactCheckBySlug } from "@/lib/dal";
 import { Metadata } from "next";
 
 interface FactCheckDetailProps {
@@ -25,7 +23,7 @@ interface FactCheckDetailProps {
 
 export async function generateMetadata({ params }: FactCheckDetailProps): Promise<Metadata> {
   const { id } = await params;
-  const item = FACT_CHECKS.find((f) => f.id === id);
+  const item = await getFactCheckBySlug(id);
   if (!item) {
     return { title: "تقرير التحقق غير موجود — الوطن اليوم" };
   }
@@ -37,7 +35,7 @@ export async function generateMetadata({ params }: FactCheckDetailProps): Promis
 
 export default async function FactCheckDetailPage({ params }: FactCheckDetailProps) {
   const { id } = await params;
-  const item = FACT_CHECKS.find((f) => f.id === id);
+  const item = await getFactCheckBySlug(id);
 
   if (!item) {
     notFound();
@@ -60,6 +58,7 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
           statusName: "مضلل ومجتزأ",
         };
       case "out-of-context":
+      case "out_of_context":
         return {
           icon: AlertTriangle,
           bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
@@ -82,7 +81,7 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
   return (
     <div className="container-custom py-8 max-w-5xl">
       {/* Breadcrumb & Navigation */}
-      <div className="flex items-center justify-between gap-4 mb-6 text-sm text-[var(--text-muted)] border-b border-[var(--border)] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-sm text-[var(--text-muted)] border-b border-[var(--border)] pb-4">
         <Link
           href="/fact-check"
           className="inline-flex items-center gap-1.5 font-bold text-[var(--primary)] hover:underline"
@@ -90,14 +89,14 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
           <ArrowRight className="w-4 h-4 rtl:rotate-180" />
           العودة لمرصد رادار الحقيقة
         </Link>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex flex-wrap items-center gap-4 text-xs">
           <span className="flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-3.5 h-3.5 text-rose-600" />
             {item.date}
           </span>
-          <span className="flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5" />
-            {item.views.toLocaleString()} قراءة
+          <span className="flex items-center gap-1 font-semibold text-[var(--text)]">
+            <UserCheck className="w-3.5 h-3.5 text-rose-600" />
+            المحقق المسؤول: {item.reviewedBy}
           </span>
         </div>
       </div>
@@ -148,63 +147,67 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
           </section>
 
           {/* Forensic Evidence Breakdown */}
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <h2 className="text-lg font-black flex items-center gap-2 mb-4 pb-3 border-b border-[var(--border)]">
-              <Cpu className="w-5 h-5 text-indigo-500" />
-              الأدلة الجنائية الرقمية وبراهين الفحص التقني
-            </h2>
-            <div className="space-y-3">
-              {item.evidences.map((ev, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] flex items-start gap-3"
-                >
+          {item.evidences && item.evidences.length > 0 && (
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <h2 className="text-lg font-black flex items-center gap-2 mb-4 pb-3 border-b border-[var(--border)]">
+                <Cpu className="w-5 h-5 text-indigo-500" />
+                الأدلة الجنائية الرقمية وبراهين الفحص التقني
+              </h2>
+              <div className="space-y-3">
+                {item.evidences.map((ev, idx) => (
                   <div
-                    className={`p-2 rounded-lg mt-0.5 ${
-                      ev.status === "debunked"
-                        ? "bg-red-500/10 text-red-600"
-                        : "bg-emerald-500/10 text-emerald-600"
-                    }`}
+                    key={idx}
+                    className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] flex items-start gap-3"
                   >
-                    <Search className="w-4 h-4" />
+                    <div
+                      className={`p-2 rounded-lg mt-0.5 ${
+                        ev.status === "debunked"
+                          ? "bg-red-500/10 text-red-600"
+                          : "bg-emerald-500/10 text-emerald-600"
+                      }`}
+                    >
+                      <Search className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                        {ev.tool}
+                      </span>
+                      <p className="text-sm font-semibold text-[var(--text)] mt-1">{ev.finding}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                      {ev.tool}
-                    </span>
-                    <p className="text-sm font-semibold text-[var(--text)] mt-1">{ev.finding}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Official Sources & Verification Links */}
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <h2 className="text-lg font-black flex items-center gap-2 mb-4 pb-3 border-b border-[var(--border)]">
-              <FileCheck2 className="w-5 h-5 text-emerald-600" />
-              المصادر والوثائق الرسمية التي بني عليها الحكم
-            </h2>
-            <div className="space-y-2">
-              {item.officialSources.map((src, idx) => (
-                <a
-                  key={idx}
-                  href={src.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--primary)] transition-colors group"
-                >
-                  <div className="min-w-0">
-                    <span className="text-sm font-bold block text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
-                      {src.name}
-                    </span>
-                    <span className="text-xs text-[var(--text-muted)]">تاريخ الإفادة: {src.date}</span>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors shrink-0" />
-                </a>
-              ))}
-            </div>
-          </section>
+          {item.officialSources && item.officialSources.length > 0 && (
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <h2 className="text-lg font-black flex items-center gap-2 mb-4 pb-3 border-b border-[var(--border)]">
+                <FileCheck2 className="w-5 h-5 text-emerald-600" />
+                المصادر والوثائق الرسمية التي بني عليها الحكم
+              </h2>
+              <div className="space-y-2">
+                {item.officialSources.map((src, idx) => (
+                  <a
+                    key={idx}
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--primary)] transition-colors group"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-sm font-bold block text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+                        {src.name}
+                      </span>
+                      <span className="text-xs text-[var(--text-muted)]">تاريخ الإفادة: {src.date}</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Sidebar Info & Action */}
@@ -220,51 +223,30 @@ export default async function FactCheckDetailPage({ params }: FactCheckDetailPro
             </p>
           </div>
 
-          {/* Share & Debunk Spread */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
-            <h3 className="font-black text-sm mb-3 text-[var(--text)] flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-[var(--primary)]" />
-              ساهم في إيقاف انتشار الشائعة
+          {/* Proof Attribution Box */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 text-sm">
+            <h3 className="font-bold text-xs text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
+              <FileCheck2 className="w-4 h-4" />
+              سند الإثبات المعتمد
             </h3>
-            <p className="text-xs text-[var(--text-muted)] mb-4 leading-relaxed">
-              شارك هذا الرابط الموثق في المجموعات أو المنصات التي تداولت الادعاء لتصحيح المعلومة وحماية الجمهور.
+            <p className="text-xs text-[var(--text)] font-medium leading-relaxed">
+              {item.sourceProof}
             </p>
-            <button
-              onClick={() => {}}
-              className="w-full py-2.5 px-4 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <Share2 className="w-4 h-4" />
-              نسخ رابط التحقق والمشاركة
-            </button>
           </div>
 
-          {/* Report Related Rumor */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
-            <h3 className="font-black text-sm mb-2 text-[var(--text)] flex items-center gap-2">
-              <Flag className="w-4 h-4 text-red-500" />
-              هل شاهدت انتشاراً جديداً لهذا الادعاء؟
-            </h3>
-            <p className="text-xs text-[var(--text-muted)] mb-3 leading-relaxed">
-              أرسل رابط المنشور أو الصورة المرفقة لمساعدة فريق المرصد في تحديث نطاق الرصد.
+          {/* Reviewer Bio Card */}
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 text-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] mb-2">
+              <UserCheck className="w-4 h-4 text-[var(--primary)]" />
+              المحقق المعتمد للتقرير:
+            </div>
+            <p className="font-bold text-sm text-[var(--text)]">{item.reviewedBy}</p>
+            <p className="text-[11px] text-[var(--text-muted)] mt-1">
+              عضو معتمد في غرفة التحقق الاستقصائي ومكافحة التضليل بمرصد الوطن اليوم.
             </p>
-            <form className="space-y-2">
-              <input
-                type="text"
-                placeholder="رابط المنشور أو القناة..."
-                className="w-full text-xs px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
-              />
-              <button
-                type="button"
-                className="w-full py-2 px-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--border)] text-xs font-bold text-[var(--text)] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Send className="w-3.5 h-3.5 text-[var(--primary)]" />
-                إرسال الإفادة
-              </button>
-            </form>
           </div>
         </aside>
       </div>
     </div>
   );
 }
-

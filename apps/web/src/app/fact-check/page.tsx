@@ -1,14 +1,18 @@
 import Link from "next/link";
-import { ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Search, Filter, Sparkles, ArrowLeft, Send, Check } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, AlertTriangle, Filter, Sparkles, ArrowLeft, UserCheck } from "lucide-react";
 import { Metadata } from "next";
-import { FACT_CHECKS, FactCheckItem } from "@/data/factChecks";
+import { getFactChecks } from "@/lib/dal";
 
 export const metadata: Metadata = {
   title: "رادار الحقيقة · مرصد مكافحة الشائعات والتضليل — الوطن اليوم",
   description: "المرصد الرقمي المعتمد لكشف الأخبار المضللة، الصور المزيفة والمولدة بالذكاء الاصطناعي، وتقديم الأدلة والبراهين الموثقة.",
 };
 
-export default function FactCheckIndexPage() {
+export const revalidate = 60;
+
+export default async function FactCheckIndexPage() {
+  const items = await getFactChecks();
+
   return (
     <div className="container-custom py-10 max-w-5xl mx-auto space-y-10">
       {/* الترويسة الرئيسية للمرصد */}
@@ -37,7 +41,7 @@ export default function FactCheckIndexPage() {
           <div className="shrink-0 flex flex-col gap-2">
             <div className="px-5 py-3 rounded-xl bg-rose-600 text-white text-xs font-bold text-center shadow-md">
               <ShieldAlert className="w-5 h-5 mx-auto mb-1" />
-              <span>أكثر من 340 شائعة تم دحضها بالأدلة</span>
+              <span>سجل التحقيقات المعتمدة ({items.length} تقارير)</span>
             </div>
           </div>
         </div>
@@ -84,13 +88,13 @@ export default function FactCheckIndexPage() {
           <h2 className="text-xl font-bold text-[var(--text)]">
             أحدث التحقيقات وتقارير دحض الشائعات
           </h2>
-          <span className="text-xs text-[var(--text-muted)]">
-            مرتبة حسب الأحدث
+          <span className="text-xs text-[var(--text-muted)] font-mono">
+            {items.length} مواد مفحوصة وموثقة
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {FACT_CHECKS.map((item) => (
+          {items.map((item) => (
             <article
               key={item.id}
               className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 hover:border-rose-500/40 hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-4"
@@ -118,7 +122,7 @@ export default function FactCheckIndexPage() {
                 </div>
 
                 <h3 className="font-bold text-base md:text-lg text-[var(--text)] group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors leading-snug">
-                  <Link href={`/fact-check/${item.id}`}>
+                  <Link href={`/fact-check/${item.slug || item.id}`}>
                     «{item.claim}»
                   </Link>
                 </h3>
@@ -129,16 +133,17 @@ export default function FactCheckIndexPage() {
               </div>
 
               <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-[var(--text-muted)] truncate max-w-[200px]">
-                  الإثبات: {item.sourceProof}
+                <span className="text-[11px] text-[var(--text-muted)] flex items-center gap-1 truncate max-w-[220px]">
+                  <UserCheck className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  {item.reviewedBy}
                 </span>
 
                 <Link
-                  href={`/fact-check/${item.id}`}
+                  href={`/fact-check/${item.slug || item.id}`}
                   className="font-bold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 shrink-0"
                 >
                   <span>تقرير التحقق الكامل</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
                 </Link>
               </div>
             </article>

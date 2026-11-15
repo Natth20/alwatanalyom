@@ -112,3 +112,13 @@ export const SubmitNewsTipSchema = z.object({
 
 export type SubmitNewsTip = z.infer<typeof SubmitNewsTipSchema>;
 
+/**
+ * مخطط استعلام «اسأل الوطن» من الأرشيف الصحفي
+ */
+export const AskQuestionSchema = z.object({
+  question: z.string().min(2, "السؤال قصير جداً").max(400, "السؤال طويل جداً"),
+});
+
+export type AskQuestion = z.infer<typeof AskQuestionSchema>;
+
+

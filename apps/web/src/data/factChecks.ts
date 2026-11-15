@@ -6,6 +6,7 @@ export interface FactCheckEvidence {
 
 export interface FactCheckItem {
   id: string;
+  slug?: string;
   claim: string;
   claimSource: string;
   verdict: "fake" | "misleading" | "out-of-context" | "verified";
@@ -17,12 +18,13 @@ export interface FactCheckItem {
   evidences: FactCheckEvidence[];
   category: string;
   date: string;
-  views: number;
+  reviewedBy: string;
 }
 
 export const FACT_CHECKS: FactCheckItem[] = [
   {
     id: "fc-1",
+    slug: "crossings-agreement-claim",
     claim: "مزاعم متداولة عن اتفاق وشيك لفتح دائم لكافة المعابر دون قيود أمنية",
     claimSource: "مجموعات ومنصات تواصل اجتماعي غير موثقة وتطبيقات مراسلة فورية",
     verdict: "misleading",
@@ -40,10 +42,11 @@ export const FACT_CHECKS: FactCheckItem[] = [
     ],
     category: "سياسة ومعابر",
     date: "اليوم 14:30",
-    views: 14200,
+    reviewedBy: "أحمد منصور — وحدة التحقق والتدقيق الميداني",
   },
   {
     id: "fc-2",
+    slug: "jerusalem-power-plant-ai-image",
     claim: "صورة متداولة على وسائل التواصل تزعم اندلاع حريق هائل بمحطة كهرباء رئيسية بالقدس",
     claimSource: "منشورات عبر منصة X وتلغرام",
     verdict: "fake",
@@ -61,16 +64,17 @@ export const FACT_CHECKS: FactCheckItem[] = [
     ],
     category: "ميداني وتقني",
     date: "أمس 20:15",
-    views: 28500,
+    reviewedBy: "م. رامي حداد — مهندس التحليل الجنائي للوسائط المتعددة",
   },
   {
     id: "fc-3",
+    slug: "gaza-coast-bombardment-old-video",
     claim: "مقطع فيديو يزعم تنفيذ قصف بحري واسع النطاق على سواحل غزة الليلة الماضية",
     claimSource: "قنوات تلغرام مجهولة وحسابات تيك توك",
     verdict: "out-of-context",
     verdictLabel: "قديم وخارج السياق الزمني",
     summary: "الفيديو المتداول صحيح في أصله لكنه قديم ويعود لتصعيد مايو 2021، وتمت إعادة نشره اليوم بهدف الترويع وإثارة الذعر في صفوف المواطنين.",
-    fullAnalysis: "حقق مقطع فيديو يُظهر إطلاق قذائف مضيئة وضربات بحرية على الشاطئ أكثر من نصف مليون مشاهدة خلال ساعات. عبر تجزئة الفيديو إلى إطارات ثابتة وإجراء بحث عكسي على محركات Google Images وYandex، عثر الفريق على نفس المقطع منشوراً بتاريخ 14 مايو 2021 خلال التصعيد على قطاع غزة. يعاد تدوير المقطع دورياً مع كل توتر ميداني لجلب التفاعل والمشاهدات.",
+    fullAnalysis: "حقق مقطع فيديو يُظهر إطلاق قذائف مضيئة وضربات بحرية على الشاطئ انتشاراً سريعاً. عبر تجزئة الفيديو إلى إطارات ثابتة وإجراء بحث عكسي على محركات Google Images وYandex، عثر الفريق على نفس المقطع منشوراً بتاريخ 14 مايو 2021 خلال التصعيد على قطاع غزة. يعاد تدوير المقطع دورياً مع كل توتر ميداني لجلب التفاعل والمشاهدات.",
     sourceProof: "البحث العكسي عن الإطارات المصورة (Reverse Video Search)",
     officialSources: [
       { name: "أرشيف وكالة الأنباء والمعلومات الفلسطينية وفا (مايو 2021)", url: "https://wafa.ps", date: "14 مايو 2021" },
@@ -81,10 +85,11 @@ export const FACT_CHECKS: FactCheckItem[] = [
     ],
     category: "فيديو وتوثيق",
     date: "28 أكتوبر 2026",
-    views: 19800,
+    reviewedBy: "سارة النجار — محققة المصادر المفتوحة (OSINT)",
   },
   {
     id: "fc-4",
+    slug: "ministry-of-finance-salaries-fake-letter",
     claim: "وثيقة مزعومة منسوبة لوزارة المالية حول نسب صرف رواتب الموظفين الحكوميين",
     claimSource: "مجموعات واتساب وصفحات فيسبوك عامة",
     verdict: "fake",
@@ -101,7 +106,7 @@ export const FACT_CHECKS: FactCheckItem[] = [
     ],
     category: "اقتصاد وإدارة",
     date: "28 أكتوبر 2026",
-    views: 31200,
+    reviewedBy: "خليل القواسمي — محرر الشؤون الاقتصادية والسياسات العامة",
   },
 ];
 

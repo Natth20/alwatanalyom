@@ -15,6 +15,7 @@ import {
   Download,
   Users2,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { PODCAST_EPISODES, PodcastEpisode, PodcastDialogueLine } from "@/data/podcast";
 
@@ -80,15 +81,21 @@ export default function PodcastPage() {
     <div className="container-custom py-8 max-w-4xl">
       {/* Header */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 mb-8 text-center relative overflow-hidden shadow-sm">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)] mb-3">
-          <Headphones className="w-3.5 h-3.5 text-indigo-500" />
-          استوديو الوطن الصوتي · بودكاست الحوار الثنائي
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)]">
+            <Headphones className="w-3.5 h-3.5" />
+            استوديو الوطن الصوتي · بودكاست الحوار الثنائي
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 border border-amber-500/30">
+            DEMO · موجز توليدي تجريبي
+          </span>
         </div>
-        <h1 className="text-2xl md:text-4xl font-black mb-3">
+
+        <h1 className="text-2xl md:text-4xl font-black mb-3 text-[var(--text)]">
           بودكاست «حوار الوطن»
         </h1>
         <p className="text-sm md:text-base text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">
-          حوار يومي مركز في 4 دقائق بين مذيعي الاستوديو الافتراضي (نور وأحمد)، يحلل ما وراء أخبار اليوم بعيداً عن صخب الشائعات.
+          حوار يومي مركز في 4 دقائق بين مذيعي الاستوديو الافتراضي (نور وأحمد)، يحلل ما وراء أخبار اليوم بالاستناد إلى تقارير المنصة المعتمدة.
         </p>
 
         {/* Hosts Visual Badges */}
@@ -158,25 +165,30 @@ export default function PodcastPage() {
           </div>
 
           {/* Dynamic Waveform Visualizer */}
-          <div className="flex items-center gap-1 h-8 flex-1 max-w-xs justify-center">
-            {[40, 70, 30, 90, 60, 100, 45, 80, 55, 95, 35, 75].map((h, i) => (
+          <div className="flex-1 max-w-xs flex items-center justify-center gap-1 h-8">
+            {Array.from({ length: 24 }).map((_, i) => (
               <span
                 key={i}
-                style={{ height: isPlaying ? `${h}%` : "20%" }}
                 className={`w-1 rounded-full transition-all duration-300 ${
-                  isPlaying ? "bg-[var(--primary)]" : "bg-[var(--border)]"
+                  isPlaying
+                    ? "bg-[var(--primary)] animate-pulse"
+                    : "bg-[var(--border)] h-2"
                 }`}
+                style={{
+                  height: isPlaying ? `${Math.max(20, (Math.sin(i + activeLineIdx) + 1.2) * 50)}%` : "20%",
+                  animationDelay: `${i * 45}ms`,
+                }}
               />
             ))}
           </div>
 
           {/* Speed & Share */}
-          <div className="flex items-center gap-2 text-xs font-bold">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setPlaybackSpeed((s) => (s === 1 ? 1.25 : s === 1.25 ? 1.5 : 1))}
-              className="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--primary)] transition-colors cursor-pointer"
+              className="text-xs font-bold px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--primary)] transition-colors cursor-pointer"
             >
-              {playbackSpeed}x السرعة
+              {playbackSpeed}x
             </button>
             <button
               onClick={handleShare}
@@ -188,53 +200,77 @@ export default function PodcastPage() {
           </div>
         </div>
 
-        {/* Live Dialogue Transcript */}
-        <div className="mt-8 space-y-4">
-          <h3 className="text-sm font-black text-[var(--text)] flex items-center gap-2 pb-2 border-b border-[var(--border)]">
-            <Users2 className="w-4 h-4 text-[var(--primary)]" />
-            النص الحواري المتزامن للحلقة
-          </h3>
+        {/* Live Synchronized Transcript */}
+        <div className="mt-6 pt-6 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-bold text-[var(--text-muted)] flex items-center gap-1.5">
+              <Volume2 className="w-3.5 h-3.5 text-[var(--primary)]" />
+              النص التزامني للحوار الصوتي:
+            </span>
+            <span className="text-[11px] font-mono text-[var(--text-muted)]">
+              الجملة {activeLineIdx + 1} من {episode.dialogue.length}
+            </span>
+          </div>
 
           <div className="space-y-3">
             {episode.dialogue.map((line, idx) => {
               const isActive = idx === activeLineIdx;
-              const isFemale = line.speaker.includes("نور");
+              const isNour = line.speaker.includes("نور");
 
               return (
                 <div
                   key={idx}
-                  onClick={() => setActiveLineIdx(idx)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 ${
+                  onClick={() => {
+                    setActiveLineIdx(idx);
+                    if (isPlaying) {
+                      window.speechSynthesis?.cancel();
+                      const utterance = new SpeechSynthesisUtterance(line.text);
+                      utterance.lang = "ar-SA";
+                      utterance.rate = isNour ? 1.05 * playbackSpeed : 0.95 * playbackSpeed;
+                      utterance.pitch = isNour ? 1.2 : 0.85;
+                      window.speechSynthesis?.speak(utterance);
+                    }
+                  }}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
                     isActive
-                      ? "bg-[var(--bg)] border-[var(--primary)] shadow-sm scale-[1.01]"
-                      : "bg-[var(--surface)] border-[var(--border)] opacity-70 hover:opacity-100"
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5 shadow-sm"
+                      : "border-[var(--border)] bg-[var(--bg)]/50 opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <span className="text-2xl shrink-0 mt-0.5">{line.avatar}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span
-                        className={`text-xs font-black ${
-                          isFemale ? "text-pink-600 dark:text-pink-400" : "text-blue-600 dark:text-blue-400"
-                        }`}
-                      >
-                        {line.speaker}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span
+                      className={`text-xs font-black px-2 py-0.5 rounded-md ${
+                        isNour
+                          ? "bg-pink-500/10 text-pink-600"
+                          : "bg-blue-500/10 text-blue-600"
+                      }`}
+                    >
+                      {line.speaker}
+                    </span>
+                    {isActive && isPlaying && (
+                      <span className="text-[10px] text-[var(--primary)] font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-ping" />
+                        يتحدث الآن...
                       </span>
-                      <span className="text-[10px] text-[var(--text-muted)] font-mono">
-                        {line.timestamp}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[var(--text)] leading-relaxed font-medium">
-                      {line.text}
-                    </p>
+                    )}
                   </div>
+                  <p className="text-sm text-[var(--text)] leading-relaxed font-medium">
+                    {line.text}
+                  </p>
                 </div>
               );
             })}
           </div>
         </div>
+
+        {/* Disclaimer per Rule 6 & 8 */}
+        <div className="mt-6 p-3.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-start gap-2.5 text-xs text-[var(--text-muted)]">
+          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong>شفافية المحتوى التوليدي (AI Audio):</strong> هذا البودكاست الافتراضي يستخدم خوارزميات توليد النطق الصوتي لقراءة نصوص صحفية موثقة ومراجعة تحريرياً من قبل فريق تحرير «الوطن اليوم».
+          </p>
+        </div>
       </div>
     </div>
   );
 }
-

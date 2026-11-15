@@ -1,6 +1,7 @@
 import { prisma } from "@awt/db";
 import { ArticleCard, StorySummary, InstrumentQuote, InstrumentDetail, ChannelCard, isMockDataAllowed } from "@awt/shared";
 import { searchClient } from "@awt/search";
+import { FACT_CHECKS, FactCheckItem } from "@/data/factChecks";
 import {
   MOCK_BREAKING,
   MOCK_QUOTES,
@@ -1347,5 +1348,338 @@ export async function getGlobalRssArticles(limit = 50) {
     return [];
   }
 }
+
+/**
+ * =========================================================================
+ * المرحلة السابعة: الميزات التفاعلية والذكاء التحريري (Editorial Intelligence)
+ * =========================================================================
+ */
+
+/**
+ * جلب تقارير مرصد رادار الحقيقة ومكافحة الشائعات
+ */
+export async function getFactChecks(): Promise<FactCheckItem[]> {
+  try {
+    const records = await prisma.factCheck.findMany({
+      orderBy: { publishedAt: "desc" },
+      include: { reviewedBy: true },
+    });
+
+    if (records.length > 0) {
+      return records.map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        claim: r.claim,
+        claimSource: r.claimSource,
+        verdict: r.verdict as any,
+        verdictLabel: r.verdictLabel,
+        summary: r.summary,
+        fullAnalysis: r.fullAnalysis,
+        sourceProof: r.sourceProof || "فحص تقني معتمد · مرصد رادار الحقيقة",
+        officialSources: (r.officialSources as any) || [],
+        evidences: (r.evidences as any) || [],
+        category: "تحقق استقصائي",
+        date: r.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }),
+        reviewedBy: r.reviewedBy?.name || "فريق التحقق والتدقيق الصحفي — الوطن اليوم",
+      }));
+    }
+
+    return isMockDataAllowed() ? FACT_CHECKS : [];
+  } catch (error) {
+    console.warn("Failed to fetch fact checks from database, using fallback:", error);
+    return isMockDataAllowed() ? FACT_CHECKS : [];
+  }
+}
+
+/**
+ * جلب تفاصيل تقرير تحقق مفرد بالمعرف أو المعرف اللطيف
+ */
+export async function getFactCheckBySlug(slug: string): Promise<FactCheckItem | null> {
+  try {
+    const record = await prisma.factCheck.findFirst({
+      where: {
+        OR: [{ slug }, { id: slug }],
+      },
+      include: { reviewedBy: true },
+    });
+
+    if (record) {
+      return {
+        id: record.id,
+        slug: record.slug,
+        claim: record.claim,
+        claimSource: record.claimSource,
+        verdict: record.verdict as any,
+        verdictLabel: record.verdictLabel,
+        summary: record.summary,
+        fullAnalysis: record.fullAnalysis,
+        sourceProof: record.sourceProof || "فحص تقني معتمد · مرصد رادار الحقيقة",
+        officialSources: (record.officialSources as any) || [],
+        evidences: (record.evidences as any) || [],
+        category: "تحقق استقصائي",
+        date: record.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }),
+        reviewedBy: record.reviewedBy?.name || "فريق التحقق والتدقيق الصحفي — الوطن اليوم",
+      };
+    }
+
+    if (isMockDataAllowed()) {
+      return FACT_CHECKS.find((f) => f.id === slug || f.slug === slug) || null;
+    }
+    return null;
+  } catch (error) {
+    console.warn(`Failed to fetch fact check ${slug} from DB:`, error);
+    if (isMockDataAllowed()) {
+      return FACT_CHECKS.find((f) => f.id === slug || f.slug === slug) || null;
+    }
+    return null;
+  }
+}
+
+/**
+ * جلب التغطيات الإخبارية المنشورة المرتبطة بمدينة أو قضاء في أطلس فلسطين
+ */
+export async function getArticlesByDistrictOrCity(placeName: string, limit = 6): Promise<ArticleCard[]> {
+  try {
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { titleAr: { contains: placeName, mode: "insensitive" } },
+          { summaryAr: { contains: placeName, mode: "insensitive" } },
+          { tags: { some: { tag: { nameAr: { contains: placeName } } } } },
+        ],
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
+    });
+
+    return articles.map((a) => ({
+      id: a.id,
+      slug: a.slug,
+      titleAr: a.titleAr,
+      titleOriginal: a.titleOriginal,
+      summaryAr: a.summaryAr,
+      kind: a.kind as any,
+      publishedAt: a.publishedAt?.toISOString() || new Date().toISOString(),
+      sourcePublishedAt: a.sourcePublishedAt?.toISOString(),
+      displayPolicy: a.displayPolicy as any,
+      isBreaking: a.isBreaking,
+      sectionSlug: a.section.slug,
+      sectionNameAr: a.section.nameAr,
+      source: a.source
+        ? {
+            id: a.source.id,
+            slug: a.source.slug,
+            nameAr: a.source.nameAr,
+            logoUrl: a.source.logoUrl,
+            homepageUrl: a.source.homepageUrl,
+          }
+        : null,
+    }));
+  } catch (error) {
+    console.warn(`Failed to fetch articles for place ${placeName}:`, error);
+    return [];
+  }
+}
+
+/**
+ * واجهة نتيجة البحث والاستعلام في الأرشيف الصحفي لـ «اسأل الوطن»
+ */
+export interface AskNewsroomResponse {
+  answered: boolean;
+  answer: string;
+  sources: { title: string; url: string; date: string }[];
+  suggestedTopics?: string[];
+  disclaimer: string;
+}
+
+/**
+ * معالجة استعلام «اسأل الوطن» استناداً حصرياً إلى الأرشيف المنشور (قواعد القسم 2 و11)
+ */
+export async function queryAskNewsroom(question: string): Promise<AskNewsroomResponse> {
+  const trimmed = question.trim();
+  if (!trimmed || trimmed.length < 3) {
+    return {
+      answered: false,
+      answer: "يرجى كتابة سؤال محدد للبحث في أرشيف الأخبار والتحقيقات الصحفية.",
+      sources: [],
+      disclaimer: "الإجابات مستمدة حصراً من المواد المنشورة والموثقة في سجلات المنصة.",
+    };
+  }
+
+  // تنظيف السؤال من كلمات الاستفهام الشائعة لاستخلاص الكلمات الدلالية الأساسية
+  const stopWords = new Set([
+    "ما", "ماذا", "من", "هل", "أين", "كيف", "متى", "لماذا", "كم", "أي",
+    "عن", "في", "على", "إلى", "مع", "هذا", "هذه", "ذلك", "تلك", "هو",
+    "هي", "هم", "كان", "كانت", "أو", "ثم", "بل", "لكن", "كل", "جميع",
+    "حول", "بشأن", "بخصوص", "أبرز", "حقيقة", "تفاصيل", "لخص", "لي"
+  ]);
+
+  const tokens = trimmed
+    .replace(/[؟?.,!،;:()\[\]"']/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !stopWords.has(w));
+
+  const searchKeyword = tokens.slice(0, 3).join(" ") || trimmed;
+
+  try {
+    // 1. البحث في المقالات المنشورة
+    const matchingArticles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: tokens.length > 0
+          ? tokens.map((token) => ({
+              OR: [
+                { titleAr: { contains: token, mode: "insensitive" } },
+                { summaryAr: { contains: token, mode: "insensitive" } },
+              ],
+            }))
+          : [{ titleAr: { contains: trimmed, mode: "insensitive" } }],
+      },
+      include: {
+        section: true,
+        source: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+    });
+
+    // 2. البحث في تقارير مرصد رادار الحقيقة
+    const matchingFactChecks = await prisma.factCheck.findMany({
+      where: {
+        OR: tokens.length > 0
+          ? tokens.map((token) => ({
+              OR: [
+                { claim: { contains: token, mode: "insensitive" } },
+                { summary: { contains: token, mode: "insensitive" } },
+              ],
+            }))
+          : [{ claim: { contains: trimmed, mode: "insensitive" } }],
+      },
+      take: 2,
+    });
+
+    const sources: { title: string; url: string; date: string }[] = [];
+
+    matchingArticles.forEach((a) => {
+      sources.push({
+        title: a.titleAr,
+        url: a.sourceUrl && a.displayPolicy === "TITLE_ONLY" ? a.sourceUrl : `/article/${a.slug}`,
+        date: a.publishedAt ? a.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "منشور",
+      });
+    });
+
+    matchingFactChecks.forEach((fc) => {
+      sources.push({
+        title: `مرصد الحقيقة: ${fc.claim}`,
+        url: `/fact-check/${fc.slug}`,
+        date: fc.publishedAt ? fc.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "تحقيق معتمد",
+      });
+    });
+
+    // إذا لم نجد أي مادة في قاعدة البيانات، نتحقق من البيانات التجريبية المصرح بها فقط عند السماح بالـ Mock
+    if (sources.length === 0 && isMockDataAllowed()) {
+      // فحص بيانات مرصد الحقيقة التجريبية الموثقة
+      const fallbackFactChecks = FACT_CHECKS.filter((fc) =>
+        tokens.some((t) => fc.claim.includes(t) || fc.summary.includes(t) || fc.category.includes(t))
+      );
+
+      if (fallbackFactChecks.length > 0) {
+        const top = fallbackFactChecks[0];
+        return {
+          answered: true,
+          answer: `استناداً إلى تحقيقات مرصد «رادار الحقيقة» المنشورة: ${top.summary} حكم المرصد: (${top.verdictLabel}) استناداً إلى: ${top.sourceProof}.`,
+          sources: [
+            { title: top.claim, url: `/fact-check/${top.id}`, date: top.date },
+            ...top.officialSources.slice(0, 2).map((s) => ({ title: s.name, url: s.url, date: s.date })),
+          ],
+          disclaimer: "مستخرج آلياً بالاعتماد حصراً على تحقيقات مرصد الحقيقة والمصادر الموثقة.",
+        };
+      }
+    }
+
+    if (sources.length === 0) {
+      return {
+        answered: false,
+        answer: "لم نجد تغطية كافية لهذا السؤال في أرشيف «الوطن اليوم» حتى الآن. التزاماً بقواعد النزاهة التحريرية، نمتنع عن تقديم إجابات غير مستندة إلى مواد موثقة ومنشورة في سجلاتنا.",
+        sources: [],
+        suggestedTopics: ["فلسطين", "المساعدات الإنسانية", "الاقتصاد", "القدس الشريف", "رادار الحقيقة"],
+        disclaimer: "نحرص على صفر اختلاق: إما مواد حقيقية بمصادرها، أو إعلان عدم توفر التغطية.",
+      };
+    }
+
+    // صياغة خلاصة الإجابة من المواد المنشورة المعتمدة
+    const primaryTitle = matchingArticles[0]?.titleAr || matchingFactChecks[0]?.claim;
+    const primarySummary = matchingArticles[0]?.summaryAr || matchingFactChecks[0]?.summary;
+    const sourceName = matchingArticles[0]?.source?.nameAr || "أرشيف الوطن اليوم";
+
+    const answer = `بناءً على التغطية المنشورة في «الوطن اليوم» نقلاً عن (${sourceName}): ${primarySummary || primaryTitle}. يمكنك الاطلاع على التفاصيل الكاملة عبر الروابط الموثقة أدناه.`;
+
+    return {
+      answered: true,
+      answer,
+      sources: sources.slice(0, 3),
+      disclaimer: "مستخلص من الأرشيف المنشور ومصادر الأخبار المعتمدة فقط دون أي إضافات توليدية غير موثقة.",
+    };
+  } catch (error) {
+    console.error("AskNewsroom error:", error);
+    return {
+      answered: false,
+      answer: "حدث خطأ أثناء فحص الأرشيف الإخباري. يرجى المحاولة لاحقاً.",
+      sources: [],
+      disclaimer: "نظام الاستعلام الصحفي الموثق.",
+    };
+  }
+}
+
+/**
+ * جلب تجمعات القصص الإخبارية المتعددة المصادر (Story Clusters)
+ */
+export async function getStoryClusters(limit = 6) {
+  try {
+    const stories = await prisma.story.findMany({
+      include: {
+        section: true,
+        articles: {
+          where: { status: "PUBLISHED" },
+          include: { source: true, section: true },
+          orderBy: { publishedAt: "asc" },
+        },
+      },
+      orderBy: { lastUpdatedAt: "desc" },
+      take: limit,
+    });
+
+    return stories.map((s) => ({
+      id: s.id,
+      slug: s.slug,
+      headlineAr: s.headlineAr,
+      summaryAr: s.summaryAr,
+      importance: s.importance,
+      trendingScore: s.trendingScore,
+      firstSeenAt: s.firstSeenAt.toISOString(),
+      lastUpdatedAt: s.lastUpdatedAt.toISOString(),
+      section: s.section ? { slug: s.section.slug, nameAr: s.section.nameAr } : null,
+      sourcesCount: new Set(s.articles.map((a) => a.sourceId).filter(Boolean)).size,
+      articlesCount: s.articles.length,
+      timeline: s.articles.map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        publishedAt: a.publishedAt?.toISOString() || "",
+        sourceNameAr: a.source?.nameAr || "مراسل الوطن",
+        sourceUrl: a.sourceUrl,
+      })),
+    }));
+  } catch (error) {
+    console.warn("Failed to fetch story clusters from DB:", error);
+    return [];
+  }
+}
+
 
 

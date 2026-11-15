@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Map,
@@ -14,14 +14,42 @@ import {
   Share2,
   BookOpen,
   ArrowRight,
+  Radio,
+  ExternalLink,
+  Newspaper,
 } from "lucide-react";
 import { PLACES, DISTRICTS, PalestinianPlace } from "@/data/atlas";
+import { ArticleCard } from "@awt/shared";
 
 export default function AtlasPage() {
   const [search, setSearch] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("الكل");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "depopulated_1948" | "surviving" | "camp">("all");
   const [activePlace, setActivePlace] = useState<PalestinianPlace | null>(null);
+  const [placeArticles, setPlaceArticles] = useState<ArticleCard[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(false);
+
+  // Fetch live articles when a place is selected
+  useEffect(() => {
+    if (!activePlace) {
+      setPlaceArticles([]);
+      return;
+    }
+
+    setLoadingArticles(true);
+    const searchTarget = activePlace.district || activePlace.name.split("—")[0].trim();
+    fetch(`/api/v1/atlas/articles?place=${encodeURIComponent(searchTarget)}&limit=4`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok && Array.isArray(data.articles)) {
+          setPlaceArticles(data.articles);
+        } else {
+          setPlaceArticles([]);
+        }
+      })
+      .catch(() => setPlaceArticles([]))
+      .finally(() => setLoadingArticles(false));
+  }, [activePlace]);
 
   const filteredPlaces = PLACES.filter((place) => {
     const matchSearch =
@@ -41,13 +69,13 @@ export default function AtlasPage() {
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 mb-8 text-center relative overflow-hidden shadow-sm">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)] mb-3">
           <Map className="w-3.5 h-3.5" />
-          أطلس الهوية والجغرافيا · فلسطين التاريخية
+          أطلس الهوية والجغرافيا والتغطيات · فلسطين التاريخية
         </div>
-        <h1 className="text-2xl md:text-4xl font-black mb-3">
-          أطلس القرى والبلدات الفلسطينية
+        <h1 className="text-2xl md:text-4xl font-black mb-3 text-[var(--text)]">
+          أطلس القرى والبلدات والتغطيات الميدانية
         </h1>
         <p className="text-sm md:text-base text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
-          دليل رقمي تفاعلي لحفظ أسماء، معالم، وتاريخ القرى والمدن الفلسطينية؛ الصامدة منها والمهجرة عام 1948، لتبقى الجغرافيا حية في الذاكرة والوجدان.
+          دليل رقمي تفاعلي يجمع الذاكرة الجغرافية الصامدة والمهجرة عام 1948، ويربط كل محافظة وقضاء بآخر التغطيات الإخبارية المباشرة من مراسلي المنصة.
         </p>
 
         {/* Search Bar */}
@@ -57,7 +85,7 @@ export default function AtlasPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث بالاسم أو القضاء (مثال: دير ياسين، المنشية، القدس، الشجاعية)..."
+            placeholder="ابحث بالاسم أو القضاء (مثال: دير ياسين، القدس، يافا، جنين، غزة)..."
             className="w-full pr-12 pl-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm text-[var(--text)] focus:outline-none focus:border-[var(--primary)] shadow-sm"
           />
         </div>
@@ -88,7 +116,7 @@ export default function AtlasPage() {
                 : "bg-[var(--surface)] border border-[var(--border)] text-[var(--text)]"
             }`}
           >
-            مهجرة ومطهرة عام 1948
+            مهجرة عام 1948
           </button>
           <button
             onClick={() => setSelectedStatus("surviving")}
@@ -121,7 +149,7 @@ export default function AtlasPage() {
               onClick={() => setSelectedDistrict(d)}
               className={`px-3 py-1 rounded-lg shrink-0 transition-colors cursor-pointer ${
                 selectedDistrict === d
-                  ? "bg-[var(--text)] text-[var(--bg)] font-bold"
+                  ? "bg-[var(--primary)] text-white font-bold"
                   : "bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]"
               }`}
             >
@@ -198,7 +226,7 @@ export default function AtlasPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs font-bold text-[var(--primary)]">
-                <span>استعراض الذاكرة والوثائق الكاملة</span>
+                <span>التفاصيل والأخبار الجارية</span>
                 <ArrowRight className="w-4 h-4 rtl:rotate-180 group-hover:translate-x-[-3px] transition-transform" />
               </div>
             </div>
@@ -206,7 +234,7 @@ export default function AtlasPage() {
         ))}
       </div>
 
-      {/* Place Detail Modal */}
+      {/* Place Detail & Live Coverage Modal */}
       {activePlace && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative p-6 md:p-8">
@@ -218,7 +246,7 @@ export default function AtlasPage() {
             </button>
 
             <span className="text-xs font-bold text-[var(--primary)] block mb-1">
-              أطلس فلسطين التاريخية · قضاء {activePlace.district}
+              أطلس فلسطين · قضاء {activePlace.district}
             </span>
             <h2 className="text-2xl font-black text-[var(--text)] mb-3">{activePlace.name}</h2>
 
@@ -244,7 +272,8 @@ export default function AtlasPage() {
               />
             </div>
 
-            <div className="space-y-4 text-sm text-[var(--text)] leading-relaxed">
+            {/* Historical Documentation */}
+            <div className="space-y-4 text-sm text-[var(--text)] leading-relaxed mb-6">
               <div>
                 <h3 className="font-black text-base text-[var(--text)] mb-1 flex items-center gap-1.5">
                   <BookOpen className="w-4 h-4 text-[var(--primary)]" />
@@ -276,6 +305,47 @@ export default function AtlasPage() {
               </div>
             </div>
 
+            {/* Live News Coverage for this district */}
+            <div className="pt-4 border-t border-[var(--border)]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-red-600 animate-pulse" />
+                  التغطيات الإخبارية الجارية في قضاء {activePlace.district}
+                </h3>
+                <span className="text-[11px] text-[var(--text-muted)]">مباشر من الأرشيف</span>
+              </div>
+
+              {loadingArticles ? (
+                <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-xs text-[var(--text-muted)] text-center">
+                  جاري جلب آخر التقارير الميدانية المرتبطة بالمنطقة...
+                </div>
+              ) : placeArticles.length > 0 ? (
+                <div className="space-y-2">
+                  {placeArticles.map((art) => (
+                    <Link
+                      key={art.id}
+                      href={`/article/${art.slug}`}
+                      className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--primary)] transition-colors flex items-center justify-between gap-3 group"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold block text-[var(--text)] group-hover:text-[var(--primary)] truncate">
+                          {art.titleAr}
+                        </span>
+                        <span className="text-[10px] text-[var(--text-muted)]">
+                          {art.source?.nameAr || "مراسل الوطن"} · {new Date(art.publishedAt).toLocaleDateString("ar-EG")}
+                        </span>
+                      </div>
+                      <ExternalLink className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--primary)] shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-xs text-[var(--text-muted)] text-center">
+                  لا توجد تطورات ميدانية عاجلة مسجلة في هذا القضاء حالياً. تغطياتنا مستمرة على مدار الساعة.
+                </div>
+              )}
+            </div>
+
             <div className="mt-6 pt-4 border-t border-[var(--border)] flex justify-end">
               <button
                 onClick={() => setActivePlace(null)}
@@ -290,4 +360,3 @@ export default function AtlasPage() {
     </div>
   );
 }
-
