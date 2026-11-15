@@ -203,3 +203,4 @@ export function TodayMatchesWidget({ matches = DEFAULT_MATCHES }: Props) {
     </div>
   );
 }
+

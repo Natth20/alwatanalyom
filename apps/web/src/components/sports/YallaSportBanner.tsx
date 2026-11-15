@@ -95,3 +95,4 @@ export function YallaSportBanner({ variant = "leaderboard" }: Props) {
     </div>
   );
 }
+

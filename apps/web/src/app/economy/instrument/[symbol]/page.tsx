@@ -210,3 +210,4 @@ export default async function InstrumentPage({ params }: Props) {
     </div>
   );
 }
+
