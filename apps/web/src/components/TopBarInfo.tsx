@@ -50,49 +50,49 @@ export function TopBarInfo() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+      <div className="flex items-center gap-3 text-xs text-white/70">
         <span>المكان الرئيسي لجميع الأخبار بمصادرها الأصلية</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-[var(--text-muted)]">
+    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-white/85">
       {/* التاريخ الميلادي والهجري */}
       <div className="flex items-center gap-1.5 font-medium">
         <span>{gregorianStr}</span>
         {hijriStr && (
           <>
-            <span className="text-[var(--border)]">|</span>
-            <span className="text-[var(--text)] font-semibold">{hijriStr}</span>
+            <span className="text-white/20">|</span>
+            <span className="text-[var(--gold)] font-bold">{hijriStr}</span>
           </>
         )}
       </div>
 
-      <span className="hidden lg:inline text-[var(--border)]">•</span>
+      <span className="hidden lg:inline text-white/20">•</span>
 
       {/* نافذة مواقيت الصلاة في القدس وغزة */}
       <div className="relative hidden md:flex items-center gap-2">
         <button
           type="button"
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--surface)] text-[11px] font-semibold text-[var(--text)] hover:border-[var(--primary)] transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-white/20 bg-white/10 text-[11px] font-semibold text-white hover:border-[var(--gold)] transition-colors cursor-pointer"
         >
-          <Clock className="w-3 h-3 text-[var(--primary)]" />
+          <Clock className="w-3 h-3 text-[var(--gold)]" />
           <span>مواقيت الصلاة:</span>
-          <span className="text-[var(--primary)] font-bold">
+          <span className="text-[var(--gold)] font-bold">
             {selectedCity === "jerusalem" ? "القدس الشريف" : "غزة العزة"}
           </span>
-          <ChevronDown className="w-3 h-3 text-[var(--text-muted)]" />
+          <ChevronDown className="w-3 h-3 text-white/60" />
         </button>
 
         {/* أوقات الصلاة السريعة */}
-        <div className="hidden xl:flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
-          <span>الفجر: <strong className="text-[var(--text)]">{prayers.fajr}</strong></span>
-          <span>الظهر: <strong className="text-[var(--text)]">{prayers.dhuhr}</strong></span>
-          <span>العصر: <strong className="text-[var(--text)]">{prayers.asr}</strong></span>
-          <span>المغرب: <strong className="text-amber-500 font-bold">{prayers.maghrib}</strong></span>
-          <span>العشاء: <strong className="text-[var(--text)]">{prayers.isha}</strong></span>
+        <div className="hidden xl:flex items-center gap-2 text-[10px] text-white/75">
+          <span>الفجر: <strong className="text-white">{prayers.fajr}</strong></span>
+          <span>الظهر: <strong className="text-white">{prayers.dhuhr}</strong></span>
+          <span>العصر: <strong className="text-white">{prayers.asr}</strong></span>
+          <span>المغرب: <strong className="text-[var(--gold)] font-bold">{prayers.maghrib}</strong></span>
+          <span>العشاء: <strong className="text-white">{prayers.isha}</strong></span>
         </div>
 
         {/* قائمة اختيار المدينة */}

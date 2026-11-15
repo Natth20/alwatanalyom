@@ -271,7 +271,7 @@ export async function getSectionFeed(
       },
     });
 
-    if (!section) return isMockDataAllowed() ? getMockSectionFeed(sectionSlug, subSlug) : null;
+    if (!section) return (isMockDataAllowed() || process.env.NODE_ENV !== "production") ? getMockSectionFeed(sectionSlug, subSlug) : null;
 
     // جلب المقالات التابعة للقسم أو أقسامه الفرعية
     const sectionIds = [section.id, ...section.children.map((c) => c.id)];
@@ -335,8 +335,8 @@ export async function getSectionFeed(
       nextCursor,
     };
   } catch (error) {
-    console.error("Failed to load section feed:", error);
-    return isMockDataAllowed() ? getMockSectionFeed(sectionSlug, subSlug) : null;
+    console.warn("Database connection issue, falling back to local section feed:", (error as any)?.message || error);
+    return (isMockDataAllowed() || process.env.NODE_ENV !== "production") ? getMockSectionFeed(sectionSlug, subSlug) : null;
   }
 }
 
@@ -1036,7 +1036,7 @@ export async function getAidData() {
       verifiedPrograms: verifiedOfficialPrograms,
     };
   } catch (error) {
-    console.error("Failed to fetch aid data:", error);
+    console.warn("Database connection issue for aid data:", (error as any)?.message || error);
     return { articles: [], verifiedPrograms: [] };
   }
 }
@@ -1144,7 +1144,7 @@ export async function getJobsData() {
       verifiedJobs,
     };
   } catch (error) {
-    console.error("Failed to fetch jobs data:", error);
+    console.warn("Database connection issue for jobs data:", (error as any)?.message || error);
     return { articles: [], verifiedJobs: [] };
   }
 }
@@ -1186,7 +1186,7 @@ export async function getVideosData() {
       sourceNameAr: a.source?.nameAr || "الوطن اليوم",
     }));
   } catch (error) {
-    console.error("Failed to fetch videos data:", error);
+    console.warn("Database connection issue for videos data:", (error as any)?.message || error);
     return [];
   }
 }
@@ -1251,7 +1251,7 @@ export async function getTagFeed(tagSlug: string, limit = 20) {
       }),
     };
   } catch (error) {
-    console.error(`Failed to fetch tag feed for ${tagSlug}:`, error);
+    console.warn(`Database connection issue for tag feed ${tagSlug}:`, (error as any)?.message || error);
     return null;
   }
 }
@@ -1310,7 +1310,7 @@ export async function getAuthorFeed(authorSlug: string, limit = 20) {
       })),
     };
   } catch (error) {
-    console.error(`Failed to fetch author feed for ${authorSlug}:`, error);
+    console.warn(`Database connection issue for author feed ${authorSlug}:`, (error as any)?.message || error);
     return null;
   }
 }

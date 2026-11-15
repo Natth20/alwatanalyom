@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, Command } from "lucide-react";
 
 export function SearchTrigger() {
   const handleClick = () => {
@@ -11,14 +11,16 @@ export function SearchTrigger() {
     <button
       type="button"
       onClick={handleClick}
-      className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--text)] flex items-center gap-2 bg-[var(--surface)] transition-colors cursor-pointer select-none"
+      className="w-full px-4 py-2 rounded-xl border border-[var(--border)] text-xs text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--text)] flex items-center justify-between bg-[var(--surface)] transition-all cursor-pointer shadow-xs group"
+      aria-label="ابحث في الأخبار والتحقيقات"
     >
-      <Search className="w-3.5 h-3.5 text-[var(--primary)]" />
-      <span>بحث فوري في الأخبار...</span>
-      <kbd className="text-[10px] bg-[var(--bg)] px-1.5 py-0.5 rounded border border-[var(--border)] font-mono">
-        Ctrl+K
+      <div className="flex items-center gap-2">
+        <Search className="w-3.5 h-3.5 text-[var(--gold)] group-hover:scale-110 transition-transform" />
+        <span className="font-medium">ابحث في الأخبار والأرشيف الموثق...</span>
+      </div>
+      <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] bg-[var(--bg)] text-[var(--text-muted)] px-2 py-0.5 rounded-md border border-[var(--border)] font-mono">
+        <Command className="w-2.5 h-2.5" /> K
       </kbd>
     </button>
   );
 }
-

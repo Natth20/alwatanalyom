@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArticleCard } from "@awt/shared";
-import { ChevronLeft, Bell, BellOff } from "lucide-react";
+import { Flame, Volume2, VolumeX, ChevronRight, ChevronLeft, Clock, ShieldCheck } from "lucide-react";
 
 interface Props {
   articles: ArticleCard[];
@@ -48,21 +48,19 @@ export function BreakingBar({ articles: initialArticles }: Props) {
     try {
       localStorage.setItem("awt_breaking_sound", next.toString());
       if (next) {
-        // نغمة تجريبية فورية لتأكيد التفعيل
         playBreakingPing();
       }
     } catch {}
   };
 
   useEffect(() => {
-    // استطلاع دوري فوري لتحديث شريط الأخبار العاجلة كل 25 ثانية
+    // تحديث شريط الأخبار العاجلة دورياً كل 25 ثانية
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/api/v1/breaking");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.items) && data.items.length > 0) {
-            // التحقق من وجود خبر جديد لم يكن موجوداً
             const hasNew = data.items.some((item: ArticleCard) => !prevIdsRef.current.has(item.id));
             if (hasNew && soundEnabled) {
               playBreakingPing();
@@ -71,9 +69,7 @@ export function BreakingBar({ articles: initialArticles }: Props) {
             setArticles(data.items);
           }
         }
-      } catch {
-        // تجاهل أخطاء الشبكة المؤقتة
-      }
+      } catch {}
     }, 25000);
 
     return () => clearInterval(interval);
@@ -82,28 +78,36 @@ export function BreakingBar({ articles: initialArticles }: Props) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <div className="relative bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white text-sm font-medium py-2 px-4 shadow-md border-b border-rose-500/30 overflow-hidden">
-      {/* خلفية جمالية خفيفة */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent pointer-events-none" />
+    <div className="relative bg-gradient-to-r from-[#3D0010] via-[#590018] to-[#3D0010] text-white text-xs font-semibold py-2 px-3 shadow-md border-b-2 border-[var(--gold)]/40 overflow-hidden z-30">
+      {/* وميض جمالي خلفي خافت */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
 
       <div className="container-custom flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
-          <span className="bg-gradient-to-r from-rose-600 to-red-600 text-white px-2.5 py-0.5 rounded-full text-xs font-black shadow-sm flex items-center gap-1.5 shrink-0 border border-rose-400/30">
-            <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping" />
-            <span>عاجل</span>
-          </span>
+          {/* شارة عاجل الملكية المستوحاة من كبرى القنوات الإخبارية */}
+          <div className="flex items-center shrink-0">
+            <span className="bg-gradient-to-r from-red-600 to-rose-600 text-white px-3 py-1 rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 border border-red-400/40">
+              <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping" />
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>عاجل</span>
+            </span>
+          </div>
 
+          {/* مسار الأخبار العاجلة المتحرك مع التوقف عند التحويم */}
           <div className="flex-1 overflow-hidden whitespace-nowrap py-0.5">
-            <div className="ticker-track">
+            <div className="ticker-track flex items-center gap-8">
               {articles.concat(articles).map((item, idx) => (
                 <Link
                   key={`${item.id}-${idx}`}
                   href={`/article/${item.id}/${item.slug}`}
-                  className="inline-flex items-center gap-2 hover:underline me-10 text-white/95 text-xs md:text-sm font-semibold transition-opacity hover:opacity-100 group"
+                  className="inline-flex items-center gap-2.5 text-white/95 hover:text-[var(--gold)] transition-colors group cursor-pointer"
                 >
-                  <span className="group-hover:text-amber-200 transition-colors">{item.titleAr}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] shrink-0" />
+                  <span className="font-bold tracking-tight text-xs sm:text-sm group-hover:underline">
+                    {item.titleAr}
+                  </span>
                   {item.source && (
-                    <span className="text-white/60 text-[11px] font-normal bg-black/20 px-1.5 py-0.2 rounded">
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-black/30 text-white/80 border border-white/10 shrink-0 font-medium">
                       {item.source.nameAr}
                     </span>
                   )}
@@ -113,33 +117,27 @@ export function BreakingBar({ articles: initialArticles }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          {/* زر تفعيل التنبيه الصوتي للعاجل */}
+        {/* أدوات التحكم في شريط العاجل: الصوت والأرشيف */}
+        <div className="flex items-center gap-1.5 shrink-0 ps-2 border-s border-white/20">
           <button
             onClick={toggleSound}
-            title={soundEnabled ? "إيقاف صوت تنبيه العاجل" : "تشغيل صوت تنبيه للعاجل"}
-            className="p-1 px-2 rounded-lg bg-black/25 hover:bg-black/40 border border-white/10 text-white/90 hover:text-white transition-all text-xs flex items-center gap-1.5"
-            aria-label="تنبيه صوتي للعاجل"
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              soundEnabled
+                ? "bg-[var(--gold)] text-[#26000A] border-[var(--gold)] shadow-xs"
+                : "bg-black/30 border-white/20 text-white/70 hover:text-white hover:border-white/40"
+            }`}
+            title={soundEnabled ? "كتم التنبيه الصوتي للعاجل" : "تفعيل التنبيه الصوتي للخبر العاجل"}
+            aria-label="تنبيه صوتي"
           >
-            {soundEnabled ? (
-              <>
-                <Bell className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-                <span className="hidden sm:inline text-[11px] font-bold text-amber-200">صوت العاجل مفعّل</span>
-              </>
-            ) : (
-              <>
-                <BellOff className="w-3.5 h-3.5 opacity-70" />
-                <span className="hidden sm:inline text-[11px] opacity-70">صامت</span>
-              </>
-            )}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
 
           <Link
             href="/breaking"
-            className="text-xs text-white/90 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 font-bold transition-colors"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/30 hover:bg-black/50 border border-white/20 text-[11px] font-bold text-white hover:text-[var(--gold)] transition-colors"
           >
-            <span>كل العاجل</span>
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>أرشيف العاجل</span>
+            <ChevronLeft className="w-3 h-3 rtl:rotate-0" />
           </Link>
         </div>
       </div>
