@@ -3,6 +3,12 @@ import { StorySummary, ArticleCard as ArticleCardType, InstrumentQuote } from "@
 import { ArticleCard } from "@/components/ArticleCard";
 import { QuoteTile } from "@/components/QuoteTile";
 import { MostReadWidget } from "@/components/MostReadWidget";
+import { FrontpageAudioBrief } from "@/components/FrontpageAudioBrief";
+import { PalestineCommoditiesWidget } from "@/components/PalestineCommoditiesWidget";
+import { LiveWarRoomMap } from "@/components/LiveWarRoomMap";
+import { FactCheckSlider } from "@/components/FactCheckSlider";
+import { InfographicSection } from "@/components/InfographicSection";
+import { InteractivePoll } from "@/components/InteractivePoll";
 import { HomeHeroSection } from "./HomeHeroSection";
 import { LiveFastStreamWire } from "./LiveFastStreamWire";
 import { PalestineFocusBlock } from "./PalestineFocusBlock";
@@ -40,6 +46,12 @@ export function HomeStreamLayout({
   sportsArticles,
   quotes,
 }: Props) {
+  const headlines = [
+    heroArticle?.titleAr,
+    ...secondaryArticles.map((a) => a.titleAr),
+    ...fastStreamArticles.slice(0, 3).map((a) => a.titleAr),
+  ].filter(Boolean) as string[];
+
   return (
     <div className="space-y-12">
       {/* 1. المركز الرئاسي والبطل الإخباري (70% بطل سينمائي + 30% ممر تدفق سريع مصور) */}
@@ -49,8 +61,17 @@ export function HomeStreamLayout({
         secondaryArticles={secondaryArticles}
       />
 
+      {/* 1.1 الموجز الصوتي الذكي في صدارة الصفحة الرئيسية */}
+      <FrontpageAudioBrief headlines={headlines} />
+
       {/* 2. كتلة فلسطين أولاً الميدانية (فلسطين، غزة، القدس، الأقصى) */}
       <PalestineFocusBlock stories={palestineStories} />
+
+      {/* 2.1 غرفة العمليات الميدانية الحية وأطلس فلسطين التفاعلي */}
+      <LiveWarRoomMap />
+
+      {/* 2.2 سلة المحروقات والسلع الحيوية في السوق الفلسطيني */}
+      <PalestineCommoditiesWidget />
 
       {/* 3. ساحة يلا سبورت والملاعب (مباريات اليوم الحية + شبكة التقارير الكروية العالمية) */}
       <HomeSportsSection articles={sportsArticles} />
@@ -141,6 +162,12 @@ export function HomeStreamLayout({
             </div>
           </div>
 
+          {/* رادار الحقيقة ومنزلق التحقيق الجنائي البصري */}
+          <FactCheckSlider />
+
+          {/* الإنفوجرافيك وصحافة البيانات والأرقام المعتمدة */}
+          <InfographicSection />
+
           {/* بوابات المساعدات الإنسانية والوظائف المعتمدة */}
           <HomeAidAndJobsBar />
 
@@ -148,10 +175,13 @@ export function HomeStreamLayout({
           <HomeVideoSection articles={videoArticles} />
         </div>
 
-        {/* العمود الجانبي (4 أعمدة): الممر السريع + أسعار الذهب والعملات + الأكثر قراءة */}
+        {/* العمود الجانبي (4 أعمدة): الممر السريع + أسعار الذهب والعملات + استطلاع الرأي + الأكثر قراءة */}
         <div className="lg:col-span-4 space-y-8">
           {/* الممر السريع / التدفق اللحظي بصور دائمة */}
           <LiveFastStreamWire articles={fastStreamArticles} />
+
+          {/* استطلاع الرأي التفاعلي اللحظي */}
+          <InteractivePoll />
 
           {/* نافذة مؤشرات الأسواق والسلع الصادقة */}
           {quotes.length > 0 && (
