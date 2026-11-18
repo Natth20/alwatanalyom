@@ -25,20 +25,15 @@ export default async function HomePage({ searchParams }: Props) {
   const heroMainArticle = heroStory?.articles[0] || feed.fastStreamArticles[0];
   const secondaryArticles = heroStory?.articles.slice(1).length
     ? heroStory.articles.slice(1)
-    : feed.fastStreamArticles.slice(1, 5);
+    : feed.fastStreamArticles.slice(1, 6);
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-20">
       {/* 1. شريط الأخبار العاجلة اللحظي المتوهج */}
       <BreakingBar articles={feed.breaking} />
 
-      <div className="container-custom space-y-8">
-        {/* 2. مبدل النماذج الأولية البصرية الثلاثة للمرحلة 4 (Visual Prototype Switcher) */}
-        <Suspense fallback={<div className="h-20 animate-pulse bg-stone-900/20 rounded-2xl" />}>
-          <VisualPrototypeSwitcher currentView={currentView} />
-        </Suspense>
-
-        {/* 3. عرض النموذج البصري المختار */}
+      <main id="main-content" className="container-custom space-y-8">
+        {/* 2. عرض النموذج التحريري المختار */}
         {currentView === "stream" && (
           <HomeStreamLayout
             heroStory={heroStory}
@@ -79,7 +74,14 @@ export default async function HomePage({ searchParams }: Props) {
             videoArticles={feed.videoArticles}
           />
         )}
-      </div>
+
+        {/* 3. مبدل الأنماط التحريرية (يظهر في الأسفل كأداة تحريرية احترافية بدون تشويش على الواجهة) */}
+        <div className="pt-8 border-t border-[var(--border)]">
+          <Suspense fallback={null}>
+            <VisualPrototypeSwitcher currentView={currentView} />
+          </Suspense>
+        </div>
+      </main>
     </div>
   );
 }

@@ -33,50 +33,53 @@ export function HomeBentoLayout({
   return (
     <div className="space-y-10">
       {/* شبكة البينتو الرئيسية (Hero Bento Grid) */}
-      <section className="grid grid-cols-1 md:grid-cols-12 gap-5">
-        {/* بطاقة البطل الكبرى (Bento Big Lead) - 8 أعمدة */}
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* بطاقة البطل الكبرى (Bento Big Lead) - 7 أعمدة */}
         {heroArticle && (
-          <div className="md:col-span-8">
+          <div className="md:col-span-7">
             <ArticleCard article={heroArticle} variant="hero" />
           </div>
         )}
 
-        {/* بطاقتان مكدستان في الجانب - 4 أعمدة */}
-        <div className="md:col-span-4 flex flex-col gap-5">
+        {/* بطاقتان مكدستان في الجانب مع صور دائمة - 5 أعمدة */}
+        <div className="md:col-span-5 flex flex-col gap-4">
           {palestineLead && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-[var(--surface)] p-5 space-y-2 flex-1 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 mb-2">
-                  <ShieldCheck className="w-3 h-3" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-emerald-500/30 pb-1.5">
+                <span className="text-xs font-black text-emerald-500 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
                   <span>فلسطين أولاً</span>
                 </span>
-                <h3 className="font-bold text-sm text-[var(--text)] line-clamp-2 leading-snug">
-                  <Link href={`/article/${palestineLead.id}/${palestineLead.slug}`}>
-                    {palestineLead.titleAr}
-                  </Link>
-                </h3>
+                <Link href="/palestine" className="text-xs font-bold text-emerald-500 hover:underline">
+                  المزيد ←
+                </Link>
               </div>
-              <Link href="/palestine" className="text-xs font-bold text-emerald-400 hover:underline pt-2 inline-flex items-center gap-1">
-                <span>تغطيات فلسطين ←</span>
-              </Link>
+              <ArticleCard article={palestineLead} variant="compact" />
             </div>
           )}
 
           {secondaryArticles[0] && (
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-2 flex-1 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-2.5 py-0.5 rounded-full inline-block mb-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-1.5">
+                <span className="text-xs font-black text-[var(--primary)]">
                   {secondaryArticles[0].sectionNameAr}
                 </span>
-                <h3 className="font-bold text-sm text-[var(--text)] line-clamp-2 leading-snug">
-                  <Link href={`/article/${secondaryArticles[0].id}/${secondaryArticles[0].slug}`}>
-                    {secondaryArticles[0].titleAr}
-                  </Link>
-                </h3>
+                <Link href={`/article/${secondaryArticles[0].id}/${secondaryArticles[0].slug}`} className="text-xs font-bold text-[var(--primary)] hover:underline">
+                  التفاصيل ←
+                </Link>
               </div>
-              <Link href={`/article/${secondaryArticles[0].id}/${secondaryArticles[0].slug}`} className="text-xs font-bold text-[var(--primary)] hover:underline pt-2">
-                <span>قراءة التفاصيل ←</span>
-              </Link>
+              <ArticleCard article={secondaryArticles[0]} variant="compact" />
+            </div>
+          )}
+
+          {secondaryArticles[1] && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-1.5">
+                <span className="text-xs font-black text-[var(--text-muted)]">
+                  تغطية إضافية
+                </span>
+              </div>
+              <ArticleCard article={secondaryArticles[1]} variant="compact" />
             </div>
           )}
         </div>
@@ -88,7 +91,7 @@ export function HomeBentoLayout({
       {/* شبكة القطاعات المتعددة (Multi-Hub) */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* عمود الاقتصاد */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
           <div className="flex items-center justify-between border-b-2 border-emerald-500 pb-2">
             <h3 className="font-bold text-base text-[var(--text)]">نافذة الاقتصاد</h3>
             <Link href="/economy" className="text-xs text-[var(--primary)] font-bold hover:underline">المزيد ←</Link>
@@ -101,7 +104,7 @@ export function HomeBentoLayout({
         </div>
 
         {/* عمود التقنية */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
           <div className="flex items-center justify-between border-b-2 border-sky-500 pb-2">
             <h3 className="font-bold text-base text-[var(--text)]">التقنية والابتكار</h3>
             <Link href="/tech" className="text-xs text-[var(--primary)] font-bold hover:underline">المزيد ←</Link>
@@ -114,9 +117,9 @@ export function HomeBentoLayout({
         </div>
 
         {/* عمود الرياضة */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-amber-500 pb-2">
-            <h3 className="font-bold text-base text-[var(--text)]">الرياضة · يلا سبورت</h3>
+        <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
+          <div className="flex items-center justify-between border-b-2 border-emerald-600 pb-2">
+            <h3 className="font-bold text-base text-[var(--text)]">الرياضة مع يلا سبورت</h3>
             <Link href="/sports" className="text-xs text-[var(--primary)] font-bold hover:underline">المزيد ←</Link>
           </div>
           <div className="space-y-3">
@@ -127,29 +130,8 @@ export function HomeBentoLayout({
         </div>
       </section>
 
-      {/* شريط الفيديو الصحفي */}
+      {/* شريط الفيديو */}
       <HomeVideoSection articles={videoArticles} />
-
-      {/* نافذة أسواق المال والذهب الصادقة */}
-      {quotes.length > 0 && (
-        <section className="card-luxury rounded-3xl p-6 shadow-md space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h3 className="font-black text-base text-[var(--text)]">أسواق المال والسلع المعتمدة</h3>
-            </div>
-            <Link href="/economy" className="text-xs font-bold text-[var(--primary)] hover:underline">
-              الأسواق الكاملة ←
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quotes.map((q) => (
-              <QuoteTile key={q.symbol} quote={q} />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
-

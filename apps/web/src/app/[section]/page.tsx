@@ -5,6 +5,7 @@ import { getSectionFeed } from "@/lib/dal";
 import { ArticleCard } from "@/components/ArticleCard";
 import { TodayMatchesWidget } from "@/components/sports/TodayMatchesWidget";
 import { YallaSportBanner } from "@/components/sports/YallaSportBanner";
+import { ShieldCheck, ChevronLeft, Sparkles, Layers } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -41,36 +42,52 @@ export default async function SectionPage({ params }: Props) {
 
   const { section, articles } = feed;
   const heroArticle = articles[0];
-  const otherArticles = articles.slice(1);
+  const sideArticles = articles.slice(1, 4);
+  const remainingArticles = articles.slice(4);
 
   return (
-    <div className="container-custom py-8 space-y-8">
-      {/* ترويسة القسم */}
-      <div className="border-b-2 border-[var(--primary)] pb-4">
-        <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-2">
-          <Link href="/" className="hover:text-[var(--primary)]">الرئيسية</Link>
+    <div className="container-custom py-8 space-y-10">
+      {/* 1. ترويسة القسم الملكية الفخمة */}
+      <div className="rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[#26000A]/10 via-[var(--surface)] to-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-sm">
+        {/* مسار التنقل */}
+        <nav aria-label="فتات الخبز" className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+          <Link href="/" className="hover:text-[var(--primary)] transition-colors">
+            الرئيسية
+          </Link>
           <span>/</span>
-          <span className="text-[var(--primary)] font-semibold">{section.nameAr}</span>
-        </div>
+          <span className="text-[var(--primary)] font-bold">{section.nameAr}</span>
+        </nav>
 
-        <h1 className="text-3xl font-black text-[var(--text)] mb-2">
-          {section.nameAr}
-        </h1>
-        {section.descriptionAr && (
-          <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-            {section.descriptionAr}
-          </p>
-        )}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-[var(--gold)] animate-pulse" />
+              <h1 className="text-3xl sm:text-4xl font-black text-[var(--text)] tracking-tight">
+                {section.nameAr}
+              </h1>
+            </div>
+            {section.descriptionAr && (
+              <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
+                {section.descriptionAr}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] bg-[var(--bg)] px-4 py-2 rounded-2xl border border-[var(--border)] self-start md:self-auto">
+            <Layers className="w-4 h-4 text-[var(--primary)]" />
+            <span>{articles.length} مادة صحفية معتمدة</span>
+          </div>
+        </div>
 
         {/* شريط الأقسام الفرعية (Sub-sections Pills) */}
         {section.children.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pt-4 mt-2">
-            <span className="text-xs text-[var(--text-muted)] font-semibold">تصفح حسب:</span>
+          <div className="flex items-center gap-2.5 overflow-x-auto pt-2 scrollbar-none">
+            <span className="text-xs text-[var(--text-muted)] font-black shrink-0">التصنيفات:</span>
             {section.children.map((sub) => (
               <Link
                 key={sub.id}
                 href={`/${sectionSlug}/${sub.slug}`}
-                className="px-3 py-1 rounded-full text-xs font-medium border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors whitespace-nowrap"
+                className="px-4 py-1.5 rounded-xl text-xs font-bold border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)] hover:text-[var(--primary)] transition-all whitespace-nowrap shadow-2xs"
               >
                 {sub.nameAr}
               </Link>
@@ -80,26 +97,28 @@ export default async function SectionPage({ params }: Props) {
 
         {/* لوحة التغطية الخاصة لفلسطين أولاً */}
         {sectionSlug === "palestine" && (
-          <div className="mt-6 p-4 rounded-xl border border-emerald-500/30 bg-gradient-to-l from-emerald-950/20 via-[var(--surface)] to-[var(--surface)]">
+          <div className="mt-4 p-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-l from-[#072415]/40 via-[var(--surface)] to-[var(--surface)]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-emerald-400">فلسطين أولاً — التغطية المركزية المباشرة</span>
+                  <span className="text-xs font-black text-emerald-400">
+                    فلسطين أولاً — التغطية المركزية الميدانية الموحدة
+                  </span>
                 </div>
-                <p className="text-xs text-[var(--text-muted)]">
-                  تغطية ميدانية وتحقق لحظي لكافة المستجدات في غزة والضفة والقدس وكافة الأراضي المحتلة، ملتزمة بالقاموس التحريري الوطني.
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  تغطية ميدانية وتحقق لحظي لكافة المستجدات في غزة والقدس والضفة وكافة الأراضي المحتلة، ملتزمة بالقاموس التحريري الوطني والمصادر الرسمية.
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-semibold text-[var(--text)] border-t md:border-t-0 md:border-r border-[var(--border)] pt-2 md:pt-0 md:pe-4 shrink-0">
+              <div className="flex items-center gap-4 text-xs font-bold text-[var(--text)] border-t md:border-t-0 md:border-r border-[var(--border)] pt-3 md:pt-0 md:pe-4 shrink-0">
                 <div className="text-center">
                   <span className="block text-[10px] text-[var(--text-muted)]">المصادر المعتمدة</span>
-                  <span className="text-emerald-400 font-bold">وكالة وفا · شهاب · صفا</span>
+                  <span className="text-emerald-400 font-bold">وفا · صفا · شهاب</span>
                 </div>
                 <div className="text-center border-r border-[var(--border)] pe-4">
                   <span className="block text-[10px] text-[var(--text-muted)]">الرصد الإنساني</span>
-                  <span className="text-[var(--primary)] font-bold">وزارة الصحة · الهلال الأحمر</span>
+                  <span className="text-[var(--gold)] font-bold">الهلال الأحمر · الصحة</span>
                 </div>
               </div>
             </div>
@@ -108,12 +127,14 @@ export default async function SectionPage({ params }: Props) {
 
         {/* لوحة الشراكة مع يلا سبورت لقسم الرياضة */}
         {sectionSlug === "sports" && (
-          <div className="mt-6 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+          <div className="mt-4 p-5 rounded-2xl border border-emerald-500/30 bg-emerald-950/20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-bold text-emerald-400">تكامل ذكي مع منصة يلا سبورت (yallasport.com)</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-xs font-black text-emerald-400">
+                    تكامل حصري مع شبكة يلا سبورت الرياضية (yallasport.com)
+                  </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">
                   تابع التغطيات الحية، جداول المباريات، وترتيب الدوريات الأوروبية والعربية لحظة بلحظة عبر شريكنا الرياضي المعتمد.
@@ -124,9 +145,9 @@ export default async function SectionPage({ params }: Props) {
                 href="https://yallasport.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 shadow-sm"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition-colors flex items-center gap-2 shrink-0 shadow-md"
               >
-                <span>الانتقال إلى يلا سبورت</span>
+                <span>الانتقال إلى منصة يلا سبورت</span>
                 <span>↗</span>
               </a>
             </div>
@@ -134,7 +155,7 @@ export default async function SectionPage({ params }: Props) {
         )}
       </div>
 
-      {/* قسم الرياضة: جدول مباريات اليوم المباشر وبانر يلا سبورت */}
+      {/* 2. قسم الرياضة الخاص: جدول مباريات اليوم وبانر يلا سبورت */}
       {sectionSlug === "sports" && (
         <div className="space-y-6">
           <TodayMatchesWidget />
@@ -142,32 +163,46 @@ export default async function SectionPage({ params }: Props) {
         </div>
       )}
 
-      {/* المقالات */}
+      {/* 3. شبكة المقالات والمواد الصحفية المصورة بالكامل */}
       {articles.length > 0 ? (
-        <div className="space-y-8">
+        <div className="space-y-10">
+          {/* الكتلة الأولى: مادة بطلة عريضة + 3 مواد مصغرة بجانبها */}
           {heroArticle && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div className="lg:col-span-7">
                 <ArticleCard article={heroArticle} variant="hero" />
               </div>
-              <div className="space-y-4">
-                <h3 className="font-bold text-sm text-[var(--text)] border-b border-[var(--border)] pb-2">
-                  أحدث المواد في القسم
-                </h3>
-                {otherArticles.slice(0, 3).map((art) => (
-                  <ArticleCard key={art.id} article={art} variant="compact" />
-                ))}
+              <div className="lg:col-span-5 space-y-4">
+                <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2">
+                  <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-2">
+                    <span className="w-2 h-4 bg-[var(--gold)] rounded-sm" />
+                    <span>أحدث المواد في القسم</span>
+                  </h3>
+                  <span className="text-[11px] text-[var(--text-muted)]">محدث باستمرار</span>
+                </div>
+                <div className="space-y-3">
+                  {sideArticles.map((art) => (
+                    <ArticleCard key={art.id} article={art} variant="compact" />
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
-          {otherArticles.length > 3 && (
-            <div>
-              <h3 className="text-lg font-bold text-[var(--text)] mb-4 border-b border-[var(--border)] pb-2">
-                بقية التغطيات
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {otherArticles.slice(3).map((art) => (
+          {/* الكتلة الثانية: بقية التغطيات في شبكة ثلاثية غنية بالصور */}
+          {remainingArticles.length > 0 && (
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center justify-between border-b-2 border-[var(--border)] pb-2.5">
+                <h3 className="text-xl font-black text-[var(--text)] flex items-center gap-2">
+                  <span className="w-2 h-4 bg-[var(--primary)] rounded-sm" />
+                  <span>تغطيات وتقارير إضافية</span>
+                </h3>
+                <span className="text-xs text-[var(--text-muted)]">
+                  {remainingArticles.length} مادة صحفية
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {remainingArticles.map((art) => (
                   <ArticleCard key={art.id} article={art} variant="medium" />
                 ))}
               </div>
@@ -175,9 +210,11 @@ export default async function SectionPage({ params }: Props) {
           )}
         </div>
       ) : (
-        <div className="p-12 text-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)]">
-          <p className="font-semibold text-base mb-1">لا توجد مواد منشورة حالياً في هذا القسم.</p>
-          <p className="text-xs">يقوم محرك الجلب الآلي بمتابعة المصادر على مدار الساعة وسيتم نشر الأخبار فور وصولها.</p>
+        <div className="p-16 text-center rounded-3xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] space-y-2">
+          <p className="font-black text-lg text-[var(--text)]">لا توجد مواد منشورة حالياً في هذا القسم</p>
+          <p className="text-xs max-w-md mx-auto">
+            يقوم محرك الجلب الآلي بمتابعة المصادر على مدار الساعة وسيتم نشر الأخبار فور وصولها وتدقيقها تحريرياً.
+          </p>
         </div>
       )}
     </div>
