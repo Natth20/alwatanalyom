@@ -16,12 +16,19 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
     minute: "2-digit",
   });
 
+  const dateStr = new Date(article.publishedAt).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+
+  const readingTime = Math.max(1, Math.round((article.summaryAr?.split(' ').length || 50) / 200));
+
   const imageUrl = resolveEditorialImage(article);
 
   // 1. نمط المادة البطلة المسرحية (Hero - أسلوب الجزيرة نت الفخم)
   if (variant === "hero") {
     return (
-      <article className="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-b from-[#26000A] via-[#1A0007] to-[#120005] p-6 md:p-8 hover:border-[var(--gold)]/40 transition-all duration-500 shadow-xl">
+      <article className="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-b from-[#26000A] via-[#1A0007] to-[#120005] p-6 md:p-8 hover:border-[var(--gold)]/40 transition-all duration-500 shadow-xl card-imperial">
+        {/* شريط ذهبي أعلى البطاقة */}
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+
         {/* الصورة الرئيسية العريضة الفخمة */}
         <div className="relative w-full aspect-16/9 rounded-2xl overflow-hidden mb-6 bg-stone-950 shadow-2xl">
           <img
@@ -53,10 +60,15 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>{article.source?.nameAr || "مراسل الوطن اليوم"}</span>
             </span>
-            <span className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/15 font-mono text-[11px]">
-              <Clock className="w-3 h-3 text-[var(--gold)]" />
-              <span>{publishedDate}</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 bg-black/60 backdrop-blur-xs px-2.5 py-0.5 rounded-lg text-[11px] font-mono text-white/80">
+                <Clock className="w-3 h-3 text-[var(--gold)]" />{readingTime} د قراءة
+              </span>
+              <span className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/15 font-mono text-[11px]">
+                <Clock className="w-3 h-3 text-[var(--gold)]" />
+                <span>{publishedDate}</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -83,7 +95,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
 
           <Link
             href={`/article/${article.id}/${article.slug}`}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#DCA600] text-[#140106] font-black hover:shadow-lg hover:shadow-[var(--gold-glow)] transition-all text-xs"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#DCA600] text-[#140106] font-black hover:shadow-xl hover:shadow-[var(--gold-glow)] hover:scale-105 transition-all text-xs tracking-wide"
           >
             <span>التفاصيل والتغطية الكاملة</span>
             <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
@@ -96,11 +108,11 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
   // 2. نمط البطاقة المدمجة للقوائم السريعة (Compact - نمط دنيا الوطن الإخباري عالي الكثافة)
   if (variant === "compact") {
     return (
-      <article className="group py-3 border-b border-[var(--border)] last:border-none flex items-center justify-between gap-3.5 transition-colors">
+      <article className="group py-3 border-b border-[var(--border)] last:border-none flex items-center justify-between gap-3.5 transition-all ps-2 border-s-2 border-s-[var(--primary)]/0 hover:border-s-[var(--gold)]">
         {/* الصورة المصغرة لكل خبر (Thumb Photo) */}
         <Link
           href={`/article/${article.id}/${article.slug}`}
-          className="relative w-20 h-16 sm:w-24 sm:h-18 rounded-xl overflow-hidden shrink-0 bg-stone-900 shadow-xs border border-[var(--border)]"
+          className="relative w-20 h-16 sm:w-24 sm:h-18 overflow-hidden shrink-0 bg-stone-900 rounded-xl shadow-md border border-[var(--gold)]/10"
         >
           <img
             src={imageUrl}
@@ -116,7 +128,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
         {/* النصوص والعنوان */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
-            <span className="font-bold text-[var(--primary)]">{article.sectionNameAr}</span>
+            <span className="font-black text-[var(--gold)] bg-[#590018]/60 px-2 py-0.5 rounded-md border border-[var(--gold)]/20">{article.sectionNameAr}</span>
             <span>•</span>
             <span className="truncate">{article.source?.nameAr || "مصدر أصلي"}</span>
             <span className="ms-auto font-mono">{publishedDate}</span>
@@ -134,7 +146,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
 
   // 3. النمط القياسي المتوسط للشبكات (Medium - بطاقة غنية ومجسمة)
   return (
-    <article className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col justify-between hover:border-[var(--primary)]/50 hover:shadow-lg transition-all duration-300 h-full">
+    <article className="group card-imperial bg-[var(--surface)] p-4 flex flex-col justify-between hover:border-[var(--primary)]/50 hover:shadow-lg transition-all duration-300 h-full">
       <div>
         {/* صورة البطاقة الدائمة */}
         <div className="relative w-full aspect-16/10 rounded-xl overflow-hidden mb-3.5 bg-stone-900 shadow-sm border border-[var(--border)]">
@@ -145,6 +157,9 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+          {/* شريط ذهبي أعلى الصورة بالداخل */}
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70" />
 
           {/* شارة القسم والعاجل */}
           <div className="absolute top-2 start-2 flex items-center gap-1.5">
@@ -158,10 +173,15 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
             )}
           </div>
 
-          {/* الوقت في أسفل الصورة */}
-          <span className="absolute bottom-2 end-2 text-[10px] text-white/90 font-mono bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md">
-            {publishedDate}
-          </span>
+          {/* الوقت في أسفل الصورة + reading time */}
+          <div className="absolute bottom-2 start-2 end-2 flex items-center justify-between">
+            <span className="text-[10px] text-white/90 font-mono bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5 text-[var(--gold)]" /> {readingTime}د
+            </span>
+            <span className="text-[10px] text-white/90 font-mono bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md">
+              {publishedDate}
+            </span>
+          </div>
         </div>
 
         {/* العنوان */}
@@ -188,7 +208,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
 
         <Link
           href={`/article/${article.id}/${article.slug}`}
-          className="text-[var(--primary)] font-bold hover:underline flex items-center gap-1 text-[11px] shrink-0"
+          className="text-[var(--gold)] font-black hover:underline flex items-center gap-1 text-[11px] shrink-0 group-hover:gap-2 transition-all"
         >
           <span>التفاصيل</span>
           <ArrowLeft className="w-3 h-3 rtl:rotate-0" />

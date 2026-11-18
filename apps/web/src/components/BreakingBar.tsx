@@ -78,47 +78,61 @@ export function BreakingBar({ articles: initialArticles }: Props) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <div className="relative bg-gradient-to-r from-[#3D0010] via-[#590018] to-[#3D0010] text-white text-xs font-semibold py-2 px-3 shadow-md border-b-2 border-[var(--gold)]/40 overflow-hidden z-30">
+    <div className="relative bg-gradient-to-r from-[#2A000C] via-[#4A0016] to-[#2A000C] text-white text-xs font-semibold py-2 px-3 shadow-[0_4px_24px_-4px_rgba(89,0,24,0.6)] border-b-2 border-[var(--gold)]/60 overflow-hidden z-30">
       {/* وميض جمالي خلفي خافت */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent pointer-events-none" />
 
       <div className="container-custom flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
-          {/* شارة عاجل الملكية المستوحاة من كبرى القنوات الإخبارية */}
-          <div className="flex items-center shrink-0">
-            <span className="bg-gradient-to-r from-red-600 to-rose-600 text-white px-3 py-1 rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 border border-red-400/40">
+          {/* شارة عاجل الملكية المستوحاة من كبرى القنوات الإخبارية العالمية */}
+          <div className="flex items-center shrink-0 gap-1.5">
+            <span className="relative bg-gradient-to-r from-[#E84A5F] to-[#C72B3F] text-white px-3.5 py-1.5 rounded-xl text-xs font-black shadow-lg shadow-red-900/40 flex items-center gap-1.5 border border-red-400/30">
               <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping" />
               <Flame className="w-3.5 h-3.5 fill-current" />
               <span>عاجل</span>
             </span>
+            <div className="w-px h-5 bg-white/20 hidden sm:block" />
           </div>
 
           {/* مسار الأخبار العاجلة المتحرك مع التوقف عند التحويم */}
           <div className="flex-1 overflow-hidden whitespace-nowrap py-0.5">
             <div className="ticker-track flex items-center gap-8">
-              {articles.concat(articles).map((item, idx) => (
-                <Link
-                  key={`${item.id}-${idx}`}
-                  href={`/article/${item.id}/${item.slug}`}
-                  className="inline-flex items-center gap-2.5 text-white/95 hover:text-[var(--gold)] transition-colors group cursor-pointer"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] shrink-0" />
-                  <span className="font-bold tracking-tight text-xs sm:text-sm group-hover:underline">
-                    {item.titleAr}
-                  </span>
-                  {item.source && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-black/30 text-white/80 border border-white/10 shrink-0 font-medium">
-                      {item.source.nameAr}
+              {articles.concat(articles).map((item, idx) => {
+                const itemTime = new Date(item.publishedAt).toLocaleTimeString("ar-EG", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                return (
+                  <Link
+                    key={`${item.id}-${idx}`}
+                    href={`/article/${item.id}/${item.slug}`}
+                    className="inline-flex items-center gap-2.5 text-white/95 hover:text-[var(--gold)] transition-colors group cursor-pointer"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] shrink-0" />
+                    <span className="font-bold tracking-tight text-xs sm:text-sm group-hover:underline">
+                      {item.titleAr}
                     </span>
-                  )}
-                </Link>
-              ))}
+                    <span className="text-[10px] font-mono text-[var(--gold)]/80 shrink-0 bg-black/40 px-1.5 py-0.5 rounded border border-white/5">
+                      {itemTime}
+                    </span>
+                    {item.source && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-black/40 text-white/90 border border-white/10 shrink-0 font-medium">
+                        {item.source.nameAr}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* أدوات التحكم في شريط العاجل: الصوت والأرشيف */}
-        <div className="flex items-center gap-1.5 shrink-0 ps-2 border-s border-white/20">
+        {/* أدوات التحكم في شريط العاجل: الصوت والعدد والأرشيف */}
+        <div className="flex items-center gap-2 shrink-0 ps-2 border-s border-white/20">
+          <span className="hidden md:inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--gold)] text-[#26000A] text-[10px] font-black shadow-xs">
+            {articles.length}
+          </span>
+
           <button
             onClick={toggleSound}
             className={`p-1.5 rounded-lg border transition-all cursor-pointer ${

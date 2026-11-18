@@ -59,6 +59,14 @@
   --border-card: rgba(232, 222, 215, 0.85);
   --border-gold: rgba(245, 185, 0, 0.4);
   --shadow-luxury: 0 10px 30px -10px rgba(89, 0, 24, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+
+  /* المتغيرات الإمبراطورية الفائقة */
+  --gold-shine: linear-gradient(90deg, #f5b900, #ffd043, #f5b900);
+  --imperial-gradient: linear-gradient(135deg, #590018 0%, #3d0010 40%, #26000a 70%, #1a0005 100%);
+  --glass-maroon: rgba(89, 0, 24, 0.12);
+  --glass-gold: rgba(245, 185, 0, 0.08);
+  --depth-shadow: 0 32px 64px -16px rgba(89, 0, 24, 0.18), 0 8px 24px -8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+  --gold-border-gradient: linear-gradient(90deg, transparent, #f5b900, transparent);
 }
 
 html.dark,
@@ -387,3 +395,183 @@ body {
     color: #000000 !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   🏛️ الوطن اليوم — مكتبة التأثيرات الإمبراطورية الفائقة
+   ═══════════════════════════════════════════════════════ */
+
+/* الإطار الذهبي الإمبراطوري (شريط ذهبي متحرك في الأعلى) */
+.imperial-gold-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #f5b900 20%, #ffd043 50%, #f5b900 80%, transparent 100%);
+  opacity: 0.9;
+}
+
+/* تأثير الزجاج الملكي (Glassmorphism عنابي-ذهبي) */
+.glass-imperial {
+  background: rgba(89, 0, 24, 0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(245, 185, 0, 0.18);
+}
+
+/* الظل الإمبراطوري العميق */
+.shadow-imperial {
+  box-shadow: 0 32px 64px -16px rgba(89, 0, 24, 0.22),
+              0 8px 24px -8px rgba(0, 0, 0, 0.14),
+              0 0 0 1px rgba(245, 185, 0, 0.08);
+}
+
+/* توهج ذهبي خافت للبطاقات */
+.glow-gold-soft {
+  box-shadow: 0 0 24px -4px rgba(245, 185, 0, 0.18),
+              0 8px 32px -8px rgba(89, 0, 24, 0.12);
+}
+
+/* أنيميشن: خط ذهبي متحرك من اليمين لليسار (Imperial Shimmer) */
+@keyframes imperialShimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.imperial-shimmer {
+  background: linear-gradient(90deg, #f5b900 0%, #ffd043 25%, #f5b900 50%, #dca600 75%, #f5b900 100%);
+  background-size: 200% auto;
+  animation: imperialShimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* أنيميشن: نبض الحدود الذهبية */
+@keyframes goldBorderPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 185, 0, 0); }
+  50% { box-shadow: 0 0 0 3px rgba(245, 185, 0, 0.18); }
+}
+
+.gold-border-pulse {
+  animation: goldBorderPulse 3s ease-in-out infinite;
+}
+
+/* أنيميشن: ظهور بطولي من الأسفل */
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.hero-reveal {
+  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* أنيميشن: وميض الذهب الإمبراطوري */
+@keyframes goldFlare {
+  0%, 100% { opacity: 0.4; transform: translateX(-100%) rotate(45deg); }
+  50% { opacity: 0.7; }
+  100% { transform: translateX(300%) rotate(45deg); }
+}
+
+.imperial-flare::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(245,185,0,0.15) 50%, transparent 70%);
+  animation: goldFlare 4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* الخط الفاصل الذهبي الديناميكي */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #f5b900 30%, #ffd043 50%, #f5b900 70%, transparent);
+  opacity: 0.5;
+}
+
+/* أنيميشن: scroll reveal سلس */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.slide-in-left { animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* بطاقات بمستوى Premium فائق */
+.card-imperial {
+  background: var(--surface-card);
+  border: 1px solid rgba(245, 185, 0, 0.15);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px -12px rgba(89, 0, 24, 0.1),
+              0 4px 12px -4px rgba(0,0,0,0.08),
+              0 0 0 1px rgba(245,185,0,0.06);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s ease;
+  will-change: transform, box-shadow;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-imperial:hover {
+  transform: translateY(-4px) scale(1.005);
+  border-color: rgba(245, 185, 0, 0.45);
+  box-shadow: 0 32px 64px -16px rgba(89, 0, 24, 0.2),
+              0 12px 32px -8px rgba(0,0,0,0.12),
+              0 0 0 1px rgba(245,185,0,0.2),
+              0 0 24px -4px rgba(245,185,0,0.1);
+}
+
+/* Typography: عنوان ملكي فائق */
+.title-imperial {
+  font-family: var(--font-arabic);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* الخلفية الإمبراطورية (الأساس العنابي-الذهبي) */
+.bg-imperial {
+  background: linear-gradient(135deg, #590018 0%, #3d0010 40%, #26000a 70%, #1a0005 100%);
+}
+
+/* نمط النقاط الإمبراطورية (Imperial Dot Pattern) */
+.pattern-imperial {
+  background-image: radial-gradient(circle, rgba(245,185,0,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* وميض الوسم (Badge Glow) */
+.badge-imperial {
+  background: linear-gradient(135deg, #f5b900, #dca600);
+  color: #26000a;
+  font-weight: 900;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  box-shadow: 0 0 12px rgba(245, 185, 0, 0.4);
+}
+
+/* تحسين الـ scrollbar للمستوى الإمبراطوري */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: linear-gradient(var(--maroon), var(--gold)); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }

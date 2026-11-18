@@ -10,7 +10,7 @@ import { AudioReader } from "@/components/AudioReader";
 import { KeyTakeaways } from "@/components/KeyTakeaways";
 import { ArticleReactions } from "@/components/ArticleReactions";
 import { SocialShareBar } from "@/components/SocialShareBar";
-import { ShieldCheck, Clock, FileText, Hash, ArrowRight, Camera, Share2, Sparkles, Flame } from "lucide-react";
+import { ShieldCheck, Clock, FileText, Hash, ArrowRight, Camera, Share2, Sparkles, Flame, ChevronLeft } from "lucide-react";
 import { resolveEditorialImage } from "@/lib/editorial-images";
 
 export const revalidate = 300; // ISR 5 دقائق
@@ -178,18 +178,18 @@ export default async function ArticlePage({ params }: PageProps) {
 
       {/* 1. مسار التنقل التحريري المنساب (Breadcrumbs) */}
       <nav aria-label="فتات الخبز" className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-        <Link href="/" className="hover:text-[var(--primary)] transition-colors">
+        <Link href="/" className="hover:text-[var(--gold)] transition-colors">
           الرئيسية
         </Link>
-        <span>/</span>
+        <ChevronLeft className="w-3.5 h-3.5 text-[var(--gold)]/60 rtl:rotate-0" />
         <Link
           href={`/${article.section.slug}`}
-          className="hover:text-[var(--primary)] font-bold text-[var(--primary)] transition-colors"
+          className="hover:text-[var(--gold)] font-bold text-[var(--primary)] transition-colors"
         >
           {article.section.nameAr}
         </Link>
-        <span>/</span>
-        <span className="truncate max-w-xs opacity-75">{article.titleAr}</span>
+        <ChevronLeft className="w-3.5 h-3.5 text-[var(--gold)]/60 rtl:rotate-0" />
+        <span className="truncate max-w-xs opacity-75 font-medium">{article.titleAr}</span>
       </nav>
 
       {/* 2. شريط أدوات القراءة التفاعلي (تكبير الخط، الاستماع الصوتي، الحفظ) */}
@@ -236,7 +236,7 @@ export default async function ArticlePage({ params }: PageProps) {
         </div>
 
         {/* العنوان البطل الفخم بنمط الجزيرة وسكاي نيوز عربية */}
-        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--text)] leading-tight tracking-tight pt-2">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--text)] leading-tight tracking-tight pt-2 title-imperial">
           {article.titleAr}
         </h1>
 
@@ -287,7 +287,9 @@ export default async function ArticlePage({ params }: PageProps) {
 
       {/* 4. الصورة الصحفية الرئيسية العريضة الفخمة (Lead Editorial Image) */}
       <figure className="space-y-2">
-        <div className="relative aspect-16/9 w-full rounded-3xl overflow-hidden bg-stone-950 border border-[var(--border)] shadow-xl group">
+        <div className="relative aspect-16/9 w-full rounded-3xl overflow-hidden bg-stone-950 border border-[var(--gold)]/30 shadow-imperial group">
+          {/* وميض ذهبي خافت أعلى الصورة */}
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80 z-10" />
           <img
             src={articleImageUrl}
             alt={article.titleAr}
@@ -296,7 +298,7 @@ export default async function ArticlePage({ params }: PageProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
-          <div className="absolute bottom-3 start-4 flex items-center gap-2 text-white/90 text-xs font-medium bg-black/60 backdrop-blur-md px-3 py-1 rounded-xl">
+          <div className="absolute bottom-3 start-4 flex items-center gap-2 text-white/90 text-xs font-medium bg-black/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10">
             <Camera className="w-3.5 h-3.5 text-[var(--gold)]" />
             <span>توثيق ميداني معتمد · أرشيف «الوطن اليوم»</span>
           </div>

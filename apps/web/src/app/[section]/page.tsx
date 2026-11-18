@@ -48,21 +48,24 @@ export default async function SectionPage({ params }: Props) {
   return (
     <div className="container-custom py-8 space-y-10">
       {/* 1. ترويسة القسم الملكية الفخمة */}
-      <div className="rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[#26000A]/10 via-[var(--surface)] to-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-sm">
-        {/* مسار التنقل */}
+      <div className="card-imperial bg-gradient-to-b from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-imperial relative overflow-hidden">
+        {/* شريط ذهبي علوي إمبراطوري */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-90" />
+
+        {/* مسار التنقل الإمبراطوري */}
         <nav aria-label="فتات الخبز" className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <Link href="/" className="hover:text-[var(--primary)] transition-colors">
+          <Link href="/" className="hover:text-[var(--gold)] transition-colors font-medium">
             الرئيسية
           </Link>
-          <span>/</span>
-          <span className="text-[var(--primary)] font-bold">{section.nameAr}</span>
+          <ChevronLeft className="w-3.5 h-3.5 text-[var(--gold)]/60 rtl:rotate-0" />
+          <span className="text-[var(--primary)] font-black">{section.nameAr}</span>
         </nav>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="w-3.5 h-3.5 rounded-full bg-[var(--gold)] animate-pulse" />
-              <h1 className="text-3xl sm:text-4xl font-black text-[var(--text)] tracking-tight">
+              <span className="w-3.5 h-3.5 rounded-full bg-[var(--gold)] shadow-[0_0_12px_var(--gold)] animate-pulse" />
+              <h1 className="text-3xl sm:text-4xl font-black text-[var(--text)] tracking-tight title-imperial">
                 {section.nameAr}
               </h1>
             </div>
@@ -73,9 +76,10 @@ export default async function SectionPage({ params }: Props) {
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] bg-[var(--bg)] px-4 py-2 rounded-2xl border border-[var(--border)] self-start md:self-auto">
-            <Layers className="w-4 h-4 text-[var(--primary)]" />
-            <span>{articles.length} مادة صحفية معتمدة</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--text)] bg-gradient-to-r from-[var(--gold)]/10 to-transparent px-4 py-2.5 rounded-2xl border border-[var(--gold)]/30 shadow-xs self-start md:self-auto">
+            <Layers className="w-4 h-4 text-[var(--gold)]" />
+            <span className="font-mono text-[var(--primary)] font-black">{articles.length}</span>
+            <span>مادة صحفية معتمدة</span>
           </div>
         </div>
 

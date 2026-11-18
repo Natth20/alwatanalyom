@@ -77,7 +77,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-b border-[var(--border)] bg-[var(--surface-header)] backdrop-blur-2xl sticky top-0 z-40 transition-colors shadow-lg">
+    <header className="border-b border-[var(--border)] bg-[var(--surface-header)] backdrop-blur-2xl sticky top-0 z-40 transition-colors shadow-lg relative imperial-gold-top">
       {/* 0. زر التخطي للمحتوى الرئيسي لتعزيز إمكانية الوصول */}
       <a
         href="#main-content"
