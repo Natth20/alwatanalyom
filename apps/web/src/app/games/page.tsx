@@ -16,6 +16,11 @@ import {
   MapPin,
   Award,
   AlertCircle,
+  Clock,
+  Check,
+  ShieldCheck,
+  Compass,
+  Star,
 } from "lucide-react";
 
 interface Question {
@@ -56,229 +61,289 @@ const QUESTIONS: Question[] = [
     explanation: "قصر هشام في أريحا يعود للعهد الأموي ويضم سجادة فسيفساء بديعة تبلغ مساحتها 827 متراً مربعاً تزين قاعة الحمام الملكي الشهيرة بـ«شجرة الحياة».",
     city: "أريحا",
   },
+  {
+    id: 4,
+    question: "أي مدينة فلسطينية تشتهر بلقب «مدينة الخليل الرحمن» وتضم الحرم الإبراهيمي الشريف وأسواق صناعة الخزف والزجاج اليدوي؟",
+    category: "تراث وهوية",
+    options: ["نابلس", "بيت لحم", "الخليل", "جنين"],
+    correctIndex: 2,
+    explanation: "الخليل هي رابع أقدس مدن الإسلام التاريخية بعد مكة والمدينة والقدس، وتضم مقام خليل الله إبراهيم عليه السلام وزوجته سارة في الحرم الإبراهيمي.",
+    city: "الخليل",
+  },
+  {
+    id: 5,
+    question: "ما هو الجبل المشهور في نابلس الذي يقابله جبل عيبال، وتُلقب المدينة بسببهما بحاضنة الجبلين؟",
+    category: "جغرافيا وتضاريس",
+    options: ["جبل الشيخ", "جبل جرزيم", "جبل المكبر", "جبل الكرمل"],
+    correctIndex: 1,
+    explanation: "تقع مدينة نابلس (دمشق الصغرى) في وادٍ خصب بين جبلي جرزيم جنوباً وعيبال شمالاً، وتضم طائفة السامريين العريقة.",
+    city: "نابلس جبل النار",
+  },
+  {
+    id: 6,
+    question: "ما هو العام الذي شهد اندلاع «ثورة البراق» المباركة دفاعاً عن الحائط الغربي للمسجد الأقصى المبارك ضد الانتداب والتهويد؟",
+    category: "محطات النضال",
+    options: ["1929م", "1936م", "1948م", "1920م"],
+    correctIndex: 0,
+    explanation: "اندلعت ثورة البراق في أغسطس 1929م دفاعاً عن إسلامية حائط البراق، وأسفرت عن استشهاد قادة الثلاثاء الحمراء (محمد جمجوم وفؤاد حجازي وعطا الزير).",
+    city: "القدس والخليل وصفد",
+  },
 ];
 
-export default function GamesPage() {
+export default function GamesMemoryPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [streak, setStreak] = useState(1);
+  const [streak, setStreak] = useState(0);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [timer, setTimer] = useState(25);
 
+  const currentQ = QUESTIONS[currentIdx];
+
+  // عداد الوقت التنازلي التفاعلي
   useEffect(() => {
-    try {
-      const savedStreak = localStorage.getItem("awt_daily_streak");
-      if (savedStreak) {
-        setStreak(parseInt(savedStreak, 10));
-      }
-    } catch {
-      // LocalStorage fallback
-    }
-  }, []);
+    if (isAnswered || isFinished) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          // انتهاء الوقت واحتساب إجابة خاطئة
+          handleOptionSelect(-1);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [currentIdx, isAnswered, isFinished]);
 
-  const handleSelect = (idx: number) => {
+  const handleOptionSelect = (optionIdx: number) => {
     if (isAnswered) return;
-    setSelectedAnswer(idx);
+    setSelectedOption(optionIdx);
     setIsAnswered(true);
 
-    if (idx === QUESTIONS[currentIdx].correctIndex) {
-      setScore((prev) => prev + 1);
+    if (optionIdx === currentQ.correctIndex) {
+      const addedPoints = 100 + streak * 25;
+      setScore((prev) => prev + addedPoints);
+      setStreak((prev) => prev + 1);
+    } else {
+      setStreak(0);
     }
   };
 
-  const handleNext = () => {
+  const handleNextQuestion = () => {
     if (currentIdx + 1 < QUESTIONS.length) {
       setCurrentIdx((prev) => prev + 1);
-      setSelectedAnswer(null);
+      setSelectedOption(null);
       setIsAnswered(false);
+      setTimer(25);
     } else {
-      setIsCompleted(true);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      try {
-        localStorage.setItem("awt_daily_streak", newStreak.toString());
-      } catch {
-        // LocalStorage fallback
-      }
+      setIsFinished(true);
     }
   };
 
-  const handleReset = () => {
+  const handleRestart = () => {
     setCurrentIdx(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
+    setSelectedOption(null);
     setScore(0);
-    setIsCompleted(false);
+    setStreak(0);
+    setIsAnswered(false);
+    setIsFinished(false);
+    setTimer(25);
   };
 
-  const handleShare = () => {
-    const text = `أكملت مسابقة الذاكرة الثقافية في «الوطن اليوم» بنتيجة ${score}/${QUESTIONS.length}! سلسلة الإنجاز: 🔥 ${streak} يوم. جرب التحدي الآن: ${window.location.href}`;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  const handleShareCertificate = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(
+        `حققتُ ${score} نقطة في تحدي الذاكرة الوطنية الفلسطينية على منصة «الوطن اليوم»! اختبر معلوماتك التاريخية الآن: ${window.location.href}`
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
-
-  const q = QUESTIONS[currentIdx];
 
   return (
-    <div className="container-custom py-8 max-w-4xl">
-      {/* Header */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 mb-8 text-center relative overflow-hidden shadow-sm">
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)]">
-            <Sparkles className="w-3.5 h-3.5" />
-            تحدي الذاكرة والمعرفة الوطنية
-          </div>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20">
-            تجريبي · محتوى ترفيهي ثقافي
-          </span>
-        </div>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] pb-24 selection:bg-[var(--gold)]/30">
+      {/* 1. الترويسة الرئيسية لتحدي الذاكرة */}
+      <div className="relative overflow-hidden border-b border-[var(--border)] bg-gradient-to-b from-[#1c0008]/20 via-[var(--surface)] to-[var(--bg)] py-12 md:py-16">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[var(--gold)]/15 via-transparent to-transparent pointer-events-none" />
 
-        <h1 className="text-2xl md:text-4xl font-black mb-3 text-[var(--text)]">
-          تحدي المعرفة الجغرافية والتاريخية
-        </h1>
-        <p className="text-sm md:text-base text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">
-          اختبر معلوماتك التوثيقية عن جغرافيا وتاريخ ومعالم فلسطين، واحتفظ بسلسلة إنجازك الشخصية في حفظ أسماء القرى والمدن.
-        </p>
+        <div className="container-custom max-w-4xl mx-auto px-4 relative z-10 space-y-4 text-center md:text-right">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--gold)]/30 bg-[var(--gold)]/10 text-[var(--gold)] text-xs font-bold shadow-sm">
+            <Trophy className="w-4 h-4 animate-bounce" />
+            <span>تحدي الذاكرة الوطنية وصون التراث الفلسطيني 2026</span>
+          </div>
 
-        {/* Stats Bar */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-bold">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-amber-500">
-            <Flame className="w-4 h-4 fill-amber-500" />
-            <span>السلسلة الحالية: {streak} يوم</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)]">
-            <Trophy className="w-4 h-4" />
-            <span>النقاط: {score} / {QUESTIONS.length}</span>
-          </div>
+          <h1 className="text-3xl md:text-5xl font-black text-[var(--text)] tracking-tight">
+            تحدي الذاكرة الوطنية · حراس الجذور والتاريخ
+          </h1>
+
+          <p className="text-sm md:text-base text-[var(--text-muted)] max-w-2xl leading-relaxed">
+            اختبر معرفتك بعروس البحر، معالم القدس الشريف، القرى المهجرة، ومحطات النضال التاريخي. صون الرواية أمانة تبدأ من المعرفة.
+          </p>
         </div>
       </div>
 
-      {!isCompleted ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 shadow-sm">
-          {/* Question Progress Header */}
-          <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--border)] text-xs text-[var(--text-muted)] font-bold">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-red-500" />
-              المحطة: {q.city} ({q.category})
-            </span>
-            <span>
-              السؤال {currentIdx + 1} من {QUESTIONS.length}
-            </span>
-          </div>
+      <div className="container-custom max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {!isFinished ? (
+          /* واجهة التحدي أثناء اللعب */
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-10 space-y-8 shadow-xl relative overflow-hidden">
+            {/* شريط الإحصاءات الحية (النقاط، التتابع، والوقت) */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-[var(--text-muted)]">
+                  السؤال {currentIdx + 1} من {QUESTIONS.length}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-bold">
+                  {currentQ.category}
+                </span>
+              </div>
 
-          {/* Question Box */}
-          <h2 className="text-lg md:text-xl font-black text-[var(--text)] mb-6 leading-relaxed">
-            {q.question}
-          </h2>
+              <div className="flex items-center gap-4 text-xs font-mono">
+                {/* عداد التتابع Streak */}
+                {streak > 1 && (
+                  <div className="flex items-center gap-1 text-amber-500 font-bold animate-pulse">
+                    <Flame className="w-4 h-4 fill-current" />
+                    <span>تتابع x{streak}</span>
+                  </div>
+                )}
 
-          {/* Options Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            {q.options.map((opt, idx) => {
-              const isSelected = selectedAnswer === idx;
-              const isCorrect = idx === q.correctIndex;
+                {/* مؤقت الثواني */}
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border ${
+                  timer <= 5 ? "border-rose-500 bg-rose-500/10 text-rose-500 animate-pulse font-bold" : "border-[var(--border)] bg-[var(--bg)] text-[var(--text)]"
+                }`}>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{timer} ثانية</span>
+                </div>
 
-              let btnStyle =
-                "bg-[var(--bg)] border-[var(--border)] hover:border-[var(--primary)] text-[var(--text)]";
+                {/* مجموع النقاط */}
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span>{score} نقطة</span>
+                </div>
+              </div>
+            </div>
 
-              if (isAnswered) {
-                if (isCorrect) {
-                  btnStyle = "bg-emerald-500/10 border-emerald-500 text-emerald-600 font-bold";
-                } else if (isSelected && !isCorrect) {
-                  btnStyle = "bg-red-500/10 border-red-500 text-red-600 font-bold";
-                } else {
-                  btnStyle = "bg-[var(--bg)] border-[var(--border)] opacity-50";
-                }
-              }
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleSelect(idx)}
-                  disabled={isAnswered}
-                  className={`p-4 rounded-xl border text-sm font-semibold text-right transition-all flex items-center justify-between cursor-pointer ${btnStyle}`}
-                >
-                  <span>{opt}</span>
-                  {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
-                  {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-red-600 shrink-0" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Explanation Box */}
-          {isAnswered && (
-            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 mb-6 animate-fadeIn">
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1 flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5" />
-                الإضاءة التوثيقية المعتمدة:
+            {/* نص السؤال التراثي التاريخي */}
+            <div className="space-y-3">
+              <span className="text-xs font-bold text-[var(--gold)] flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>نطاق السؤال: {currentQ.city}</span>
               </span>
-              <p className="text-xs md:text-sm text-[var(--text)] leading-relaxed">
-                {q.explanation}
-              </p>
-            </div>
-          )}
-
-          {/* Action Bar */}
-          <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
-            <div className="text-xs text-[var(--text-muted)]">
-              {isAnswered ? "اضغط للمتابعة إلى المحطة التالية" : "اختر الإجابة الصحيحة للتحقق"}
+              <h2 className="text-lg md:text-2xl font-black text-[var(--text)] leading-snug">
+                {currentQ.question}
+              </h2>
             </div>
 
+            {/* الخيارات الأربعة */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {currentQ.options.map((opt, optIdx) => {
+                const isSelected = selectedOption === optIdx;
+                const isCorrect = optIdx === currentQ.correctIndex;
+
+                let btnStyle = "border-[var(--border)] bg-[var(--bg)] hover:border-[var(--gold)] text-[var(--text)]";
+                if (isAnswered) {
+                  if (isCorrect) {
+                    btnStyle = "border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold shadow-md";
+                  } else if (isSelected) {
+                    btnStyle = "border-rose-500 bg-rose-500/15 text-rose-700 dark:text-rose-300 font-bold";
+                  } else {
+                    btnStyle = "border-[var(--border)] bg-[var(--bg)] opacity-40";
+                  }
+                }
+
+                return (
+                  <button
+                    key={optIdx}
+                    onClick={() => handleOptionSelect(optIdx)}
+                    disabled={isAnswered}
+                    className={`p-4 rounded-2xl border text-right text-xs md:text-sm font-semibold transition-all flex items-center justify-between cursor-pointer disabled:cursor-default ${btnStyle}`}
+                  >
+                    <span>{opt}</span>
+                    {isAnswered && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
+                    {isAnswered && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-rose-500 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* بطاقة التفسير التوثيقي التاريخي بعد الإجابة */}
             {isAnswered && (
-              <button
-                onClick={handleNext}
-                className="px-6 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
-              >
-                <span>{currentIdx + 1 === QUESTIONS.length ? "عرض النتيجة النهائية" : "السؤال التالي"}</span>
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-              </button>
+              <div className="p-5 rounded-2xl border border-[var(--gold)]/40 bg-[var(--gold)]/10 space-y-2 animate-fade-in">
+                <div className="flex items-center gap-2 text-xs font-bold text-[var(--gold-deep,var(--gold))]">
+                  <BookOpen className="w-4 h-4" />
+                  <span>التوثيق والشاهد التاريخي:</span>
+                </div>
+                <p className="text-xs md:text-sm text-[var(--text)] leading-relaxed">
+                  {currentQ.explanation}
+                </p>
+                <div className="pt-3 flex justify-end">
+                  <button
+                    onClick={handleNextQuestion}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{currentIdx + 1 === QUESTIONS.length ? "مشاهدة وسام الشرف" : "السؤال التالي"}</span>
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </button>
+                </div>
+              </div>
             )}
           </div>
-        </div>
-      ) : (
-        /* Result Screen */
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center space-y-6 shadow-sm">
-          <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
-            <Award className="w-8 h-8" />
-          </div>
+        ) : (
+          /* وسام الشرف الوطني عند الانتهاء (Digital Certificate of Honor) */
+          <div className="rounded-3xl border-2 border-[var(--gold)] bg-gradient-to-br from-[#1c020b] via-[#120106] to-[#0a0004] p-8 md:p-12 text-center text-white space-y-6 shadow-2xl relative overflow-hidden animate-fade-in">
+            {/* ختم الذهب المائي الخلفي */}
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--gold)] to-[#dca600] text-[#140106] flex items-center justify-center mx-auto shadow-2xl shadow-[var(--gold-glow)]">
+              <Award className="w-12 h-12" />
+            </div>
 
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black text-[var(--text)]">
-              أحسنت! أتممت تحدي المعرفة لليوم
-            </h2>
-            <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto">
-              حققت {score} إجابات صحيحة من أصل {QUESTIONS.length}. معاً نحافظ على ذاكرة الجغرافيا والتاريخ حية للأجيال القادمة.
-            </p>
-          </div>
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[var(--gold)] tracking-widest uppercase">
+                وثيقة التقدير والامتياز التراثي 2026
+              </span>
+              <h2 className="text-2xl md:text-4xl font-black text-white">
+                وسام حارس الذاكرة الوطنية الفلسطينية
+              </h2>
+              <p className="text-xs md:text-sm text-white/70 max-w-lg mx-auto leading-relaxed">
+                تمنح منصة «الوطن اليوم» هذا الوسام تقديراً لتمسكك بالرواية التاريخية الموثقة وصون معالم وجغرافيا فلسطين من النسيان.
+              </p>
+            </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={handleShare}
-              className="px-5 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
-            >
-              {copied ? <CheckCircle2 className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-              <span>{copied ? "تم نسخ نتيجة التحدي" : "مشاركة النتيجة"}</span>
-            </button>
-            <button
-              onClick={handleReset}
-              className="px-5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:text-[var(--primary)] text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>إعادة المحاولة</span>
-            </button>
-          </div>
-        </div>
-      )}
+            {/* لوحة نتيجة التحدي */}
+            <div className="inline-grid grid-cols-2 gap-6 p-5 rounded-2xl bg-white/5 border border-white/10 max-w-md mx-auto text-center">
+              <div>
+                <span className="text-xs text-white/50 block">مجموع النقاط</span>
+                <span className="text-3xl font-black text-[var(--gold)] font-mono">{score}</span>
+              </div>
+              <div>
+                <span className="text-xs text-white/50 block">نسبة المعرفة التاريخية</span>
+                <span className="text-3xl font-black text-emerald-400 font-mono">
+                  {Math.round((score / (QUESTIONS.length * 100)) * 100)}%
+                </span>
+              </div>
+            </div>
 
-      {/* Editorial Distinction Disclaimer per Section 11 */}
-      <div className="mt-6 p-3.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-start gap-2.5 text-xs text-[var(--text-muted)]">
-        <AlertCircle className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong>تنويه تحريري:</strong> قسم المسابقات الثقافية صُمم لأغراض التثقيف الوطني وحفظ الذاكرة التاريخية والجغرافية، وهو مصنف كـ «محتوى ترفيهي ثقافي» منفصل تماماً عن غرف الأخبار والتقارير الصحفية الاستقصائية.
-        </p>
+            {/* إجراءات المشاركة وإعادة المحاولة */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+              <button
+                onClick={handleShareCertificate}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg flex items-center gap-2 cursor-pointer"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                <span>{copied ? "تم نسخ نص المشاركة!" : "مشاركة الوسام على السوشيال ميديا"}</span>
+              </button>
+
+              <button
+                onClick={handleRestart}
+                className="px-6 py-3 rounded-2xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>إعادة خوض التحدي</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

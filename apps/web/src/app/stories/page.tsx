@@ -15,6 +15,10 @@ import {
   ArrowRight,
   TrendingUp,
   GitBranch,
+  BookOpen,
+  Filter,
+  Eye,
+  Calendar,
 } from "lucide-react";
 import { STORY_CLUSTERS, STORIES_SHORTS, StoryCard, StoryClusterItem } from "@/data/storiesShorts";
 
@@ -22,6 +26,7 @@ export default function StoriesPage() {
   const [activeTab, setActiveTab] = useState<"clusters" | "shorts">("clusters");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [expandedClusterId, setExpandedClusterId] = useState<string>(STORY_CLUSTERS[0]?.id || "");
 
   const shorts = STORIES_SHORTS;
   const currentShort = shorts[currentIndex];
@@ -41,257 +46,265 @@ export default function StoriesPage() {
   };
 
   return (
-    <div className="container-custom py-8 max-w-6xl mx-auto space-y-8">
-      {/* Page Header */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
-        <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg)] border border-[var(--border)] text-[var(--primary)]">
-            <Layers className="w-3.5 h-3.5" />
-            الذكاء التحريري وتجميع الأحداث
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-[var(--text)]">
-            تجمع القصص والموجزات الإخبارية المتعددة المصادر
-          </h1>
-          <p className="text-xs md:text-sm text-[var(--text-muted)] leading-relaxed">
-            منظومة ذكية تجمع تغطيات الحدث الواحد من مصادر متعددة وتظهر التطور الزمني والمقارن لمنع التكرار وتقديم الصورة الكاملة.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] pb-24 selection:bg-[var(--gold)]/30">
+      {/* 1. الترويسة الرئيسية */}
+      <div className="relative overflow-hidden border-b border-[var(--border)] bg-gradient-to-b from-[var(--primary)]/10 via-[var(--surface)] to-[var(--bg)] py-12 md:py-16">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[var(--gold)]/15 via-transparent to-transparent pointer-events-none" />
 
-        {/* Tab Switcher */}
-        <div className="flex items-center p-1 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-xs font-bold shrink-0">
-          <button
-            onClick={() => setActiveTab("clusters")}
-            className={`px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "clusters"
-                ? "bg-[var(--primary)] text-white shadow-sm"
-                : "text-[var(--text-muted)] hover:text-[var(--text)]"
-            }`}
-          >
-            <GitBranch className="w-3.5 h-3.5" />
-            <span>تجمع القصص (Story Clusters)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("shorts")}
-            className={`px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "shorts"
-                ? "bg-[var(--primary)] text-white shadow-sm"
-                : "text-[var(--text-muted)] hover:text-[var(--text)]"
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>موجزات بصرية سريعة</span>
-          </button>
+        <div className="container-custom max-w-6xl mx-auto px-4 relative z-10 space-y-4 text-center md:text-right">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--gold)]/30 bg-[var(--gold)]/10 text-[var(--gold)] text-xs font-bold shadow-sm">
+            <GitBranch className="w-4 h-4" />
+            <span>محرك التجميع الذكي ورسم الخط الزمني للحدث (Multi-Source Clusters)</span>
+          </div>
+
+          <h1 className="text-3xl md:text-5xl font-black text-[var(--text)] tracking-tight">
+            تجمعات القصص والخط الزمني المقارن
+          </h1>
+
+          <p className="text-sm md:text-base text-[var(--text-muted)] max-w-3xl leading-relaxed">
+            منظومة ذكية تجمع تغطيات الحدث الواحد من كافة الوكالات والمصادر الميدانية المعتمدة، لترسم خريطة زمنية ومقارنة دقيقة تمنع التكرار وتقدم لك الحقيقة الكاملة من كل الزوايا.
+          </p>
+
+          {/* محول الأنماط (تجمعات الأحداث vs قصص ريلز سريعة) */}
+          <div className="pt-2 flex justify-center md:justify-start">
+            <div className="inline-flex p-1.5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+              <button
+                onClick={() => setActiveTab("clusters")}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab === "clusters"
+                    ? "bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black shadow-md"
+                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>تجمعات القصص والخط الزمني ({STORY_CLUSTERS.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("shorts")}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab === "shorts"
+                    ? "bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black shadow-md"
+                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>الموجزات البصرية (Reels) ({shorts.length})</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* View 1: Story Clusters */}
-      {activeTab === "clusters" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] px-1">
-            <span className="font-bold">أبرز الأحداث الجارية بتغطية متعددة المصادر ({STORY_CLUSTERS.length} ملفات نشطة)</span>
-            <span>مرتبة حسب الأهمية وحداثة التحديث</span>
-          </div>
+      <div className="container-custom max-w-6xl mx-auto px-4 py-8 space-y-10">
+        {/* ========================================================================= */}
+        {/* النمط الأول: تجمعات القصص والخط الزمني المقارن */}
+        {/* ========================================================================= */}
+        {activeTab === "clusters" && (
+          <div className="space-y-8 animate-fade-in">
+            {STORY_CLUSTERS.map((cluster) => {
+              const isExpanded = expandedClusterId === cluster.id;
+              return (
+                <div
+                  key={cluster.id}
+                  className={`rounded-3xl border transition-all overflow-hidden ${
+                    isExpanded
+                      ? "border-[var(--gold)] bg-[var(--surface)] shadow-xl"
+                      : "border-[var(--border)] bg-[var(--surface)] hover:border-white/30"
+                  }`}
+                >
+                  {/* رأس التجمع */}
+                  <div
+                    onClick={() => setExpandedClusterId(isExpanded ? "" : cluster.id)}
+                    className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer"
+                  >
+                    <div className="space-y-3 max-w-3xl">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-3 py-1 rounded-full bg-[var(--primary-light)] text-[var(--primary)] font-bold">
+                          {cluster.category}
+                        </span>
+                        <span className="text-[var(--text-muted)] font-mono">{cluster.lastUpdated}</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">
+                          {cluster.sourcesCount} وكالات متطابقة
+                        </span>
+                      </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            {STORY_CLUSTERS.map((cluster) => (
-              <article
-                key={cluster.id}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm hover:border-[var(--primary)]/40 transition-all space-y-5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-white font-bold text-[11px]">
-                      {cluster.category}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-bold text-[11px] flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" />
-                      {cluster.sourcesCount} مصادر معتمدة ومطابقة
-                    </span>
+                      <h2 className="text-xl md:text-2xl font-black text-[var(--text)] leading-snug">
+                        {cluster.headline}
+                      </h2>
+
+                      <p className="text-xs md:text-sm text-[var(--text-muted)] leading-relaxed">
+                        {cluster.summary}
+                      </p>
+                    </div>
+
+                    <div className="shrink-0 flex items-center gap-3">
+                      <div className="text-center p-3 rounded-2xl bg-[var(--bg)] border border-[var(--border)]">
+                        <span className="text-xl font-black text-[var(--gold)] block">{cluster.importance}%</span>
+                        <span className="text-[10px] text-[var(--text-muted)] font-bold">مؤشر الأهمية</span>
+                      </div>
+                      <button className="w-10 h-10 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--text)]">
+                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
-                  <span className="text-[11px] text-[var(--text-muted)] flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    آخر تطور: {cluster.lastUpdated}
-                  </span>
-                </div>
 
-                <div>
-                  <h2 className="text-xl md:text-2xl font-black text-[var(--text)] mb-2">
-                    {cluster.headline}
-                  </h2>
-                  <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                    {cluster.summary}
-                  </p>
-                </div>
+                  {/* الجزء التفاعلي الممتد: الخط الزمني ومقارنة الوكالات */}
+                  {isExpanded && (
+                    <div className="p-6 md:p-8 pt-0 border-t border-[var(--border)] bg-[var(--bg)]/40 space-y-8 animate-fade-in">
+                      {/* 1. الخط الزمني المتسلسل للأحداث */}
+                      <div className="space-y-4 pt-6">
+                        <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-[var(--gold)]" />
+                          <span>الخط الزمني الموثق لتسلسل الأحداث:</span>
+                        </h3>
 
-                {/* Sources Row */}
-                <div className="space-y-2">
-                  <span className="text-xs font-bold text-[var(--text)] block">
-                    المصادر المساهمة في بناء التغطية:
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {cluster.sources.map((src, idx) => (
-                      <a
-                        key={idx}
-                        href={src.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--primary)] transition-colors flex items-center justify-between gap-2 group"
-                      >
-                        <div className="min-w-0">
-                          <span className="text-xs font-bold block text-[var(--text)] group-hover:text-[var(--primary)] truncate">
-                            {src.headline}
-                          </span>
-                          <span className="text-[10px] text-[var(--text-muted)]">
-                            {src.name} · {src.time}
-                          </span>
-                        </div>
-                        <ExternalLink className="w-3 h-3 text-[var(--text-muted)] group-hover:text-[var(--primary)] shrink-0" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Chronological Timeline */}
-                <div className="pt-4 border-t border-[var(--border)]">
-                  <span className="text-xs font-bold text-[var(--text)] flex items-center gap-1.5 mb-3">
-                    <Clock className="w-3.5 h-3.5 text-[var(--primary)]" />
-                    التسلسل الزمني لتطورات الحدث:
-                  </span>
-                  <div className="relative pr-4 border-r-2 border-[var(--border)] space-y-3 mr-2 text-xs">
-                    {cluster.timeline.map((step, sIdx) => (
-                      <div key={sIdx} className="relative">
-                        <span className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-[var(--primary)]">{step.time}</span>
-                          <span className="text-[var(--text)] font-semibold">{step.event}</span>
-                          <span className="text-[10px] text-[var(--text-muted)] bg-[var(--bg)] px-2 py-0.5 rounded border border-[var(--border)] mr-auto">
-                            المصدر: {step.source}
-                          </span>
+                        <div className="relative ps-6 border-s-2 border-[var(--gold)]/40 space-y-4">
+                          {cluster.timeline.map((item, tIdx) => (
+                            <div key={tIdx} className="relative group">
+                              <span className="absolute -start-[31px] top-1.5 w-3.5 h-3.5 rounded-full bg-[var(--gold)] border-4 border-[var(--surface)] shadow" />
+                              <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-mono font-bold text-[var(--primary)]">{item.time}</span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--bg)] font-bold text-[var(--text-muted)]">
+                                    المصدر: {item.source}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-[var(--text)] font-semibold leading-relaxed">
+                                  {item.event}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* View 2: Visual Shorts Card */}
-      {activeTab === "shorts" && currentShort && (
-        <div className="flex flex-col items-center justify-center py-4">
-          <div className="relative w-full max-w-md h-[680px] bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl flex flex-col justify-between text-white">
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
+                      {/* 2. جدول مقارنة روايات المصادر والوكالات */}
+                      <div className="space-y-3">
+                        <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-[var(--primary)]" />
+                          <span>روايات وعناوين الوكالات المشتركة في التغطية:</span>
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {cluster.sources.map((src, sIdx) => (
+                            <a
+                              key={sIdx}
+                              href={src.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)] transition-all flex items-start justify-between gap-3 group"
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-xs text-[var(--primary)]">{src.name}</span>
+                                  <span className="font-mono text-[10px] text-[var(--text-muted)]">{src.time}</span>
+                                </div>
+                                <h4 className="text-xs font-semibold text-[var(--text)] group-hover:text-[var(--gold)] transition-colors">
+                                  {src.headline}
+                                </h4>
+                              </div>
+                              <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--gold)] shrink-0 mt-1" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* النمط الثاني: الموجزات البصرية السريعة (Story Reels) */}
+        {/* ========================================================================= */}
+        {activeTab === "shorts" && currentShort && (
+          <div className="max-w-md mx-auto space-y-4 animate-fade-in">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-black text-white h-[580px] flex flex-col justify-between p-6 select-none">
               <img
                 src={currentShort.image}
                 alt={currentShort.headline}
-                className="w-full h-full object-cover opacity-35 scale-105 transition-transform duration-700"
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/70" />
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60" />
 
-            {/* Top Progress Bars */}
-            <div className="relative z-10 p-4 pb-2">
-              <div className="flex items-center gap-1.5 mb-3">
-                {shorts.map((s, idx) => (
-                  <div
-                    key={s.id}
-                    className="h-1 flex-1 rounded-full bg-white/20 overflow-hidden"
-                  >
+              {/* شريط المؤشر العلوي لعدد القصص */}
+              <div className="relative z-10 space-y-3">
+                <div className="flex gap-1">
+                  {shorts.map((_, idx) => (
                     <div
-                      className={`h-full transition-all duration-300 ${
-                        idx === currentIndex
-                          ? "bg-white w-full"
-                          : idx < currentIndex
-                          ? "bg-white w-full"
-                          : "w-0"
+                      key={idx}
+                      className={`h-1 flex-1 rounded-full transition-all ${
+                        idx === currentIndex ? "bg-[var(--gold)]" : idx < currentIndex ? "bg-white" : "bg-white/30"
                       }`}
                     />
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md font-bold">
+                    {currentShort.category}
+                  </span>
+                  <span className="font-mono text-white/70">{currentShort.timestamp}</span>
+                </div>
+              </div>
+
+              {/* متن القصة ونقاط الإيجاز */}
+              <div className="relative z-10 space-y-4">
+                {currentShort.statNumber && (
+                  <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 w-fit">
+                    <span className="text-2xl font-black text-[var(--gold)] block font-mono">
+                      {currentShort.statNumber}
+                    </span>
+                    <span className="text-[11px] text-white/80 font-bold">{currentShort.statLabel}</span>
                   </div>
-                ))}
-              </div>
+                )}
 
-              <div className="flex items-center justify-between">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-black shadow-md ${currentShort.categoryColor}`}
-                >
-                  {currentShort.category}
-                </span>
-                <div className="flex items-center gap-2 text-xs text-white/70">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{currentShort.timestamp}</span>
+                <h2 className="text-lg md:text-xl font-black text-white leading-snug">
+                  {currentShort.headline}
+                </h2>
+
+                <ul className="space-y-1.5 text-xs text-white/90">
+                  {currentShort.summaryBullets.map((bullet, bIdx) => (
+                    <li key={bIdx} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] mt-1.5 shrink-0" />
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs text-white/70">
+                  <span>المصدر: <strong>{currentShort.sourceName}</strong></span>
+                  <button
+                    onClick={() => handleShare(currentShort.headline)}
+                    className="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Main Content */}
-            <div className="relative z-10 p-6 flex-1 flex flex-col justify-center space-y-4">
-              {currentShort.statLabel && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 self-start">
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs text-white/90 font-bold">{currentShort.statLabel}</span>
-                </div>
-              )}
-
-              <h2 className="text-xl md:text-2xl font-black leading-snug drop-shadow-md">
-                {currentShort.headline}
-              </h2>
-
-              <ul className="space-y-2 text-xs md:text-sm text-white/90 leading-relaxed">
-                {currentShort.summaryBullets.map((bullet, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Footer with Controls */}
-            <div className="relative z-10 p-4 pt-2 border-t border-white/10 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Link
-                  href={currentShort.sourceUrl}
-                  className="px-3.5 py-1.5 rounded-xl bg-[var(--primary)] text-white font-bold hover:brightness-110 transition-all flex items-center gap-1.5"
-                >
-                  <span>التغطية الكاملة</span>
-                  <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                </Link>
-                <button
-                  onClick={() => handleShare(`${currentShort.headline} — الوطن اليوم`)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                  title="مشاركة"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {/* Navigation arrows */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={handlePrev}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                  title="السابق"
-                >
-                  <ChevronUp className="w-4 h-4" />
-                </button>
-                <span className="text-white/60 font-mono text-[11px] px-1">
-                  {currentIndex + 1} / {shorts.length}
-                </span>
-                <button
-                  onClick={handleNext}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                  title="التالي"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-              </div>
+            {/* أزرار التنقل بين القصص السريعة */}
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={handlePrev}
+                className="flex-1 py-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-xs font-bold hover:border-[var(--gold)] transition-colors text-center cursor-pointer"
+              >
+                ← القصة السابقة
+              </button>
+              <button
+                onClick={handleNext}
+                className="flex-1 py-3 rounded-2xl bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-colors text-center cursor-pointer shadow-md"
+              >
+                القصة التالية →
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
