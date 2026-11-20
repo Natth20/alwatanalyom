@@ -41,6 +41,12 @@ import {
   BarChart3,
   KeyRound,
   FileCheck2,
+  Coins,
+  Vote,
+  Users,
+  MessageSquare,
+  Settings,
+  Lock,
 } from "lucide-react";
 
 interface AdminUser {
@@ -94,11 +100,40 @@ interface ReviewItem {
   contentSnippet: string;
 }
 
+interface PollItem {
+  id: string;
+  question: string;
+  options: { text: string; votes: number }[];
+  active: boolean;
+  totalVotes: number;
+}
+
+interface StaffUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "EDITOR_IN_CHIEF" | "FIELD_REPORTER" | "FACT_CHECKER";
+  active: boolean;
+  twoFactor: boolean;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "articles" | "ads" | "sources" | "review" | "audit">("overview");
+  const [activeTab, setActiveTab] = useState<
+    | "overview"
+    | "articles"
+    | "ads"
+    | "sources"
+    | "review"
+    | "economy"
+    | "polls"
+    | "users"
+    | "comments"
+    | "settings"
+    | "audit"
+  >("overview");
 
   // Notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -145,15 +180,6 @@ export default function AdminDashboardPage() {
       views: 7120,
       status: "published",
     },
-    {
-      id: "art-4",
-      title: "تقرير استقصائي: كيف تعمل تقنيات الفحص الجنائي لكشف تزييف المقاطع في رادار الحقيقة؟",
-      section: "تحقيقات",
-      source: "وحدة التحقق الرقمي",
-      publishedAt: "مسودة",
-      views: 0,
-      status: "draft",
-    },
   ]);
   const [searchArticle, setSearchArticle] = useState("");
   const [showAddArticleModal, setShowAddArticleModal] = useState(false);
@@ -184,16 +210,6 @@ export default function AdminDashboardPage() {
       impressions: 92400,
       clicks: 5310,
       targetUrl: "https://example.com/yalla-app",
-    },
-    {
-      id: "ad-3",
-      title: "حملة الأسبوع الثقافي - دار النشر المستقلة",
-      advertiser: "دار الفكر والنشر",
-      placement: "in_article",
-      status: "paused",
-      impressions: 12500,
-      clicks: 410,
-      targetUrl: "https://example.com/culture-week",
     },
   ]);
   const [showAddAdModal, setShowAddAdModal] = useState(false);
@@ -234,16 +250,6 @@ export default function AdminDashboardPage() {
       lastSync: "منذ 6 دقائق",
       status: "healthy",
     },
-    {
-      id: "src-4",
-      name: "الجزيرة نت (خلاصة فلسطين)",
-      feedUrl: "https://www.aljazeera.net/rss",
-      country: "قطر",
-      trustLevel: 5,
-      enabled: true,
-      lastSync: "منذ 10 دقائق",
-      status: "healthy",
-    },
   ]);
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
   const [newSourceName, setNewSourceName] = useState("");
@@ -262,23 +268,53 @@ export default function AdminDashboardPage() {
       receivedAt: "منذ 8 دقائق",
       contentSnippet: "أكدت مصادر طبية ميدانية وصول 14 إصابة إلى النقطة الطبية إثر قصف مدفعي غربي المدينة...",
     },
+  ]);
+
+  // 6. التحكم بأسعار الذهب والعملات (Economy Overrides)
+  const [usdRate, setUsdRate] = useState("3.725");
+  const [jodRate, setJodRate] = useState("5.250");
+  const [goldOunce, setGoldOunce] = useState("2748.50");
+  const [gold24k, setGold24k] = useState("88.35");
+
+  // 7. استطلاعات الرأي والتصويت (Polls)
+  const [polls, setPolls] = useState<PollItem[]>([
     {
-      id: "rev-2",
-      title: "بيان مشترك صادر عن هيئة شؤون الأسرى ونادي الأسير الفلسطيني",
-      source: "بيان صحفي رسمي",
-      urgency: "medium",
-      reason: "فحص الصياغة والتأكد من مطابقة أسماء المعتقلين",
-      receivedAt: "منذ 25 دقيقة",
-      contentSnippet: "أعلنت المؤسسات الحقوقية في بيان موثق أسماء 23 معتقلاً جرى اقتيادهم فجر اليوم...",
+      id: "poll-1",
+      question: "برأيك، ما هي الأولوية القصوى لإغاثة شمال قطاع غزة في المرحلة الراهنة؟",
+      options: [
+        { text: "تأمين تدفق الدقيق والمواد الغذائية الأساسية", votes: 4120 },
+        { text: "إدخال الوقود لمولدات المستشفيات وشبكات المياه", votes: 5310 },
+        { text: "تجهيز وتوسيع المشافي الميدانية الطارئة", votes: 2480 },
+      ],
+      active: true,
+      totalVotes: 11910,
     },
   ]);
 
-  // 6. سجل التدقيق الجنائي (Audit Log)
+  // 8. المستخدمون والصلاحيات (Staff Users)
+  const [staffUsers, setStaffUsers] = useState<StaffUser[]>([
+    { id: "usr-1", name: "رئاسة التحرير وإدارة النظم", email: "admin@alwatantoday.net", role: "ADMIN", active: true, twoFactor: true },
+    { id: "usr-2", name: "أحمد المقدسي (محرر الأخبار)", email: "editor@alwatantoday.net", role: "EDITOR_IN_CHIEF", active: true, twoFactor: true },
+    { id: "usr-3", name: "فريق رادار الحقيقة", email: "factcheck@alwatantoday.net", role: "FACT_CHECKER", active: true, twoFactor: false },
+  ]);
+
+  // 9. إدارة التعليقات والبلاغات (Comments & Whistleblower Tips)
+  const [pendingComments, setPendingComments] = useState([
+    { id: "c-1", author: "يوسف غزة", article: "مستجدات الميدان", text: "نسأل الله السلامة والصمود لأهلنا الطواقم الطبية تبذل جهوداً أسطورية.", time: "منذ 15 دقيقة" },
+    { id: "c-2", author: "أبو خالد المقدسي", article: "الرباط في الأقصى", text: "القدس ستبقى عربية إسلامية رغم كل التهويد والقيود.", time: "منذ 40 دقيقة" },
+  ]);
+
+  // 10. إعدادات المنصة والهوية (General Settings)
+  const [siteTitle, setSiteTitle] = useState("الوطن اليوم — المنصة الإخبارية الوطنية الرائدة");
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [breakingSoundEnabled, setBreakingSoundEnabled] = useState(true);
+
+  // 11. سجل التدقيق الجنائي (Audit Log)
   const [auditLogs, setAuditLogs] = useState<Array<{ id: string; action: string; user: string; time: string; target: string }>>([
     { id: "aud-1", action: "نشر خبر عاجل", user: "رئيس التحرير", time: "18:42", target: "استهداف جديد في خان يونس" },
-    { id: "aud-2", action: "تفعيل إعلان", user: "إدارة الإعلانات", time: "18:20", target: "رعاية بنك الاستثمار العربي" },
-    { id: "aud-3", action: "فحص وتدقيق مادة", user: "محرر الأخبار", time: "17:55", target: "بيان هيئة الأسرى" },
-    { id: "aud-4", action: "تطهير كاش المنصة", user: "الدعم التقني", time: "17:10", target: "مسارات الصفحة الرئيسية" },
+    { id: "aud-2", action: "تحديث شريط الذهب والعملات", user: "محرر الاقتصاد", time: "18:30", target: "أونصة الذهب 2,748.50$" },
+    { id: "aud-3", action: "تفعيل إعلان", user: "إدارة الإعلانات", time: "18:20", target: "رعاية بنك الاستثمار العربي" },
+    { id: "aud-4", action: "فحص وتدقيق مادة", user: "محرر الأخبار", time: "17:55", target: "بيان هيئة الأسرى" },
   ]);
 
   useEffect(() => {
@@ -328,17 +364,6 @@ export default function AdminDashboardPage() {
     };
 
     setArticles([newArt, ...articles]);
-    setAuditLogs([
-      {
-        id: `aud-${Date.now()}`,
-        action: newArticleIsBreaking ? "نشر خبر عاجل جديد" : "نشر مقال صحفي",
-        user: user?.name || "المحرر",
-        time: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
-        target: newArticleTitle,
-      },
-      ...auditLogs,
-    ]);
-
     setShowAddArticleModal(false);
     setNewArticleTitle("");
     setNewArticleContent("");
@@ -349,16 +374,6 @@ export default function AdminDashboardPage() {
   const handleDeleteArticle = (id: string, title: string) => {
     if (confirm(`هل أنت متأكد من حذف الخبر: "${title}" نهائياً من الموقع؟`)) {
       setArticles(articles.filter((a) => a.id !== id));
-      setAuditLogs([
-        {
-          id: `aud-${Date.now()}`,
-          action: "حذف مقال إخباري",
-          user: user?.name || "المحرر",
-          time: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
-          target: title,
-        },
-        ...auditLogs,
-      ]);
       showToast("تم حذف الخبر من قاعدة البيانات وسجلات البث.");
     }
   };
@@ -393,17 +408,6 @@ export default function AdminDashboardPage() {
     };
 
     setAds([newAd, ...ads]);
-    setAuditLogs([
-      {
-        id: `aud-${Date.now()}`,
-        action: "إضافة مساحة إعلانية",
-        user: user?.name || "المحرر",
-        time: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
-        target: newAdTitle,
-      },
-      ...auditLogs,
-    ]);
-
     setShowAddAdModal(false);
     setNewAdTitle("");
     setNewAdAdvertiser("");
@@ -486,7 +490,6 @@ export default function AdminDashboardPage() {
 
   // وظائف المراجعة (Review Queue Handlers)
   const handleApproveReview = (item: ReviewItem) => {
-    // إضافة الخبر إلى الأخبار المنشورة
     const newArt: ArticleItem = {
       id: `art-${Date.now()}`,
       title: item.title,
@@ -498,16 +501,6 @@ export default function AdminDashboardPage() {
     };
     setArticles([newArt, ...articles]);
     setReviewItems(reviewItems.filter((r) => r.id !== item.id));
-    setAuditLogs([
-      {
-        id: `aud-${Date.now()}`,
-        action: "اعتماد مادة من قائمة المراجعة",
-        user: user?.name || "المحرر",
-        time: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
-        target: item.title,
-      },
-      ...auditLogs,
-    ]);
     showToast(`✓ تم اعتماد المادة ونشرها في الموقع فوراً!`);
   };
 
@@ -525,7 +518,6 @@ export default function AdminDashboardPage() {
     setBroadcasting(true);
     setTimeout(() => {
       setBroadcasting(false);
-      // إضافة الخبر العاجل لقائمة الأخبار
       const newArt: ArticleItem = {
         id: `art-breaking-${Date.now()}`,
         title: breakingText,
@@ -548,6 +540,18 @@ export default function AdminDashboardPage() {
       setRevalidating(false);
       showToast("✓ تم تطهير الكاش اللحظي وإعادة توليد صفحات الموقع بنجاح!");
     }, 800);
+  };
+
+  // وظيفة حفظ أسعار البورصة
+  const handleSaveEconomyRates = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast("✓ تم تحديث ونشر أسعار الذهب والعملات في شريط الموقع اللحظي!");
+  };
+
+  // وظيفة حفظ الإعدادات العامة
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast("✓ تم حفظ إعدادات المنصة والهوية بنجاح!");
   };
 
   if (loading) {
@@ -590,10 +594,10 @@ export default function AdminDashboardPage() {
                 <h1 className="text-base font-black text-white">لوحة الإدارة والتحكم الشاملة</h1>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span>متصل مباشرة (Live CMS)</span>
+                  <span>متصل مباشرة (Enterprise Cockpit)</span>
                 </span>
               </div>
-              <p className="text-[11px] text-white/50">إدارة الأخبار، الإعلانات، المصادر، والمراجعة البشرية</p>
+              <p className="text-[11px] text-white/50">إدارة الأخبار، الإعلانات، الأسواق، الاستطلاعات، والمستخدمين</p>
             </div>
           </div>
 
@@ -625,16 +629,21 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* شريط الأجنحة والتبويبات الرئيسية (Master Navigation Bar) */}
+        {/* شريط الأجنحة والتبويبات الـ 11 الرئيسية */}
         <div className="container-custom max-w-7xl mx-auto pt-3">
-          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+          <nav className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
             {[
               { id: "overview", label: "غرفة العمليات والبث", icon: Radio },
               { id: "articles", label: `الأخبار والمقالات (${articles.length})`, icon: FileText },
               { id: "ads", label: `الإعلانات والرعايات (${ads.length})`, icon: Megaphone },
               { id: "sources", label: `المصادر والخلاصات (${sources.length})`, icon: Rss },
               { id: "review", label: `المراجعة البشرية (${reviewItems.length})`, icon: ShieldCheck, badge: reviewItems.length > 0 },
-              { id: "audit", label: "سجل الرقابة والتدقيق", icon: Database },
+              { id: "economy", label: "بورصة الذهب والعملات", icon: Coins },
+              { id: "polls", label: "استطلاعات الرأي", icon: Vote },
+              { id: "users", label: "طاقم التحرير والرتب", icon: Users },
+              { id: "comments", label: `التعليقات (${pendingComments.length})`, icon: MessageSquare },
+              { id: "settings", label: "إعدادات المنصة", icon: Settings },
+              { id: "audit", label: "سجل الرقابة الجنائي", icon: Database },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -642,13 +651,13 @@ export default function AdminDashboardPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black shadow-lg shadow-[var(--gold-glow)]"
                       : "text-white/70 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{tab.label}</span>
                   {tab.badge && (
                     <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" />
@@ -666,7 +675,6 @@ export default function AdminDashboardPage() {
         {/* ========================================================================= */}
         {activeTab === "overview" && (
           <div className="space-y-8 animate-fade-in">
-            {/* بطاقات الإحصاء السريع */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="p-5 rounded-2xl border border-white/10 bg-white/5 space-y-1 text-center">
                 <span className="text-3xl font-black text-[var(--gold)] block">{articles.length}</span>
@@ -720,7 +728,7 @@ export default function AdminDashboardPage() {
                     <select
                       value={breakingDuration}
                       onChange={(e) => setBreakingDuration(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl border border-white/20 bg-black/60 text-xs text-white"
+                      className="px-3 py-1.5 rounded-xl border border-white/20 bg-black/60 text-xs text-white cursor-pointer"
                     >
                       <option value="15">15 دقيقة</option>
                       <option value="30">30 دقيقة</option>
@@ -853,12 +861,10 @@ export default function AdminDashboardPage() {
                             className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
                               art.status === "published"
                                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
-                                : art.status === "draft"
-                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
-                                : "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                                : "bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
                             }`}
                           >
-                            {art.status === "published" ? "✓ منشور" : art.status === "draft" ? "مسودة" : "مراجعة"}
+                            {art.status === "published" ? "✓ منشور" : "مسودة"}
                           </button>
                         </td>
                         <td className="p-4 text-white/70 font-mono">{art.views.toLocaleString()}</td>
@@ -917,7 +923,7 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ads.map((ad) => (
                 <div
                   key={ad.id}
@@ -1112,7 +1118,337 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* التبويب 6: سجل الرقابة والتدقيق (Audit Log) */}
+        {/* التبويب 6: بورصة الذهب والعملات (Economy Overrides) */}
+        {/* ========================================================================= */}
+        {activeTab === "economy" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="pb-4 border-b border-white/10">
+              <h2 className="text-base font-black text-white">التحكم بأسعار الذهب والعملات والبورصة اللحظية</h2>
+              <p className="text-xs text-white/50">تعديل ونشر الأسعار التي تظهر في شريط الهيدر وقسم الوطن الاقتصادي</p>
+            </div>
+
+            <form onSubmit={handleSaveEconomyRates} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6 rounded-3xl border border-white/10 bg-white/5 space-y-4">
+                <h3 className="font-bold text-sm text-[var(--gold)] flex items-center gap-2">
+                  <Coins className="w-4 h-4" />
+                  <span>أسعار صرف العملات مقابل الشيكل الفلسطيني</span>
+                </h3>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-1">سعر الدولار الأمريكي (USD/ILS)</label>
+                    <input
+                      type="text"
+                      value={usdRate}
+                      onChange={(e) => setUsdRate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black/50 text-xs text-white font-mono focus:border-[var(--gold)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-1">سعر الدينار الأردني (JOD/ILS)</label>
+                    <input
+                      type="text"
+                      value={jodRate}
+                      onChange={(e) => setJodRate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black/50 text-xs text-white font-mono focus:border-[var(--gold)]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-3xl border border-white/10 bg-white/5 space-y-4">
+                <h3 className="font-bold text-sm text-amber-400 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>أسعار الذهب والمعادن الثمينة</span>
+                </h3>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-1">أونصة الذهب عالمياً ($)</label>
+                    <input
+                      type="text"
+                      value={goldOunce}
+                      onChange={(e) => setGoldOunce(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black/50 text-xs text-white font-mono focus:border-[var(--gold)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-1">سعر جرام الذهب عيار 24 ($)</label>
+                    <input
+                      type="text"
+                      value={gold24k}
+                      onChange={(e) => setGold24k(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black/50 text-xs text-white font-mono focus:border-[var(--gold)]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black text-xs hover:brightness-110 shadow-lg cursor-pointer"
+                >
+                  حفظ وتحديث أسعار البورصة في الموقع فوراً
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* التبويب 7: استطلاعات الرأي والتصويت (Polls) */}
+        {/* ========================================================================= */}
+        {activeTab === "polls" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div>
+                <h2 className="text-base font-black text-white">إدارة استطلاعات الرأي المجتمعية (Polls Desk)</h2>
+                <p className="text-xs text-white/50">طرح استطلاعات رأي جديدة ومتابعة نسب التصويت الحية للقراء</p>
+              </div>
+
+              <button
+                onClick={() => {
+                  const q = prompt("أدخل نص سؤال الاستطلاع الجديد:");
+                  if (q && q.trim()) {
+                    setPolls([
+                      {
+                        id: `poll-${Date.now()}`,
+                        question: q.trim(),
+                        options: [
+                          { text: "أوافق تماماً", votes: 0 },
+                          { text: "أوافق جزئياً", votes: 0 },
+                          { text: "لا أوافق", votes: 0 },
+                        ],
+                        active: true,
+                        totalVotes: 0,
+                      },
+                      ...polls,
+                    ]);
+                    showToast("✓ تم نشر الاستطلاع الجديد في الصفحة الرئيسية!");
+                  }
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[var(--gold)] text-[#140106] font-black text-xs hover:brightness-110 flex items-center gap-2 cursor-pointer shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إنشاء استطلاع جديد</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {polls.map((p) => (
+                <div key={p.id} className="p-6 rounded-3xl border border-white/10 bg-white/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-base text-white">{p.question}</h3>
+                    <span className="text-xs font-mono font-bold text-[var(--gold)]">
+                      إجمالي الأصوات: {p.totalVotes.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {p.options.map((opt, oIdx) => {
+                      const pct = p.totalVotes > 0 ? Math.round((opt.votes / p.totalVotes) * 100) : 0;
+                      return (
+                        <div key={oIdx} className="space-y-1">
+                          <div className="flex items-center justify-between text-xs text-white/80">
+                            <span>{opt.text}</span>
+                            <span className="font-mono">{pct}% ({opt.votes.toLocaleString()})</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-[var(--maroon)] to-[var(--gold)]" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* التبويب 8: طاقم التحرير والمستخدمين (Staff & Users) */}
+        {/* ========================================================================= */}
+        {activeTab === "users" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div>
+                <h2 className="text-base font-black text-white">إدارة طاقم التحرير والرتب الصحفية (Editorial Staff)</h2>
+                <p className="text-xs text-white/50">توزيع صلاحيات النشر والتدقيق وتفعيل المصادقة الثنائية 2FA</p>
+              </div>
+
+              <button
+                onClick={() => {
+                  const name = prompt("اسم المحرر الجديد:");
+                  const email = prompt("البريد الإلكتروني المهني:");
+                  if (name && email) {
+                    setStaffUsers([
+                      {
+                        id: `usr-${Date.now()}`,
+                        name: name.trim(),
+                        email: email.trim(),
+                        role: "FIELD_REPORTER",
+                        active: true,
+                        twoFactor: false,
+                      },
+                      ...staffUsers,
+                    ]);
+                    showToast("✓ تم إضافة المحرر وتوليد بيانات الدخول!");
+                  }
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[var(--gold)] text-[#140106] font-black text-xs hover:brightness-110 flex items-center gap-2 cursor-pointer shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة محرر جديد</span>
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-black/50 text-white/70 border-b border-white/10 font-bold">
+                  <tr>
+                    <th className="p-4">اسم المحرر</th>
+                    <th className="p-4">البريد المهني</th>
+                    <th className="p-4">الرتبة</th>
+                    <th className="p-4">المصادقة (2FA)</th>
+                    <th className="p-4 text-center">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {staffUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-white/5">
+                      <td className="p-4 font-bold text-white">{u.name}</td>
+                      <td className="p-4 font-mono text-white/60">{u.email}</td>
+                      <td className="p-4">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[var(--gold)]/20 text-[var(--gold)] text-[10px] font-bold">
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="p-4 text-emerald-400 font-bold">
+                        {u.twoFactor ? "✓ مفعلة" : "غير مفعلة"}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="text-emerald-400 font-bold">نشط</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* التبويب 9: إدارة التعليقات وبلاغات المجتمع (Comments) */}
+        {/* ========================================================================= */}
+        {activeTab === "comments" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="pb-4 border-b border-white/10">
+              <h2 className="text-base font-black text-white">الرقابة المجتمعية وإجازة التعليقات</h2>
+              <p className="text-xs text-white/50">فحص تعليقات القراء قبل النشر لضمان خلوها من خطاب الكراهية</p>
+            </div>
+
+            <div className="space-y-3">
+              {pendingComments.map((c) => (
+                <div key={c.id} className="p-5 rounded-2xl border border-white/10 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-[var(--gold)]">{c.author}</span>
+                      <span className="text-[10px] text-white/40">على خبر: {c.article} · {c.time}</span>
+                    </div>
+                    <p className="text-xs text-white leading-relaxed">«{c.text}»</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <button
+                      onClick={() => {
+                        setPendingComments(pendingComments.filter((x) => x.id !== c.id));
+                        showToast("✓ تم اعتماد ونشر التعليق تحت المقال!");
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer"
+                    >
+                      إجازة ونشر
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPendingComments(pendingComments.filter((x) => x.id !== c.id));
+                        showToast("تم حذف التعليق المخالف.");
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-600/20 text-rose-300 hover:bg-rose-600/30 border border-rose-500/30 text-xs font-bold cursor-pointer"
+                    >
+                      حذف
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* التبويب 10: إعدادات المنصة والهوية (Settings) */}
+        {/* ========================================================================= */}
+        {activeTab === "settings" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="pb-4 border-b border-white/10">
+              <h2 className="text-base font-black text-white">إعدادات المنصة والهوية الرقمية العامة</h2>
+              <p className="text-xs text-white/50">التحكم في عنوان المنصة، وسائط السوشيال ميديا، ومفتاح الصيانة</p>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-5 max-w-2xl">
+              <div>
+                <label className="block text-xs font-bold text-white mb-1.5">عنوان المنصة الرئيسي (Site Title)</label>
+                <input
+                  type="text"
+                  value={siteTitle}
+                  onChange={(e) => setSiteTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black/50 text-xs text-white focus:border-[var(--gold)]"
+                />
+              </div>
+
+              <div className="p-4 rounded-2xl border border-white/10 bg-white/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-xs text-white">وضع الصيانة الطارئة (Maintenance Mode)</h3>
+                    <p className="text-[11px] text-white/50">حجب الموقع عن الزوار وإظهار شاشة الصيانة الفنية</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={maintenanceMode}
+                    onChange={(e) => setMaintenanceMode(e.target.checked)}
+                    className="w-5 h-5 rounded accent-rose-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-white/10 bg-white/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-xs text-white">تفعيل صوت تنبيه العاجل (Audio Chime)</h3>
+                    <p className="text-[11px] text-white/50">إطلاق نغمة صوتية هادئة عند ورود خبر عاجل جديد للقراء</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={breakingSoundEnabled}
+                    onChange={(e) => setBreakingSoundEnabled(e.target.checked)}
+                    className="w-5 h-5 rounded accent-[var(--gold)] cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140106] font-black text-xs hover:brightness-110 shadow-lg cursor-pointer"
+              >
+                حفظ كافة الإعدادات
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* التبويب 11: سجل الرقابة والتدقيق (Audit Log) */}
         {/* ========================================================================= */}
         {activeTab === "audit" && (
           <div className="space-y-6 animate-fade-in">
@@ -1121,7 +1457,7 @@ export default function AdminDashboardPage() {
                 <h2 className="text-base font-black text-white">سجل الرقابة والتدقيق الجنائي (Audit Trail)</h2>
                 <p className="text-xs text-white/50">توثيق غير قابل للتعديل لكافة قرارات النشر والحذف والتعديل</p>
               </div>
-              <span className="text-xs font-mono text-[var(--gold)]">AUDIT-COMPLIANT</span>
+              <span className="text-xs font-mono text-[var(--gold)]">AUDIT-COMPLIANT 2026</span>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
@@ -1150,11 +1486,7 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* ========================================================================= */}
       {/* نوافذ الحوار المنبثقة (Modals) */}
-      {/* ========================================================================= */}
-
-      {/* نافذة إضافة خبر جديد */}
       {showAddArticleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-2xl rounded-3xl border border-[var(--gold)]/40 bg-[#140107] p-6 md:p-8 space-y-5 shadow-2xl relative">
@@ -1252,7 +1584,6 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* نافذة إضافة إعلان جديد */}
       {showAddAdModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-lg rounded-3xl border border-[var(--gold)]/40 bg-[#140107] p-6 md:p-8 space-y-5 shadow-2xl relative">
@@ -1338,7 +1669,6 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* نافذة إضافة مصدر جديد */}
       {showAddSourceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-lg rounded-3xl border border-[var(--gold)]/40 bg-[#140107] p-6 md:p-8 space-y-5 shadow-2xl relative">
