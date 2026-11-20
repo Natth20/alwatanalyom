@@ -5,6 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SearchModal } from "@/components/SearchModal";
 import { BottomNav } from "@/components/BottomNav";
+import { PersistentFloatingAudioPlayer } from "@/components/PersistentFloatingAudioPlayer";
+import { FloatingBreakingHUD } from "@/components/FloatingBreakingHUD";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { OFFICIAL_SOCIAL_LINKS, TRACKING_IDS } from "@awt/shared";
@@ -116,6 +118,8 @@ export default function RootLayout({
         <Footer />
         <SearchModal />
         <BottomNav />
+        <PersistentFloatingAudioPlayer />
+        <FloatingBreakingHUD />
         <PwaInstallPrompt />
         <CookieConsentBanner />
       </body>

@@ -124,7 +124,7 @@ export function ReadingToolbar({ article }: Props) {
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]/80 backdrop-blur-sm no-print mb-6">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl glass-hud border border-[var(--gold)]/30 text-white shadow-xl no-print mb-6">
       {/* وقت القراءة والتحكم بحجم الخط */}
       <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
         <span className="flex items-center gap-1 font-medium">

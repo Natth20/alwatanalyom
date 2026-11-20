@@ -21,7 +21,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] px-2 py-1.5 shadow-lg no-print">
+    <nav className="md:hidden fixed bottom-3 inset-x-3 sm:inset-x-6 z-40 glass-dock rounded-3xl py-2 px-3 shadow-2xl border border-[var(--gold)]/30 no-print animate-in fade-in slide-in-from-bottom-3 duration-300">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -32,10 +32,10 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-bold transition-colors ${
+                className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl text-[10px] font-bold transition-all duration-300 ${
                   isActive
-                    ? "text-emerald-500 font-black"
-                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                    ? "bg-emerald-950/60 text-emerald-400 font-black border border-emerald-500/40 shadow-xs scale-105"
+                    : "text-white/70 hover:text-white"
                 }`}
               >
                 <span className="text-base leading-none mb-0.5">🇵🇸</span>
@@ -48,17 +48,17 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold transition-colors relative ${
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl text-[10px] font-bold transition-all duration-300 relative ${
                 isActive
                   ? item.isBreaking
-                    ? "text-[var(--breaking)] font-bold"
-                    : "text-[var(--primary)] font-bold"
-                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                    ? "bg-red-950/60 text-red-400 border border-red-500/40 shadow-xs scale-105 font-black"
+                    : "bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/40 shadow-xs scale-105 font-black"
+                  : "text-white/70 hover:text-white"
               }`}
             >
               {Icon && <Icon className="w-4 h-4 mb-0.5" />}
               {item.isBreaking && (
-                <span className="absolute top-1 end-2 w-1.5 h-1.5 rounded-full bg-[var(--breaking)] animate-ping" />
+                <span className="absolute top-1 end-2 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               )}
               <span>{item.label}</span>
             </Link>
@@ -69,7 +69,7 @@ export function BottomNav() {
         <button
           type="button"
           onClick={handleOpenSearch}
-          className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl text-[10px] font-bold text-white/70 hover:text-[var(--gold)] transition-colors cursor-pointer"
         >
           <Search className="w-4 h-4 mb-0.5" />
           <span>بحث</span>

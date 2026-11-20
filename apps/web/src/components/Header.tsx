@@ -10,6 +10,7 @@ import { TopBarInfo } from "@/components/TopBarInfo";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SavedCounterBadge } from "@/components/SavedCounterBadge";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { LowBandwidthToggle } from "@/components/LowBandwidthToggle";
 import {
   Flame,
@@ -172,6 +173,7 @@ export function Header() {
             <span>رادار الحقيقة</span>
           </Link>
 
+          <NotificationCenter />
           <SavedCounterBadge />
 
           <Link

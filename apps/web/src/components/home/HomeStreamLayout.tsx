@@ -3,6 +3,7 @@ import { StorySummary, ArticleCard as ArticleCardType, InstrumentQuote } from "@
 import { ArticleCard } from "@/components/ArticleCard";
 import { QuoteTile } from "@/components/QuoteTile";
 import { MostReadWidget } from "@/components/MostReadWidget";
+import { NewsStoriesBar } from "@/components/NewsStoriesBar";
 import { FrontpageAudioBrief } from "@/components/FrontpageAudioBrief";
 import { PalestineCommoditiesWidget } from "@/components/PalestineCommoditiesWidget";
 import { LiveWarRoomMap } from "@/components/LiveWarRoomMap";
@@ -53,7 +54,10 @@ export function HomeStreamLayout({
   ].filter(Boolean) as string[];
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10">
+      {/* 0. شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
+      <NewsStoriesBar />
+
       {/* 1. المركز الرئاسي والبطل الإخباري (70% بطل سينمائي + 30% ممر تدفق سريع مصور) */}
       <HomeHeroSection
         heroStory={heroStory}

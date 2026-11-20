@@ -53,17 +53,20 @@ export function ArticleReactions({ articleId }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3.5 my-8 no-print">
+    <div className="card-hyper-luxury p-5 sm:p-6 space-y-4 my-8 no-print border border-[var(--gold)]/30">
       <div className="flex items-center justify-between">
-        <h4 className="font-bold text-xs md:text-sm text-[var(--text)]">
-          ما هو انطباعك عن هذه التغطية الصحفية؟
-        </h4>
-        <span className="text-[11px] text-[var(--text-muted)]">
-          {reactions.reduce((sum, r) => sum + r.count, 0)} تفاعل من القراء
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)] animate-pulse" />
+          <h4 className="font-black text-sm md:text-base text-[var(--text)]">
+            ما هو انطباعك عن هذه التغطية الصحفية؟
+          </h4>
+        </div>
+        <span className="text-[11px] font-bold text-[var(--gold)] bg-[var(--gold)]/10 px-2.5 py-0.5 rounded-full border border-[var(--gold)]/30">
+          {reactions.reduce((sum, r) => sum + r.count, 0)} تفاعل موثق
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {reactions.map((r) => {
           const isSelected = selectedReaction === r.id;
           return (
@@ -71,17 +74,17 @@ export function ArticleReactions({ articleId }: Props) {
               key={r.id}
               type="button"
               onClick={() => handleVote(r.id)}
-              className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border flex items-center justify-between transition-all duration-300 cursor-pointer magnetic-btn ${
                 isSelected
-                  ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)] font-bold scale-[1.02] shadow-sm"
-                  : "border-[var(--border)] bg-[var(--bg)] hover:border-[var(--primary)]/50 hover:bg-[var(--surface-hover)] text-[var(--text)]"
+                  ? "border-[var(--gold)] bg-gradient-to-r from-[var(--gold)]/20 to-[var(--gold)]/10 text-[var(--gold)] font-black scale-105 shadow-md shadow-[var(--gold-glow)]"
+                  : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)]/50 text-[var(--text)] hover:scale-102"
               }`}
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-base">{r.emoji}</span>
-                <span className="text-xs">{r.label}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg leading-none">{r.emoji}</span>
+                <span className="text-xs font-bold">{r.label}</span>
               </div>
-              <span className="text-xs font-mono font-bold opacity-80">{r.count}</span>
+              <span className="text-xs font-mono font-black opacity-90">{r.count}</span>
             </button>
           );
         })}
