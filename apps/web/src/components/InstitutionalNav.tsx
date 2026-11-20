@@ -49,6 +49,15 @@ export function InstitutionalNav({ current }: { current?: string } = {}) {
           </span>
           <span className="text-white/30 hidden sm:inline">•</span>
           <Link
+            href="/admin"
+            className="text-[var(--gold)] hover:text-white flex items-center gap-1 transition-colors font-bold"
+            title="بوابة غرفة الأخبار والإدارة"
+          >
+            <ShieldCheck className="w-3 h-3 text-[var(--gold)]" />
+            <span>لوحة الإدارة</span>
+          </Link>
+          <span className="text-white/30 hidden sm:inline">•</span>
+          <Link
             href="/"
             className="text-white/60 hover:text-white flex items-center gap-1 transition-colors"
           >

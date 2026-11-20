@@ -342,6 +342,12 @@ export function Footer() {
                   الاتصال بهيئة التحرير
                 </Link>
               </li>
+              <li className="pt-2 border-t border-white/10">
+                <Link href="/admin" className="text-[var(--gold)] hover:underline flex items-center gap-1 font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[var(--gold)]" />
+                  <span>لوحة الإدارة وغرفة العمليات</span>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

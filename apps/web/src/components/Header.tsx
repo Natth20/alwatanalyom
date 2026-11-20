@@ -137,6 +137,16 @@ export function Header() {
               <Globe2 className="w-3 h-3" />
               <span>EN</span>
             </Link>
+
+            {/* بوابة غرفة الأخبار والإدارة للمحررين */}
+            <Link
+              href="/admin"
+              className="px-2.5 py-0.5 rounded-full bg-[var(--gold)]/20 hover:bg-[var(--gold)]/30 text-[10px] font-black text-[var(--gold)] border border-[var(--gold)]/40 transition-all flex items-center gap-1 shadow-sm"
+              title="غرفة العمليات التحريرية والإدارة"
+            >
+              <ShieldCheck className="w-3 h-3" />
+              <span>لوحة الإدارة</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -858,6 +868,20 @@ export function Header() {
                 <ChevronLeft className="w-3.5 h-3.5 text-[var(--text-muted)]" />
               </Link>
             ))}
+          </div>
+
+          {/* بوابة الإدارة للمحررين في قائمة الهواتف */}
+          <div className="pt-2 border-t border-[var(--border)]">
+            <Link
+              href="/admin"
+              className="w-full p-3 rounded-2xl bg-gradient-to-r from-[var(--maroon)] to-[#200008] text-[var(--gold)] border border-[var(--gold)]/30 font-black text-xs flex items-center justify-between shadow-md"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[var(--gold)]" />
+                <span>غرفة الأخبار ولوحة الإدارة (Admin Portal)</span>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-[var(--gold)]" />
+            </Link>
           </div>
         </div>
       )}
