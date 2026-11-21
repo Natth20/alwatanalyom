@@ -1,7 +1,7 @@
 import { prisma } from "@awt/db";
-import { MockQuoteProvider, QuoteProvider } from "@awt/ingest";
+import { getQuoteProvider, QuoteProvider } from "@awt/ingest";
 
-const provider: QuoteProvider = new MockQuoteProvider();
+const provider: QuoteProvider = getQuoteProvider();
 
 export async function processPricePoll() {
   const instruments = await prisma.instrument.findMany({
