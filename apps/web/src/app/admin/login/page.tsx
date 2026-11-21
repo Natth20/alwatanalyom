@@ -17,6 +17,7 @@ import {
   Building2,
   Fingerprint,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -99,10 +100,17 @@ export default function AdminLoginPage() {
           {/* شريط الإطار الذهبي العلوي */}
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent" />
 
-          {/* الترويسة والشعار */}
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[#dca600] text-[#140106] font-black flex items-center justify-center mx-auto text-2xl shadow-lg shadow-[var(--gold-glow)]">
-              وطن
+          {/* الترويسة والشعار الرسمي المعتمد */}
+          <div className="text-center space-y-3">
+            <div className="inline-block p-1.5 rounded-2xl border border-[var(--gold)]/40 bg-black/60 shadow-xl mx-auto">
+              <Image
+                src="/brand/logo-banner.jpg"
+                alt="شعار الوطن اليوم"
+                width={200}
+                height={60}
+                priority
+                className="h-12 w-auto object-contain rounded-xl"
+              />
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight">
               بوابة غرفة الأخبار والإدارة

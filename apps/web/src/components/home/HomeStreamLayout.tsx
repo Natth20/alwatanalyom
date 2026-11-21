@@ -55,7 +55,7 @@ export function HomeStreamLayout({
   ].filter(Boolean) as string[];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12 sm:space-y-16">
       {/* 0. شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
       <NewsStoriesBar />
 

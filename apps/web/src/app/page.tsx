@@ -29,16 +29,16 @@ export default async function HomePage({ searchParams }: Props) {
     : feed.fastStreamArticles.slice(1, 6);
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-8 sm:space-y-12 pb-24">
       {/* 0. بانر الليدربورد الملكي الماسي في صدارة الصفحة الرئيسية */}
-      <div className="container-custom pt-1">
+      <div className="container-custom pt-3">
         <AdSlot position="HEADER_TOP_LEADERBOARD" className="max-w-5xl" />
       </div>
 
       {/* 1. شريط الأخبار العاجلة اللحظي المتوهج */}
       <BreakingBar articles={feed.breaking} />
 
-      <main id="main-content" className="container-custom space-y-8">
+      <main id="main-content" className="container-custom space-y-12">
         {/* 2. عرض النموذج التحريري المختار */}
         {currentView === "stream" && (
           <HomeStreamLayout

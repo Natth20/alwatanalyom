@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import {
@@ -34,9 +35,33 @@ import {
   Clock,
   Layers,
   FileSearch,
+  Coins,
+  Compass,
 } from "lucide-react";
 
 export function Footer() {
+  const [times, setTimes] = useState({
+    jerusalem: "",
+    mecca: "",
+    cairo: "",
+    london: "",
+  });
+
+  useEffect(() => {
+    const updateTimes = () => {
+      const now = new Date();
+      setTimes({
+        jerusalem: now.toLocaleTimeString("ar-EG", { timeZone: "Asia/Jerusalem", hour: "2-digit", minute: "2-digit" }),
+        mecca: now.toLocaleTimeString("ar-EG", { timeZone: "Asia/Riyadh", hour: "2-digit", minute: "2-digit" }),
+        cairo: now.toLocaleTimeString("ar-EG", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit" }),
+        london: now.toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" }),
+      });
+    };
+    updateTimes();
+    const interval = setInterval(updateTimes, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -50,7 +75,7 @@ export function Footer() {
 
       {/* 1. محراب إيجاز الصباح الملكي (The Royal Newsletter Sanctuary) */}
       <div className="border-b border-white/10 py-12 bg-gradient-to-r from-[#220009] via-[#35000e] to-[#220009] relative">
-        <div className="container-custom max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-4 relative z-10">
+        <div className="container-custom max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-4 sm:px-6 relative z-10">
           <div className="space-y-2.5 max-w-2xl text-center lg:text-right">
             <div className="inline-flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)] animate-ping" />
@@ -93,166 +118,291 @@ export function Footer() {
         </div>
       </div>
 
-      {/* 2. شريط شراكة يلا سبورت الرياضية الحصرية */}
-      <div className="border-b border-white/10 py-4 bg-[#082214]/80 backdrop-blur-md">
-        <div className="container-custom max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
+      {/* 2. شريط شراكة يلا سبورت ومؤشرات العواصم الإقليمية */}
+      <div className="border-b border-white/10 py-3 bg-[#082214]/80 backdrop-blur-md">
+        <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
-              ⚽
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black text-base shadow-md shrink-0">
+              ⚡
             </div>
             <div>
-              <span className="text-[10px] font-black text-emerald-400 block uppercase tracking-wider">الشريك الرياضي الحصري</span>
-              <span className="text-xs sm:text-sm font-black text-white">منظومة يلا سبورت (YallaSport) للتغطيات الكروية والمباريات المباشرة</span>
+              <span className="font-black text-xs text-emerald-400 block">يلا سبورت · الشريك الرياضي الرسمي</span>
+              <span className="text-[11px] text-stone-300">تغطيات مباريات اليوم الحية، دوري أبطال أوروبا، وتحليلات الكرة العالمية</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
-            <Link
-              href="/sports"
-              className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs flex items-center gap-1.5"
-            >
-              <span>جدول مباريات اليوم</span>
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </Link>
+          {/* ساعات العواصم الحية */}
+          <div className="flex items-center gap-4 text-xs font-mono text-stone-300">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>القدس: {times.jerusalem || "12:00"}</span>
+            </span>
+            <span className="text-white/20">·</span>
+            <span>مكة: {times.mecca || "12:00"}</span>
+            <span className="text-white/20">·</span>
+            <span>القاهرة: {times.cairo || "11:00"}</span>
+            <span className="text-white/20">·</span>
+            <span>لندن: {times.london || "09:00"}</span>
           </div>
         </div>
       </div>
 
-      {/* 3. الصرح الرئيسي للأروقة الخمسة (The 5 Imperial Pillars) */}
-      <div className="container-custom max-w-7xl mx-auto py-16 px-4">
+      {/* 3. الأروقة الخمسة المهيبة لصرح الوطن اليوم (The Five Architectural Wings) */}
+      <div className="container-custom max-w-7xl mx-auto py-16 px-4 sm:px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 items-start">
-          {/* العمود الأول: الهوية الكبرى، الختم الرقمي، وساعات العواصم */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* الرواق الأول: هوية الصرح والشعار الماسي الرسمي (4 أعمدة) */}
+          <div className="lg:col-span-4 space-y-6 border-b lg:border-b-0 lg:border-e border-white/10 pb-8 lg:pb-0 lg:pe-8">
             <BrandLogo variant="footer" />
 
-            <p className="text-xs text-stone-300 leading-relaxed max-w-sm">
-              المنصة الإخبارية الوطنية الرائدة لتجميع وتنظيم وبث الأخبار بالذكاء الصحفي المتقدم. نلتزم بأعلى معايير الدقة والأمانة التحريرية ونسبة كل حرف إلى مصدره المعتمد.
-            </p>
-
-            {/* ساعات العواصم الإقليمية اللحظية */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
-              <span className="text-[10px] font-bold text-[var(--gold)] uppercase tracking-wider block flex items-center gap-1.5">
-                <Clock className="w-3 h-3" />
-                <span>ساعات العواصم الإخبارية الحية:</span>
-              </span>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] text-white/50 block">القدس</span>
-                  <span className="font-mono font-bold text-white text-xs">مباشر</span>
-                </div>
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] text-white/50 block">عمان/القاهرة</span>
-                  <span className="font-mono font-bold text-white text-xs">مباشر</span>
-                </div>
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] text-white/50 block">لندن/UTC</span>
-                  <span className="font-mono font-bold text-[var(--gold)] text-xs">GMT</span>
-                </div>
+            <div className="space-y-2 text-xs text-stone-300 leading-relaxed">
+              <p>
+                صحافة رقمية سيادية تستند للتحقق الجنائي وتلتزم بعزو الأخبار إلى وكالاتها ومصادرها المعتمدة، لتقديم الحقيقة الكاملة دون تحريف أو تزييف.
+              </p>
+              <div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-400 font-bold">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>مرخصة ومسجلة رسميًا · اعتماد النزاهة 2026</span>
               </div>
             </div>
 
-            {/* ختم التحقق المؤسسي لعام 2026 */}
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[var(--maroon)]/40 border border-[var(--gold)]/30">
-              <Award className="w-7 h-7 text-[var(--gold)] shrink-0" />
-              <div className="text-xs">
-                <span className="font-bold text-white block">معتمد بالختم التحريري لعام 2026</span>
-                <span className="text-[10px] text-[var(--gold)]">عضوية مبادئ النزاهة الصحفية المفتوحة المصدر</span>
-              </div>
+            {/* روابط المنصات الرسمية */}
+            <div className="pt-2 flex flex-wrap items-center gap-2">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-stone-300 hover:text-[var(--gold)] transition-colors"
+                title="منصة X / تويتر"
+              >
+                𝕏
+              </a>
+              <a
+                href="https://t.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-stone-300 hover:text-[var(--gold)] transition-colors"
+                title="قناة تيليجرام الإخبارية"
+              >
+                ✈
+              </a>
+              <a
+                href="/rss.xml"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-stone-300 hover:text-amber-500 transition-colors"
+                title="خلاصة RSS الإخبارية المعتمدة"
+              >
+                <Rss className="w-4 h-4" />
+              </a>
+              <Link
+                href="/contact"
+                className="px-3.5 py-2 rounded-xl bg-[var(--maroon)] hover:bg-[#730020] border border-[var(--gold)]/30 text-[var(--gold)] text-xs font-black transition-colors ms-auto flex items-center gap-1.5"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>اتصل بهيئة التحرير</span>
+              </Link>
             </div>
           </div>
 
-          {/* العمود الثاني: فلسطين والميدان والقدس */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="font-black text-sm text-[var(--gold)] border-b border-white/10 pb-2 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-emerald-400" />
-              <span>فلسطين والميدان</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-stone-300 font-medium">
-              <li><Link href="/palestine/gaza" className="hover:text-[var(--gold)] transition-colors">قطاع غزة العزة</Link></li>
-              <li><Link href="/palestine/jerusalem" className="hover:text-[var(--gold)] transition-colors">القدس الشريف والأقصى</Link></li>
-              <li><Link href="/palestine/west-bank" className="hover:text-[var(--gold)] transition-colors">الضفة الغربية والمخيمات</Link></li>
-              <li><Link href="/atlas" className="hover:text-[var(--gold)] transition-colors text-emerald-400 font-bold">أطلس فلسطين التاريخي</Link></li>
-              <li><Link href="/aid" className="hover:text-[var(--gold)] transition-colors">دليل المساعدات والإغاثة</Link></li>
-              <li><Link href="/history" className="hover:text-[var(--gold)] transition-colors">الذاكرة والقرى المهجرة</Link></li>
-            </ul>
-          </div>
+          {/* الأروقة الأربعة التحريرية (8 أعمدة) */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {/* الرواق 2: فلسطين والميدان */}
+            <div className="space-y-3">
+              <h4 className="font-black text-sm text-emerald-400 border-b border-emerald-500/30 pb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>فلسطين والميدان</span>
+              </h4>
+              <ul className="space-y-2 text-xs text-stone-300">
+                <li>
+                  <Link href="/palestine/gaza" className="hover:text-[var(--gold)] transition-colors block">
+                    قطاع غزة العزة
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/palestine/jerusalem" className="hover:text-[var(--gold)] transition-colors block">
+                    القدس الشريف والأقصى
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/palestine/west-bank" className="hover:text-[var(--gold)] transition-colors block">
+                    الضفة والمخيمات
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/atlas" className="hover:text-[var(--gold)] transition-colors block text-emerald-300 font-bold">
+                    أطلس القرى المهجرة
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/aid" className="hover:text-[var(--gold)] transition-colors block text-amber-300 font-bold">
+                    المساعدات والإغاثة
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/jobs" className="hover:text-[var(--gold)] transition-colors block">
+                    بوابة فرص العمل والتمكين
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* العمود الثالث: الصحافة الرقمية والاستقصاء */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="font-black text-sm text-[var(--gold)] border-b border-white/10 pb-2 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[var(--gold)]" />
-              <span>الصحافة الرقمية</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-stone-300 font-medium">
-              <li><Link href="/fact-check" className="hover:text-rose-400 transition-colors text-rose-400 font-bold">رادار الحقيقة (Fact-Check)</Link></li>
-              <li><Link href="/ask" className="hover:text-[var(--gold)] transition-colors text-[var(--gold)] font-bold">اسأل الوطن · الأرشيف الذكي</Link></li>
-              <li><Link href="/videos" className="hover:text-[var(--gold)] transition-colors">الصحافة المرئية وفيديو 4K</Link></li>
-              <li><Link href="/podcast" className="hover:text-[var(--gold)] transition-colors">استوديو البودكاست والموجز</Link></li>
-              <li><Link href="/stories" className="hover:text-[var(--gold)] transition-colors">تجمعات القصص والخط الزمني</Link></li>
-              <li><Link href="/games" className="hover:text-[var(--gold)] transition-colors">تحدي الذاكرة الوطنية</Link></li>
-            </ul>
-          </div>
+            {/* الرواق 3: الشؤون الكبرى والرياضة */}
+            <div className="space-y-3">
+              <h4 className="font-black text-sm text-[var(--gold)] border-b border-[var(--gold)]/30 pb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[var(--gold)]" />
+                <span>أقاليم وملاعب</span>
+              </h4>
+              <ul className="space-y-2 text-xs text-stone-300">
+                <li>
+                  <Link href="/arab-world" className="hover:text-[var(--gold)] transition-colors block">
+                    العالم العربي والشرق الأوسط
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/world" className="hover:text-[var(--gold)] transition-colors block">
+                    عواصم القرار الدولي
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/sports" className="hover:text-[var(--gold)] transition-colors block text-emerald-400 font-bold">
+                    يلا سبورت والملاعب
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/sports" className="hover:text-[var(--gold)] transition-colors block">
+                    دوري أبطال أوروبا
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/stories" className="hover:text-[var(--gold)] transition-colors block text-amber-300 font-bold">
+                    تجمعات القصص والخطوط الزمنية
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/breaking" className="hover:text-red-400 transition-colors block text-red-400 font-bold">
+                    رادار العاجل 24/7
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* العمود الرابع: المؤسسة والشفافية (الـ 8 صفحات المؤسسية بالكامل) */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="font-black text-sm text-[var(--gold)] border-b border-white/10 pb-2 flex items-center gap-1.5">
-              <Scale className="w-4 h-4 text-cyan-400" />
-              <span>المؤسسة والشفافية</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-stone-300 font-medium">
-              <li><Link href="/editorial-policy" className="hover:text-[var(--gold)] transition-colors">ميثاق الشرف التحريري</Link></li>
-              <li><Link href="/corrections" className="hover:text-[var(--gold)] transition-colors">سجل التصحيحات العلني</Link></li>
-              <li><Link href="/sources-policy" className="hover:text-[var(--gold)] transition-colors">سياسة عزو المصادر</Link></li>
-              <li><Link href="/submit-news" className="hover:text-[var(--gold)] transition-colors text-[var(--gold)] font-bold">تقديم بلاغ سري (Whistleblower)</Link></li>
-              <li><Link href="/dmca" className="hover:text-[var(--gold)] transition-colors">حقوق النشر (DMCA)</Link></li>
-              <li><Link href="/privacy" className="hover:text-[var(--gold)] transition-colors">سياسة الخصوصية والبيانات</Link></li>
-              <li><Link href="/terms" className="hover:text-[var(--gold)] transition-colors">شروط وأحكام الاستخدام</Link></li>
-              <li><Link href="/contact" className="hover:text-[var(--gold)] transition-colors">الاتصال بهيئة التحرير</Link></li>
-            </ul>
-          </div>
+            {/* الرواق 4: الاقتصاد والأسواق */}
+            <div className="space-y-3">
+              <h4 className="font-black text-sm text-amber-400 border-b border-amber-500/30 pb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span>المال والأعمال</span>
+              </h4>
+              <ul className="space-y-2 text-xs text-stone-300">
+                <li>
+                  <Link href="/economy" className="hover:text-[var(--gold)] transition-colors block font-bold text-amber-300">
+                    بورصة الأسواق والذهب
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/economy" className="hover:text-[var(--gold)] transition-colors block">
+                    حاسبة صرف العملات اللحظية
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/economy" className="hover:text-[var(--gold)] transition-colors block">
+                    أسعار المحروقات والسلع
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/economy/instrument/BRENT" className="hover:text-[var(--gold)] transition-colors block">
+                    نفط برنت والطاقة
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/economy" className="hover:text-[var(--gold)] transition-colors block">
+                    بورصة القدس للشركات
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tech" className="hover:text-[var(--gold)] transition-colors block">
+                    التقنية والذكاء الاصطناعي
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* العمود الخامس: غرف العمليات ولوحة الإدارة والتطبيقات */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="font-black text-sm text-[var(--gold)] border-b border-white/10 pb-2 flex items-center gap-1.5">
-              <Radio className="w-4 h-4 text-red-500" />
-              <span>غرفة العمليات والإدارة</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-stone-300 font-medium">
-              <li>
-                <Link href="/admin" className="p-2.5 rounded-xl bg-[var(--gold)]/15 border border-[var(--gold)]/30 text-[var(--gold)] hover:bg-[var(--gold)]/25 transition-all block font-black flex items-center justify-between">
-                  <span>لوحة الإدارة والتحكم</span>
-                  <ShieldCheck className="w-4 h-4" />
-                </Link>
-              </li>
-              <li><Link href="/live" className="hover:text-red-400 transition-colors flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /><span>البث المباشر 24/7</span></Link></li>
-              <li><Link href="/rss.xml" className="hover:text-[var(--gold)] transition-colors flex items-center gap-1"><Rss className="w-3.5 h-3.5 text-amber-500" /><span>خلاصة الأخبار (RSS)</span></Link></li>
-              <li><Link href="/newsletter" className="hover:text-[var(--gold)] transition-colors">إدارة اشتراك النشرة</Link></li>
-              <li><Link href="/advertise" className="hover:text-[var(--gold)] transition-colors">الإعلانات والرعايات التجارية</Link></li>
-            </ul>
+            {/* الرواق 5: الصحافة الرقمية والشفافية */}
+            <div className="space-y-3">
+              <h4 className="font-black text-sm text-purple-400 border-b border-purple-500/30 pb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-400" />
+                <span>الصحافة والشفافية</span>
+              </h4>
+              <ul className="space-y-2 text-xs text-stone-300">
+                <li>
+                  <Link href="/fact-check" className="hover:text-rose-400 transition-colors block font-bold text-rose-300">
+                    رادار الحقيقة ومكافحة التضليل
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ask" className="hover:text-[var(--gold)] transition-colors block font-bold text-amber-300">
+                    اسأل الوطن (الأرشيف الذكي AI)
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/videos" className="hover:text-[var(--gold)] transition-colors block">
+                    استوديو فيديو 4K السينمائي
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/podcast" className="hover:text-[var(--gold)] transition-colors block">
+                    استوديو البودكاست والموجز
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/games" className="hover:text-[var(--gold)] transition-colors block text-purple-300 font-bold">
+                    تحدي الذاكرة الوطنية والتراث
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/editorial-policy" className="hover:text-[var(--gold)] transition-colors block">
+                    ميثاق الشرف التحريري
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 4. السطر السيادي الأخير وحقوق الملكية وزر الصعود */}
-      <div className="border-t border-white/10 py-6 bg-black/70 text-xs text-stone-400">
-        <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-center md:text-right">
-            <span className="w-2 h-2 rounded-full bg-[var(--gold)] inline-block" />
-            <span className="font-bold text-white/90">
-              جميع الحقوق محفوظة لمنصة «الوطن اليوم» © {new Date().getFullYear()}
-            </span>
-            <span className="text-white/20 hidden sm:inline">•</span>
-            <span className="text-[var(--gold)] font-mono font-bold">alwatantoday.net</span>
-            <span className="text-white/20 hidden sm:inline">•</span>
-            <span className="text-white/60">تشفير اتصالات TLS 1.3 معزز</span>
+      {/* 4. شريط السيادة والاعتماد القانوني النهائي (The Sovereign Legal Bar) */}
+      <div className="border-t border-white/10 bg-black/60 py-6 text-xs text-stone-400 relative z-10">
+        <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-[11px]">
+            <span>© 2026 منصة «الوطن اليوم». كافة الحقوق محفوظة.</span>
+            <span className="text-white/20">|</span>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              شروط الاستخدام
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              الخصوصية وأمان البيانات
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/sources-policy" className="hover:text-white transition-colors">
+              سياسة عزو المصادر
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/corrections" className="hover:text-white transition-colors">
+              سجل التصحيحات العلني
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/dmca" className="hover:text-white transition-colors">
+              حقوق النشر (DMCA)
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link href="/advertise" className="hover:text-[var(--gold)] font-bold transition-colors">
+              الإعلان والرعاية
+            </Link>
           </div>
 
           <button
             onClick={scrollToTop}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 hover:text-[var(--gold)] border border-white/10 transition-colors text-xs cursor-pointer shrink-0 shadow-xs"
             title="العودة لأعلى الصفحة"
           >
-            <span>العودة للأعلى</span>
+            <span>أعلى الصفحة</span>
             <ArrowUp className="w-3.5 h-3.5" />
           </button>
         </div>

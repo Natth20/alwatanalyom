@@ -48,6 +48,7 @@ import {
   Settings,
   Lock,
 } from "lucide-react";
+import Image from "next/image";
 
 interface AdminUser {
   name: string;
@@ -586,9 +587,16 @@ export default function AdminDashboardPage() {
       <div className="border-b border-white/10 bg-black/50 backdrop-blur-2xl sticky top-0 z-40 py-3 px-4 shadow-xl">
         <div className="container-custom max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[#dca600] text-[#140106] font-black flex items-center justify-center text-lg shadow-lg shadow-[var(--gold-glow)]">
-              وطن
-            </div>
+            <Link href="/" className="inline-block p-1 rounded-xl border border-[var(--gold)]/40 bg-black/60 shadow-md">
+              <Image
+                src="/brand/logo-banner.jpg"
+                alt="شعار الوطن اليوم"
+                width={120}
+                height={36}
+                priority
+                className="h-8 w-auto object-contain rounded-lg"
+              />
+            </Link>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-black text-white">لوحة الإدارة والتحكم الشاملة</h1>
