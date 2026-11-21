@@ -55,11 +55,11 @@ export function HomeStreamLayout({
   ].filter(Boolean) as string[];
 
   return (
-    <div className="space-y-12 sm:space-y-16">
+    <div className="space-y-16 sm:space-y-20 lg:space-y-24">
       {/* 0. شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
       <NewsStoriesBar />
 
-      {/* 1. المركز الرئاسي والبطل الإخباري (70% بطل سينمائي + 30% ممر تدفق سريع مصور) */}
+      {/* 1. المركز الرئاسي والبطل الإخباري ثلاثي الأعمدة (Tri-Pillar Hero Wall) */}
       <HomeHeroSection
         heroStory={heroStory}
         heroArticle={heroArticle}
@@ -69,27 +69,30 @@ export function HomeStreamLayout({
       {/* 1.1 الموجز الصوتي الذكي في صدارة الصفحة الرئيسية */}
       <FrontpageAudioBrief headlines={headlines} />
 
-      {/* 2. كتلة فلسطين أولاً الميدانية (فلسطين، غزة، القدس، الأقصى) */}
+      {/* 2. صرح فلسطين أولاً وغرف العمليات الأربع الميدانية */}
       <PalestineFocusBlock stories={palestineStories} />
 
       {/* 2.1 غرفة العمليات الميدانية الحية وأطلس فلسطين التفاعلي */}
       <LiveWarRoomMap />
 
-      {/* 2.2 سلة المحروقات والسلع الحيوية في السوق الفلسطيني */}
+      {/* 2.2 صرح المال والأسواق والسلع الحيوية وحاسبة الذهب اللحظية */}
       <PalestineCommoditiesWidget />
 
-      {/* 3. ساحة يلا سبورت والملاعب (مباريات اليوم الحية + شبكة التقارير الكروية العالمية) */}
+      {/* 3. جدارية الصحافة المرئية وفيديو الوطن — بالعرض الكامل 12 عموداً بنمط سينمائي */}
+      <HomeVideoSection articles={videoArticles} />
+
+      {/* 4. ساحة يلا سبورت والملاعب (مباريات اليوم الحية + شبكة التقارير الكروية) */}
       <HomeSportsSection articles={sportsArticles} />
 
-      {/* 4. الهيكل التحريري الموسع: الأخبار الإقليمية والدولية والتقنية */}
+      {/* 5. الهيكل التحريري الشبكي: الأخبار الإقليمية والدولية والأعمدة الجانبية */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* العمود الرئيسي (8 أعمدة) */}
+        {/* العمود الرئيسي للأخبار والتحليلات (8 أعمدة) */}
         <div className="lg:col-span-8 space-y-10">
           {/* شبكة الأقسام المركزية: العالم العربي ودولياً */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* العالم العربي */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
-              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2.5">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
                   <span className="w-2 h-4 bg-[var(--gold)] rounded-sm" />
                   <span>العالم العربي</span>
@@ -99,7 +102,7 @@ export function HomeStreamLayout({
                   <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                 </Link>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {arabWorldArticles.slice(0, 3).map((art) => (
                   <ArticleCard key={art.id} article={art} variant="compact" />
                 ))}
@@ -107,8 +110,8 @@ export function HomeStreamLayout({
             </div>
 
             {/* الشؤون الدولية */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
-              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-2.5">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
                   <span className="w-2 h-4 bg-[var(--gold)] rounded-sm" />
                   <span>الشؤون الدولية</span>
@@ -118,7 +121,7 @@ export function HomeStreamLayout({
                   <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                 </Link>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {worldArticles.slice(0, 3).map((art) => (
                   <ArticleCard key={art.id} article={art} variant="compact" />
                 ))}
@@ -126,33 +129,35 @@ export function HomeStreamLayout({
             </div>
           </div>
 
-          {/* بانر إعلاني تحريري مدمج بين قطاعات الأخبار */}
-          <AdSlot position="BETWEEN_HOMEPAGE_SECTIONS" className="my-2" />
+          {/* بانر إعلاني تحريري بين قطاعات الأخبار */}
+          <div className="py-2">
+            <AdSlot position="BETWEEN_HOMEPAGE_SECTIONS" />
+          </div>
 
-          {/* قطاع الاقتصاد والتقنية والابتكار */}
+          {/* قطاع الاقتصاد وأسواق المال والتقنية والابتكار */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* الاقتصاد والأسواق */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
-              <div className="flex items-center justify-between border-b-2 border-amber-600 pb-2.5">
+            {/* الاقتصاد وأسواق المال */}
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="flex items-center justify-between border-b-2 border-amber-600 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
                   <span className="w-2 h-4 bg-amber-500 rounded-sm" />
-                  <span>الاقتصاد وأسواق المال</span>
+                  <span>الاقتصاد والأسواق</span>
                 </h3>
                 <Link href="/economy" className="text-xs text-[var(--primary)] font-bold hover:underline flex items-center gap-0.5">
                   <span>المزيد</span>
                   <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                 </Link>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {economyArticles.slice(0, 3).map((art) => (
                   <ArticleCard key={art.id} article={art} variant="compact" />
                 ))}
               </div>
             </div>
 
-            {/* التقنية والابتكار */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
-              <div className="flex items-center justify-between border-b-2 border-sky-600 pb-2.5">
+            {/* التقنية والذكاء الاصطناعي */}
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+              <div className="flex items-center justify-between border-b-2 border-sky-600 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
                   <span className="w-2 h-4 bg-sky-500 rounded-sm" />
                   <span>التقنية والذكاء الاصطناعي</span>
@@ -162,62 +167,22 @@ export function HomeStreamLayout({
                   <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                 </Link>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {techArticles.slice(0, 3).map((art) => (
                   <ArticleCard key={art.id} article={art} variant="compact" />
                 ))}
               </div>
             </div>
           </div>
-
-          {/* رادار الحقيقة ومنزلق التحقيق الجنائي البصري */}
-          <FactCheckSlider />
-
-          {/* الإنفوجرافيك وصحافة البيانات والأرقام المعتمدة */}
-          <InfographicSection />
-
-          {/* بوابات المساعدات الإنسانية والوظائف المعتمدة */}
-          <HomeAidAndJobsBar />
-
-          {/* شريط الصحافة المرئية وفيديو الوطن */}
-          <HomeVideoSection articles={videoArticles} />
         </div>
 
-        {/* العمود الجانبي (4 أعمدة): الممر السريع + أسعار الذهب والعملات + استطلاع الرأي + الأكثر قراءة */}
+        {/* العمود الجانبي (4 أعمدة): الممر السريع + استطلاع الرأي + الأكثر قراءة + ميثاق الشرف */}
         <div className="lg:col-span-4 space-y-8">
-          {/* الممر السريع / التدفق اللحظي بصور دائمة */}
+          {/* الممر السريع والتدفق اللحظي */}
           <LiveFastStreamWire articles={fastStreamArticles} />
 
           {/* استطلاع الرأي التفاعلي اللحظي */}
           <InteractivePoll />
-
-          {/* نافذة مؤشرات الأسواق والسلع الصادقة */}
-          {quotes.length > 0 && (
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4 shadow-sm">
-              <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <h3 className="font-black text-sm text-[var(--text)]">أسواق المال والذهب</h3>
-                </div>
-                <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full font-bold">
-                  بيانات حية
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {quotes.slice(0, 4).map((quote) => (
-                  <QuoteTile key={quote.symbol} quote={quote} />
-                ))}
-              </div>
-
-              <div className="pt-2 text-center border-t border-[var(--border)]">
-                <Link href="/economy" className="text-xs font-bold text-[var(--primary)] hover:underline inline-flex items-center gap-1">
-                  <span>مؤشرات بورصات فلسطين والعالم</span>
-                  <ChevronLeft className="w-3 h-3 rtl:rotate-0" />
-                </Link>
-              </div>
-            </div>
-          )}
 
           {/* الأكثر قراءة وتفاعلاً */}
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
@@ -230,17 +195,35 @@ export function HomeStreamLayout({
           </div>
 
           {/* ميثاق الشفافية والمسؤولية الصحفية */}
-          <div className="rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[#26000A]/10 to-[var(--surface)] p-5 space-y-3 text-xs text-[var(--text-muted)]">
+          <div className="rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[#26000A]/20 via-[var(--surface)] to-[var(--surface)] p-6 space-y-3.5 text-xs text-[var(--text-muted)] shadow-md">
             <div className="flex items-center gap-2 font-bold text-[var(--text)]">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
               <span className="font-black text-sm">ميثاق الشرف والمصداقية:</span>
             </div>
             <p className="leading-relaxed text-xs">
               كافة المواد المنشورة على منصة «الوطن اليوم» منسوبة صراحة لمصادرها الرسمية الموثقة، ونلتزم بسجل تصحيحات شفاف وحماية كاملة لحقوق الملكية الفكرية.
             </p>
+            <div className="pt-2">
+              <Link
+                href="/editorial-policy"
+                className="text-xs font-bold text-[var(--gold)] hover:underline inline-flex items-center gap-1"
+              >
+                <span>الاطلاع على ميثاق الشرف كاملاً</span>
+                <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* 6. صرح التحقق الجنائي ومنزلق كشف التزييف البصري (بالعرض الكامل) */}
+      <FactCheckSlider />
+
+      {/* 7. صحافة البيانات والإنفوجرافيك التفاعلي (بالعرض الكامل) */}
+      <InfographicSection />
+
+      {/* 8. بوابات المساعدات الإنسانية والوظائف المعتمدة (بالعرض الكامل) */}
+      <HomeAidAndJobsBar />
     </div>
   );
 }
