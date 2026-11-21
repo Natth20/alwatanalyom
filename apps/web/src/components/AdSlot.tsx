@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
-
+import { useEffect, useRef, useState } from "react";
+import { X, ExternalLink, Sparkles } from "lucide-react";
 
 export interface AdData {
   id: string;
@@ -18,87 +17,157 @@ export interface AdData {
 
 interface AdSlotProps {
   campaign?: AdData | null;
-  position: string;
+  position:
+    | "HEADER_TOP_LEADERBOARD"
+    | "STICKY_MOBILE_FOOTER"
+    | "SIDEBAR_TOP_RECTANGLE"
+    | "SIDEBAR_STICKY_SKYSCRAPER"
+    | "IN_ARTICLE_PARAGRAPH_3"
+    | "IN_ARTICLE_PARAGRAPH_6"
+    | "BETWEEN_HOMEPAGE_SECTIONS"
+    | "BREAKING_BAR_SPONSOR"
+    | "STORY_TIMELINE_BANNER"
+    | string;
   className?: string;
+  allowDismiss?: boolean;
 }
 
-export function AdSlot({ campaign, position, className = "" }: AdSlotProps) {
+export function AdSlot({
+  campaign: initialCampaign,
+  position,
+  className = "",
+  allowDismiss = true,
+}: AdSlotProps) {
+  const [ad, setAd] = useState<AdData | null>(initialCampaign || null);
+  const [dismissed, setDismissed] = useState(false);
   const trackedRef = useRef(false);
 
+  // إذا لم يتم تمرير حملة، نقوم بجلب الحملة النشطة لهذا الموضع تلقائياً
   useEffect(() => {
-    if (!campaign?.id || trackedRef.current) return;
+    if (initialCampaign) {
+      setAd(initialCampaign);
+      return;
+    }
+
+    let isMounted = true;
+    fetch(`/api/v1/ads?position=${encodeURIComponent(position)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.ok && Array.isArray(data.ads) && data.ads.length > 0) {
+          setAd(data.ads[0]);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialCampaign, position]);
+
+  // تسجيل المشاهدة (Impression)
+  useEffect(() => {
+    if (!ad?.id || trackedRef.current) return;
     trackedRef.current = true;
 
-    // تسجيل ظهور الإعلان (Impression)
     fetch("/api/v1/ads/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: campaign.id, event: "impression" }),
+      body: JSON.stringify({ id: ad.id, event: "impression" }),
     }).catch(() => {});
-  }, [campaign?.id]);
+  }, [ad?.id]);
 
-  if (!campaign) {
+  if (dismissed || !ad) {
     return null;
   }
 
   const handleAdClick = () => {
-    if (!campaign?.id) return;
+    if (!ad?.id) return;
     fetch("/api/v1/ads/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: campaign.id, event: "click" }),
+      body: JSON.stringify({ id: ad.id, event: "click" }),
     }).catch(() => {});
   };
+
+  const isLeaderboard = position === "HEADER_TOP_LEADERBOARD";
+  const isSidebar = position.includes("SIDEBAR");
 
   return (
     <div
       data-ad-position={position}
-      className={`relative mx-auto my-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-center transition-all ${className}`}
+      className={`relative mx-auto my-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-center transition-all duration-300 shadow-xs hover:border-[var(--gold)]/40 group ${className}`}
     >
-      <div className="absolute top-1.5 left-2 z-10 rounded-sm bg-slate-950/60 px-1.5 py-0.5 text-[9px] font-bold text-slate-300 backdrop-blur-xs">
-        إعلان ممول
+      {/* شارة إعلان ممول مع اسم المعلن وزر الإغلاق */}
+      <div className="flex items-center justify-between px-3 py-1 bg-[var(--surface-hover)] border-b border-[var(--border)]/60 text-[10px] text-[var(--text-muted)]">
+        <div className="flex items-center gap-1.5 font-bold">
+          <Sparkles className="w-3 h-3 text-[var(--gold)]" />
+          <span className="text-[var(--gold)]">إعلان ممول</span>
+          {ad.clientName && (
+            <>
+              <span className="text-[var(--border)]">•</span>
+              <span className="text-[var(--text-secondary)]">{ad.clientName}</span>
+            </>
+          )}
+        </div>
+
+        {allowDismiss && (
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-0.5 rounded-md hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
+            title="إخفاء الإعلان"
+            aria-label="إخفاء الإعلان"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
-      {campaign.type === "CUSTOM_BANNER" && campaign.imageUrl && (
+      {/* عرض البانر المخصص */}
+      {ad.type === "CUSTOM_BANNER" && ad.imageUrl && (
         <a
-          href={campaign.targetUrl || "#"}
+          href={ad.targetUrl || "#"}
           target="_blank"
           rel="noopener noreferrer sponsored"
           onClick={handleAdClick}
-          className="group block"
+          className="relative block overflow-hidden"
         >
           <img
-            src={campaign.imageUrl}
-            alt={campaign.altText || campaign.name}
-            className="w-full h-auto max-h-[160px] sm:max-h-[220px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+            src={ad.imageUrl}
+            alt={ad.altText || ad.name}
+            className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.01] ${
+              isLeaderboard
+                ? "h-20 sm:h-24 md:h-28"
+                : isSidebar
+                ? "h-80 sm:h-96"
+                : "h-36 sm:h-44"
+            }`}
           />
+          <div className="absolute bottom-2 end-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-xs text-[10px] text-white/90 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span>زيارة الرابط</span>
+            <ExternalLink className="w-2.5 h-2.5" />
+          </div>
         </a>
       )}
 
-      {campaign.type === "GOOGLE_ADSENSE" && (
-        <div className="min-h-[90px] flex items-center justify-center p-2 bg-[var(--surface-hover)]">
-          {campaign.scriptCode ? (
-            <div dangerouslySetInnerHTML={{ __html: campaign.scriptCode }} />
+      {/* عرض سكريبت جوجل أدسنس أو HTML */}
+      {ad.type === "GOOGLE_ADSENSE" && (
+        <div className="min-h-[90px] flex items-center justify-center p-3 bg-[var(--surface-hover)]">
+          {ad.scriptCode ? (
+            <div dangerouslySetInnerHTML={{ __html: ad.scriptCode }} />
           ) : (
-            <ins
-              className="adsbygoogle"
-              style={{ display: "block" }}
-              data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-              data-ad-slot="1234567890"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
+            <div className="text-xs text-[var(--text-muted)] py-4">
+              مساحة إعلانية مخصصة لشركاء الوطن اليوم
+            </div>
           )}
         </div>
       )}
 
-      {campaign.type === "HTML_SCRIPT" && campaign.scriptCode && (
+      {ad.type === "HTML_SCRIPT" && ad.scriptCode && (
         <div
           className="p-2"
-          dangerouslySetInnerHTML={{ __html: campaign.scriptCode }}
+          dangerouslySetInnerHTML={{ __html: ad.scriptCode }}
         />
       )}
     </div>
   );
 }
-

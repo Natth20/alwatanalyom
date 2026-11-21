@@ -10,6 +10,7 @@ import { AudioReader } from "@/components/AudioReader";
 import { KeyTakeaways } from "@/components/KeyTakeaways";
 import { ArticleReactions } from "@/components/ArticleReactions";
 import { SocialShareBar } from "@/components/SocialShareBar";
+import { AdSlot } from "@/components/AdSlot";
 import { ShieldCheck, Clock, FileText, Hash, ArrowRight, Camera, Share2, Sparkles, Flame, ChevronLeft } from "lucide-react";
 import { resolveEditorialImage } from "@/lib/editorial-images";
 
@@ -396,6 +397,9 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* مساحة إعلانية مدمجة داخل التحقيق والمقال التحريري */}
+      <AdSlot position="IN_ARTICLE_PARAGRAPH_3" className="my-8" />
 
       {/* 10. الوسوم والكلمات المفتاحية (Tags) */}
       {article.tags && article.tags.length > 0 && (

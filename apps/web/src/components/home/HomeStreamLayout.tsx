@@ -16,6 +16,7 @@ import { PalestineFocusBlock } from "./PalestineFocusBlock";
 import { HomeAidAndJobsBar } from "./HomeAidAndJobsBar";
 import { HomeVideoSection } from "./HomeVideoSection";
 import { HomeSportsSection } from "./HomeSportsSection";
+import { AdSlot } from "@/components/AdSlot";
 import { TrendingUp, ShieldCheck, ChevronLeft } from "lucide-react";
 
 interface Props {
@@ -124,6 +125,9 @@ export function HomeStreamLayout({
               </div>
             </div>
           </div>
+
+          {/* بانر إعلاني تحريري مدمج بين قطاعات الأخبار */}
+          <AdSlot position="BETWEEN_HOMEPAGE_SECTIONS" className="my-2" />
 
           {/* قطاع الاقتصاد والتقنية والابتكار */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getHomeFeed } from "@/lib/dal";
 import { BreakingBar } from "@/components/BreakingBar";
+import { AdSlot } from "@/components/AdSlot";
 import { VisualPrototypeSwitcher, type PrototypeView } from "@/components/home/VisualPrototypeSwitcher";
 import { HomeStreamLayout } from "@/components/home/HomeStreamLayout";
 import { HomeBentoLayout } from "@/components/home/HomeBentoLayout";
@@ -29,6 +30,11 @@ export default async function HomePage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6 pb-20">
+      {/* 0. بانر الليدربورد الملكي الماسي في صدارة الصفحة الرئيسية */}
+      <div className="container-custom pt-1">
+        <AdSlot position="HEADER_TOP_LEADERBOARD" className="max-w-5xl" />
+      </div>
+
       {/* 1. شريط الأخبار العاجلة اللحظي المتوهج */}
       <BreakingBar articles={feed.breaking} />
 
