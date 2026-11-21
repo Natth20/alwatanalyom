@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
 import {
   Globe2,
@@ -40,6 +41,13 @@ import {
 } from "lucide-react";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // عدم عرض فوتر الموقع العام في كابينة الإدارة
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const [times, setTimes] = useState({
     jerusalem: "",
     mecca: "",

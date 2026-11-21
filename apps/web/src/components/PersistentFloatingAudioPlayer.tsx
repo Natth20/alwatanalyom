@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Radio, Play, Pause, Volume2, VolumeX, Minimize2, Maximize2, Sparkles, ChevronUp, ChevronDown } from "lucide-react";
 
 export function PersistentFloatingAudioPlayer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
   const [station, setStation] = useState<"live-radio" | "audio-brief">("live-radio");

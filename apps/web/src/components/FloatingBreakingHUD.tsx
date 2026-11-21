@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Flame, X, ArrowLeft, Radio } from "lucide-react";
 
 interface BreakingToastProps {
@@ -15,10 +16,12 @@ export function FloatingBreakingHUD({
   initialSlug = "breaking-alert-live",
   initialId = "art-hero-1",
 }: BreakingToastProps) {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
     // إظهار الإشعار بعد 3 ثوانٍ من دخول الصفحة للترحيب البصري الذكي
     const timer = setTimeout(() => {
       const isDismissed = sessionStorage.getItem("awt_breaking_dismissed");
@@ -38,7 +41,7 @@ export function FloatingBreakingHUD({
     } catch {}
   };
 
-  if (!visible || dismissed) return null;
+  if (pathname?.startsWith("/admin") || !visible || dismissed) return null;
 
   return (
     <div className="fixed bottom-20 md:bottom-6 start-4 sm:start-6 z-50 max-w-sm sm:max-w-md w-full animate-in fade-in slide-in-from-bottom-5 duration-400 no-print">

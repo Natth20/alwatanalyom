@@ -38,7 +38,7 @@ export default async function HomePage({ searchParams }: Props) {
       {/* 1. شريط الأخبار العاجلة اللحظي المتوهج */}
       <BreakingBar articles={feed.breaking} />
 
-      <main id="main-content" className="container-custom space-y-12">
+      <div className="container-custom space-y-12 sm:space-y-16">
         {/* 2. عرض النموذج التحريري المختار */}
         {currentView === "stream" && (
           <HomeStreamLayout
@@ -87,7 +87,7 @@ export default async function HomePage({ searchParams }: Props) {
             <VisualPrototypeSwitcher currentView={currentView} />
           </Suspense>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

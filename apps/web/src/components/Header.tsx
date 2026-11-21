@@ -39,6 +39,12 @@ type ActiveMegaMenu = "palestine" | "world" | "sports" | "economy" | "digital" |
 
 export function Header() {
   const pathname = usePathname();
+
+  // عدم عرض هيدر الموقع العام في كابينة الإدارة
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const [activeMega, setActiveMega] = useState<ActiveMegaMenu>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

@@ -7,6 +7,10 @@ import { Home, Zap, TrendingUp, Search, Bookmark, Sparkles, Bot } from "lucide-r
 export function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const handleOpenSearch = () => {
     window.dispatchEvent(new CustomEvent("awt:open-search"));
   };
