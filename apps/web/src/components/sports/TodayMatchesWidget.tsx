@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Clock, Tv, ExternalLink, Calendar, Radio } from "lucide-react";
+import { Trophy, Clock, Tv, ExternalLink, Calendar, Radio, ChevronLeft, Link } from "lucide-react";
 
 export interface MatchItem {
   id: string;
   tournament: string;
-  homeTeam: { name: string; logo?: string; score?: number };
-  awayTeam: { name: string; logo?: string; score?: number };
-  time: string; // e.g. "21:00" or "الدقيقة 67"
+  homeTeam: { name: string; flag?: string; score?: number };
+  awayTeam: { name: string; flag?: string; score?: number };
+  time: string; // e.g. "21:00" or "الدقيقة 78"
   status: "LIVE" | "UPCOMING" | "FINISHED";
   broadcaster: string;
   yallaSportUrl: string;
@@ -17,9 +17,9 @@ export interface MatchItem {
 const DEFAULT_MATCHES: MatchItem[] = [
   {
     id: "m-1",
-    tournament: "تصفيات كأس العالم 2026 — آسيا",
-    homeTeam: { name: "فلسطين (الفدائي)", score: 2 },
-    awayTeam: { name: "كوريا الجنوبية", score: 1 },
+    tournament: "تصفيات آسيا لكأس العالم 2026",
+    homeTeam: { name: "فلسطين (الفدائي)", flag: "🇵🇸", score: 2 },
+    awayTeam: { name: "كوريا الجنوبية", flag: "🇰🇷", score: 1 },
     time: "الدقيقة 78",
     status: "LIVE",
     broadcaster: "beIN SPORTS 1 HD",
@@ -27,9 +27,9 @@ const DEFAULT_MATCHES: MatchItem[] = [
   },
   {
     id: "m-2",
-    tournament: "دوري أبطال أوروبا — مرحلة المجموعات",
-    homeTeam: { name: "ريال مدريد", score: 0 },
-    awayTeam: { name: "مانشستر سيتي", score: 0 },
+    tournament: "دوري أبطال أوروبا — الجولة 5",
+    homeTeam: { name: "ريال مدريد", flag: "🇪🇸", score: 0 },
+    awayTeam: { name: "مانشستر سيتي", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", score: 0 },
     time: "22:00 مكة المكرمة",
     status: "UPCOMING",
     broadcaster: "beIN SPORTS 2 HD",
@@ -38,12 +38,22 @@ const DEFAULT_MATCHES: MatchItem[] = [
   {
     id: "m-3",
     tournament: "دوري روشن السعودي للمحترفين",
-    homeTeam: { name: "الهلال", score: 3 },
-    awayTeam: { name: "النصر", score: 1 },
+    homeTeam: { name: "الهلال", flag: "🇸🇦", score: 3 },
+    awayTeam: { name: "النصر", flag: "🇸🇦", score: 1 },
     time: "انتهت",
     status: "FINISHED",
     broadcaster: "SSC SPORT 1 HD",
     yallaSportUrl: "https://yallasport.com/matches/al-hilal-vs-al-nassr",
+  },
+  {
+    id: "m-4",
+    tournament: "دوري أبطال إفريقيا — المجموعات",
+    homeTeam: { name: "الأهلي المصري", flag: "🇪🇬", score: 2 },
+    awayTeam: { name: "الترجي التونسي", flag: "🇹🇳", score: 0 },
+    time: "انتهت",
+    status: "FINISHED",
+    broadcaster: "beIN SPORTS 6 HD",
+    yallaSportUrl: "https://yallasport.com/matches/ahly-vs-taraji",
   },
 ];
 
@@ -60,55 +70,46 @@ export function TodayMatchesWidget({ matches = DEFAULT_MATCHES }: Props) {
     return true;
   });
 
+  const liveCount = matches.filter((m) => m.status === "LIVE").length;
+
   return (
-    <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-[var(--surface)] to-[var(--bg)] p-6 shadow-sm space-y-4">
-      {/* الترويسة وشعار الشراكة مع يلا سبورت */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
+    <div className="rounded-3xl border border-emerald-500/30 bg-[#06150D]/70 backdrop-blur-md p-5 space-y-4 shadow-xl">
+      {/* 1. رأس ويدجت المباريات */}
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
-            <Trophy className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-[var(--text)]">
-                جدول مباريات اليوم والنتائج المباشرة
-              </h2>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">
-                بث وتغطية يلا سبورت
-              </span>
-            </div>
-            <p className="text-[11px] text-[var(--text-muted)]">
-              تحديث لحظي لنتائج الأهداف، التشكيلات، ومواعيد البث المباشر
-            </p>
-          </div>
+          <Trophy className="w-5 h-5 text-emerald-400" />
+          <h3 className="font-black text-sm sm:text-base text-white">مباريات اليوم والنتائج الحية</h3>
         </div>
 
-        {/* أزرار التصفية */}
-        <div className="flex items-center gap-1.5 bg-[var(--bg)] p-1 rounded-xl border border-[var(--border)] self-start sm:self-auto">
+        {/* الفلاتر السريعة */}
+        <div className="flex items-center gap-1.5 text-xs">
           <button
-            type="button"
             onClick={() => setFilter("all")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-              filter === "all" ? "bg-emerald-600 text-white shadow-xs" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+              filter === "all"
+                ? "bg-emerald-500 text-slate-950 shadow-sm"
+                : "text-slate-400 hover:text-white hover:bg-white/5"
             }`}
           >
-            الكل
+            الكل ({matches.length})
           </button>
           <button
-            type="button"
             onClick={() => setFilter("live")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
-              filter === "live" ? "bg-rose-600 text-white shadow-xs" : "text-[var(--text-muted)] hover:text-rose-500"
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 ${
+              filter === "live"
+                ? "bg-rose-600 text-white shadow-sm"
+                : "text-rose-400 hover:bg-rose-500/10"
             }`}
           >
-            <Radio className="w-3 h-3 animate-pulse" />
-            <span>مباشر الآن</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+            <span>مباشر ({liveCount})</span>
           </button>
           <button
-            type="button"
             onClick={() => setFilter("upcoming")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-              filter === "upcoming" ? "bg-emerald-600 text-white shadow-xs" : "text-[var(--text-muted)] hover:text-[var(--text)]"
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+              filter === "upcoming"
+                ? "bg-amber-500 text-slate-950 shadow-sm"
+                : "text-slate-400 hover:text-white hover:bg-white/5"
             }`}
           >
             القادمة
@@ -116,91 +117,78 @@ export function TodayMatchesWidget({ matches = DEFAULT_MATCHES }: Props) {
         </div>
       </div>
 
-      {/* قائمة المباريات */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {filtered.map((match) => {
-          const isLive = match.status === "LIVE";
-          const isFinished = match.status === "FINISHED";
-
-          return (
-            <div
-              key={match.id}
-              className={`p-4 rounded-2xl border transition-all space-y-3 ${
-                isLive
-                  ? "border-rose-500/40 bg-rose-500/5 shadow-sm"
-                  : "border-[var(--border)] bg-[var(--surface)] hover:border-emerald-500/40"
-              }`}
-            >
-              <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] pb-2 border-b border-[var(--border)]/60">
-                <span className="font-bold truncate max-w-[170px]">{match.tournament}</span>
-                {isLive ? (
-                  <span className="flex items-center gap-1 text-rose-600 font-bold bg-rose-500/10 px-2 py-0.5 rounded-full animate-pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                    <span>{match.time}</span>
-                  </span>
-                ) : isFinished ? (
-                  <span className="text-slate-500 font-bold bg-slate-500/10 px-2 py-0.5 rounded-full">
-                    انتهت
+      {/* 2. بطاقات المباريات المصممة بنمط شاشات البث */}
+      <div className="space-y-3">
+        {filtered.map((m) => (
+          <div
+            key={m.id}
+            className="p-3.5 rounded-2xl border border-white/10 bg-black/40 hover:border-emerald-500/40 hover:shadow-lg transition-all space-y-2.5 group"
+          >
+            {/* سطر البطولة والقناة والوقت */}
+            <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <span className="font-bold text-emerald-300 truncate max-w-[180px]">{m.tournament}</span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-[10px] bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                  <Tv className="w-3 h-3 text-slate-400" />
+                  <span>{m.broadcaster}</span>
+                </span>
+                {m.status === "LIVE" ? (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded bg-rose-600 text-white animate-pulse">
+                    {m.time}
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-[var(--text-muted)] font-mono">
-                    <Clock className="w-3 h-3 text-emerald-500" />
-                    <span>{match.time}</span>
-                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">{m.time}</span>
                 )}
               </div>
+            </div>
 
-              {/* الفريقان والنتيجة */}
-              <div className="space-y-2 py-1">
-                <div className="flex items-center justify-between font-bold text-xs text-[var(--text)]">
-                  <span className="truncate">{match.homeTeam.name}</span>
-                  <span className="font-mono text-sm px-2 py-0.5 rounded bg-[var(--bg)] border border-[var(--border)]">
-                    {match.homeTeam.score !== undefined ? match.homeTeam.score : "-"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between font-bold text-xs text-[var(--text)]">
-                  <span className="truncate">{match.awayTeam.name}</span>
-                  <span className="font-mono text-sm px-2 py-0.5 rounded bg-[var(--bg)] border border-[var(--border)]">
-                    {match.awayTeam.score !== undefined ? match.awayTeam.score : "-"}
-                  </span>
-                </div>
+            {/* سطر الفريقين والنتيجة في الوسط */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              {/* الفريق المضيف */}
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="text-xl">{m.homeTeam.flag || "⚽"}</span>
+                <span className="font-bold text-xs sm:text-sm text-white truncate">{m.homeTeam.name}</span>
               </div>
 
-              {/* القناة الناقلة ورابط المتابعة */}
-              <div className="pt-2 border-t border-[var(--border)]/60 flex items-center justify-between text-[11px]">
-                <span className="flex items-center gap-1 text-[var(--text-muted)] truncate max-w-[140px]">
-                  <Tv className="w-3 h-3 text-emerald-500 shrink-0" />
-                  <span className="truncate">{match.broadcaster}</span>
-                </span>
+              {/* النتيجة */}
+              <div className="px-3 py-1 rounded-xl bg-white/10 border border-white/15 font-mono text-sm sm:text-base font-black text-amber-300 shrink-0">
+                {m.status === "UPCOMING" ? "VS" : `${m.homeTeam.score} - ${m.awayTeam.score}`}
+              </div>
 
-                <a
-                  href={match.yallaSportUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-emerald-600 hover:text-emerald-500 flex items-center gap-1 transition-colors"
-                >
-                  <span>التغطية</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              {/* الفريق الضيف */}
+              <div className="flex items-center gap-2 flex-1 min-w-0 justify-end text-end">
+                <span className="font-bold text-xs sm:text-sm text-white truncate">{m.awayTeam.name}</span>
+                <span className="text-xl">{m.awayTeam.flag || "⚽"}</span>
               </div>
             </div>
-          );
-        })}
+
+            {/* تذييل زر المتابعة عبر يلا سبورت */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
+              <span>تغطية حية بالشراكة مع يلا سبورت VIP</span>
+              <a
+                href={m.yallaSportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 font-bold hover:underline flex items-center gap-1 group-hover:text-emerald-300"
+              >
+                <span>متابعة تفاصيل المباراة</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* رابط يلا سبورت الشامل في الأسفل */}
-      <div className="pt-2 flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border)]">
-        <span>شريك الرياضة الرسمي: <strong>يلا سبورت (Yalla Sport)</strong></span>
-        <a
-          href="https://yallasport.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-bold text-emerald-600 hover:underline flex items-center gap-1"
+      {/* 3. زر الانتقال لمدرج الرياضة الكامل */}
+      <div className="pt-2 text-center border-t border-white/10">
+        <Link
+          href="/sports"
+          className="text-xs font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 hover:underline"
         >
-          <span>تصفح كافة مباريات وجداول اليوم ↗</span>
-        </a>
+          <span>عرض كافة مباريات وجداول البطولات الرياضية</span>
+          <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0" />
+        </Link>
       </div>
     </div>
   );
 }
-
