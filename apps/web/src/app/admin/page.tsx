@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
   let pendingReviewCount = 4;
   let publishedCount = 1420;
   let activeAdsCount = 6;
-  let totalAdImpressions = { _sum: { impressions: 185420 } };
+  let totalAdImpressions: { _sum: { impressions: number | null } } = { _sum: { impressions: 185420 } };
   let recentArticles: any[] = [
     {
       id: "art-1",
