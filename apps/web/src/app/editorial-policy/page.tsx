@@ -1,12 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { Metadata } from "next";
 import { InstitutionalNav } from "@/components/InstitutionalNav";
 import {
   FileCheck2,
   ShieldCheck,
   Scale,
   Sparkles,
-  ChevronLeft,
+  ChevronDown,
   Award,
   CheckCircle2,
   AlertTriangle,
@@ -14,225 +16,389 @@ import {
   HeartHandshake,
   Lock,
   Globe,
+  BookOpen,
+  Search,
+  CheckCircle,
+  Copy,
+  Printer,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "ميثاق الشرف التحريري والسياسة المعيارية — الوطن اليوم",
-  description: "الوثيقة الدستورية الرسمية للسياسة التحريرية وقواعد النشر والأمانة الصحفية المعتمدة لدى منصة الوطن اليوم.",
-};
+interface ConstitutionalArticle {
+  num: string;
+  title: string;
+  category: string;
+  summary: string;
+  content: string;
+  rules: string[];
+  icon: any;
+}
+
+const ARTICLES: ConstitutionalArticle[] = [
+  {
+    num: "المادة 01",
+    title: "قاعدة التثبت المزدوج ونزاهة الرواية الإخبارية",
+    category: "التحقق الميداني",
+    summary: "حظر نشر أي خبر عاجل ما لم يكن موثقاً من مصدرين مستقلين على الأقل.",
+    content: "تلتزم منصة «الوطن اليوم» بعدم نشر أي خبر عاجل أو ادعاء رئيسي يمس الشأن العام ما لم يكن موثقاً من مصدرين مستقلين على الأقل، أو صادراً عن جهة حكومية أو أممية أو حقوقية معتمدة برصيد مهني موثوق. تخضع كافة المواد العاجلة لبروتوكول التدقيق اللحظي لمنع نشر الشائعات أو الأخبار غير المكتملة.",
+    rules: [
+      "حظر النقل عن الحسابات المجهولة في منصات التواصل دون تحقق جنائي.",
+      "تثبيت توقيت الحدث بالساعة والدقيقة بتوقيت القدس الشريف.",
+      "الإشارة الواضحة لأي تحديث لاحق يطرأ على البيانات الأولية.",
+    ],
+    icon: Scale,
+  },
+  {
+    num: "المادة 02",
+    title: "القاموس الوطني الفلسطيني الموحد ومعايير التسمية",
+    category: "الهوية السيادية",
+    summary: "الالتزام بالمصطلحات الوطنية الموحدة: القدس عاصمة فلسطين، الشهداء، والأراضي المحتلة.",
+    content: "انطلاقاً من مبدأ «فلسطين أولاً»، تعتمد المنصة دليلاً معيارياً ملزماً لكافة المحررين والمراسلين: تسمية عاصمة فلسطين بـ «القدس المحتلة»، إطلاق صفة «الشهداء» على ضحايا العمليات العسكرية وقصف الاحتلال مع توثيق أسمائهم وأعمارهم وسيرهم الإنسانية، التمييز التام بين «المستوطنات» والأراضي المحتلة، والتعامل بحذر وتدقيق مضاعف مع إعلام الاحتلال بوضع وسم صريح يوضح روايته.",
+    rules: [
+      "القدس الشريف هي العاصمة الأبدية والتاريخية لدولة فلسطين.",
+      "عدم تبني المصطلحات المضللة للرواية الإسرائيلية في تغطية الحواجز والاقتحامات.",
+      "توثيق القرى والبلدات المهجرة بأسمائها العربية الكنعانية الأصيلة.",
+    ],
+    icon: ShieldCheck,
+  },
+  {
+    num: "المادة 03",
+    title: "الفصل الصارم والواضح بين الخبر والرأي والتحليل",
+    category: "النزاهة التحريرية",
+    summary: "تمييز بصري وتحريري مطلق بين الخبر المجرد ومقالات الرأي والافتتاحيات.",
+    content: "تلتزم المنصة بالفصل البصري والتحريري التام بين المادة الإخبارية المجردة ومقالات الرأي والتحليلات السياسية. توسم مقالات الرأي بوسم واضح («رأي وتحليل») مع إبراز اسم الكاتب وصورته وصفته، والتنويه بأن المقال يعبر عن وجهة نظر صاحبه ولا يمثل بالضرورة الموقف التحريري لمنصة الوطن اليوم.",
+    rules: [
+      "خلو العناوين الإخبارية من الألفاظ التقييمية أو العواطف المسبقة.",
+      "إتاحة حق الرد المتكافئ لأي جهة أو شخصية تناولها التحليل السياسي.",
+      "حظر الجمع بين مسؤولية كتابة الخبر والتعليق عليه في نفس المادة.",
+    ],
+    icon: FileCheck2,
+  },
+  {
+    num: "المادة 04",
+    title: "أخلاقيات الذكاء الاصطناعي الصحفي ومكافحة التوليد الوهمي",
+    category: "التكنولوجيا المسؤولة",
+    summary: "استخدام الذكاء الاصطناعي كأداة تدقيق مساعدة تحت الإشراف البشري الكامل.",
+    content: "تستخدم منصة «الوطن اليوم» خوارزميات الذكاء الاصطناعي التوليدي كأداة للمساعدة في الفهرسة الدلالية، والترجمة، وتلخيص البيانات المعقدة، والتحقق من التكرار. يُحظر حظراً باتاً صياغة أي مادة إخبارية بالذكاء الاصطناعي دون مراجعة واعتماد بشري كامل، مع وضع إشعار صريح للقارئ في حال احتوت المادة على رسوم بيانية مولدة آلياً.",
+    rules: [
+      "المسؤولية القانونية والتحريرية تقع دائماً على رئيس التحرير البشري.",
+      "حظر توليد صور أو مقاطع فيديو مصطنعة تزور وقائع ميدانية (Deepfakes).",
+      "إخضاع مخرجات الذكاء الاصطناعي لفحص الهلوسة والمطابقة الجنائية.",
+    ],
+    icon: Bot,
+  },
+  {
+    num: "المادة 05",
+    title: "حماية المصادر السرية وسلامة الشهود والمراسلين",
+    category: "الحصانة المهنية",
+    summary: "سرية تامة لهوية المصادر الميدانية وحماية الصحفيين في خطوط النار.",
+    content: "تضمن المنصة الحماية الكاملة لسرية المصادر التي تزود الصحفيين بمعلومات حساسة، وتلتزم بعدم الكشف عن هويتها تحت أي ضغط قضائي أو سياسي، إلا إذا ثبت تعمد المصدر تضليل الرأي العام. كما تولي المنصة أولوية قصوى لسلامة المراسلين والمصورين في قطاع غزة والضفة الغربية على حساب السبق الصحفي.",
+    rules: [
+      "تشفير كافة قنوات الاتصال والرسائل الواردة من الميدان.",
+      "حظر نشر صور المراسلين في أماكن حساسة قد تعرضهم للاستهداف الميداني.",
+      "عدم بث أي مادة قد تلحق أذى بشهود العيان أو عائلاتهم.",
+    ],
+    icon: Lock,
+  },
+  {
+    num: "المادة 06",
+    title: "مراعاة الكرامة الإنسانية وحظر نشر الصور الصادمة",
+    category: "المعايير الإنسانية",
+    summary: "احترام كرامة الشهداء والضحايا ووضع تحذير مسبق على المواد البصرية الحساسة.",
+    content: "تلتزم المنصة بصون كرامة الضحايا وأسرهم، وتمنع نشر صور الجثامين المشوهة أو المشاهد الدموية المقربة إلا بعد معالجة بصرية تحجب التفاصيل القاسية وتضع تحذيراً تحريرياً صريحاً («محتوى حساس»). نهدف إلى توثيق الجريمة والانتهاك دون ابتذال المأساة أو استغلال دماء الأبرياء لجلب المشاهدات.",
+    rules: [
+      "مراعاة خصوصية الأطفال والجرحى وذويهم في المستشفيات ومراكز الإيواء.",
+      "الامتناع عن نشر أسماء الشهداء قبل إبلاغ عائلاتهم رسمياً من الجهات الصحية.",
+      "الحفاظ على أسلوب صحفي رصين يخاطب العقل ويوثق التاريخ.",
+    ],
+    icon: HeartHandshake,
+  },
+  {
+    num: "المادة 07",
+    title: "استقلالية الخط التحريري عن المصالح المالية والسياسية",
+    category: "السيادة التحريرية",
+    summary: "حظر تأثير المعلنين أو الرعاة على محتوى التحقيقات أو الخط التحريري.",
+    content: "تتمتع هيئة تحرير «الوطن اليوم» بالاستقلال التام عن أي توجيه خارجي أو ضغوط تمويلية. يُمنع منعاً باتاً تدخل المعلنين أو الجهات الراعية في المحتوى التحريري، وتخضع المواد الإعلانية والتسويقية للتمييز البصري الكامل عبر وسوم واضحة («مادة إعلانية» أو «رعاية تجارية»).",
+    rules: [
+      "الفصل المطلق بين إدارة التحرير وإدارة التسويق والمبيعات.",
+      "حظر قبول الهدايا أو الامتيازات التي قد تؤثر على نزاهة الصحفي.",
+      "الإفصاح الشفاف عن أي تضارب محتمل في المصالح لدى الكتاب والمحللين.",
+    ],
+    icon: Award,
+  },
+  {
+    num: "المادة 08",
+    title: "النزاهة والروح الرياضية في منصة «يلا سبورت»",
+    category: "الصحافة الرياضية",
+    summary: "تغطية رياضية احترافية، نبذ التعصب، والاحتفاء بإنجازات الرياضة الفلسطينية والعربية.",
+    content: "يلتزم ديسك «يلا سبورت» بنقل وقائع المباريات والبطولات بحيادية تامة ومهنية عالية، مع نبذ التعصب الكروي ومكافحة خطاب الكراهية في الرياضة. تفرد المنصة مساحة خاصة لدعم مشاركات الفدائي والمنتخبات والأندية الفلسطينية والعربية في المحافل القارية والدولية.",
+    rules: [
+      "الالتزام بالأرقام والإحصاءات المعتمدة من الاتحادات الرسمية (UEFA, FIFA).",
+      "احترام الحكام واللاعبين والامتناع عن التجريح الشخصي.",
+      "تسليط الضوء على الرياضة كجسر للتضامن الإنساني وصمود الشباب.",
+    ],
+    icon: Globe,
+  },
+  {
+    num: "المادة 09",
+    title: "التدقيق الجنائي للتحقيقات الاستقصائية ومصادر OSINT",
+    category: "الصحافة الاستقصائية",
+    summary: "إخضاع كافة الصور والأقمار الصناعية لبروتوكول التحقق الرقمي الجنائي.",
+    content: "تخضع كافة التحقيقات الاستقصائية المنشورة على المنصة لبروتوكول التدقيق الجنائي المتقدم (Forensic OSINT). يتم فحص الصور الجوية، بيانات الموقع الجغرافي (Geolocation)، وتوقيت الظلال، لمطابقة الادعاءات مع الوقائع الملموسة قبل النشر.",
+    rules: [
+      "إتاحة المنهجية الجنائية والأدلة المفتوحة للقراء لتمكينهم من إعادة الفحص.",
+      "الاستعانة بالخبراء المستقلين في قضايا الأسلحة والانتهاكات البيئية والصحية.",
+      "توثيق الأرشيف الرقمي بأرقام تتبع لا تقبل التعديل أو التلاعب اللاحق.",
+    ],
+    icon: Sparkles,
+  },
+  {
+    num: "المادة 10",
+    title: "الالتزام الفوري بسجل التصحيحات والاعتذار المهني",
+    category: "المسؤولية الأخلاقية",
+    summary: "نشر أي تصحيح فورياً في صدر المقال وفي السجل العلني دون مواربة.",
+    content: "تعتبر المنصة أن الاعتراف بالخطأ والمسارعة إلى تصويبه ركن أساسي من أركان المصداقية. في حال حدوث أي خطأ في معلومة أو رقم أو اسم، يلتزم ديسك التحرير بتعديل المقال فوراً مع وضع تنويه تصحيحي واضح، وإدراج تفاصيل التعديل في «سجل التصحيحات العلني» المفتوح لكافة القراء.",
+    rules: [
+      "التصحيح خلال أقل من 12 دقيقة من ثبوت عدم دقة المعلومة.",
+      "عدم حذف الأخطاء سراً دون بيان ما تم تعديله للقارئ.",
+      "تقديم اعتذار صريح للمتضرر في حال كان للخطأ أثر معنوي أو قانوني.",
+    ],
+    icon: CheckCircle2,
+  },
+];
 
 export default function EditorialPolicyPage() {
-  const articles = [
-    {
-      num: "المادة الأولى",
-      title: "قاعدة التثبت المزدوج ونزاهة الرواية الإخبارية",
-      icon: Scale,
-      content:
-        "تلتزم منصة «الوطن اليوم» بعدم نشر أي خبر عاجل أو ادعاء رئيسي يمس الشأن العام ما لم يكن موثقاً من مصدرين مستقلين على الأقل، أو صادراً عن جهة حكومية أو أممية أو حقوقية معتمدة برصيد مهني موثوق. تخضع كافة المواد العاجلة لبروتوكول التدقيق اللحظي لمنع نشر الشائعات أو الأخبار غير المكتملة.",
-    },
-    {
-      num: "المادة الثانية",
-      title: "القاموس الوطني الفلسطيني الموحد ومعايير التسمية",
-      icon: ShieldCheck,
-      content:
-        "انطلاقاً من مبدأ «فلسطين أولاً»، تعتمد المنصة دليلاً معيارياً ملزماً لكافة المحررين والمراسلين: تسمية عاصمة فلسطين بـ «القدس المحتلة»، إطلاق صفة «الشهداء» على ضحايا العمليات العسكرية وقصف الاحتلال مع توثيق أسمائهم وأعمارهم وسيرهم الإنسانية، التمييز التام بين «المستوطنات» والأراضي المحتلة، والتعامل بحذر وتدقيق مضاعف مع إعلام الاحتلال بوضع وسم صريح يوضح روايته.",
-    },
-    {
-      num: "المادة الثالثة",
-      title: "الفصل الصارم والواضح بين الخبر والرأي والتحليل",
-      icon: FileCheck2,
-      content:
-        "تلتزم المنصة بالفصل البصري والتحريري التام بين المادة الإخبارية المجردة ومقالات الرأي والتحليلات السياسية. توسم مقالات الرأي بوسم واضح («رأي وتحليل») مع إبراز اسم الكاتب وصورته وصفته، والتنويه بأن المقال يعبر عن وجهة نظر صاحبه ولا يمثل بالضرورة الموقف التحريري لمنصة الوطن اليوم.",
-    },
-    {
-      num: "المادة الرابعة",
-      title: "أخلاقيات الذكاء الاصطناعي الصحفي ومكافحة التوليد الوهمي",
-      icon: Bot,
-      content:
-        "يُحظر حظراً مطلقاً استخدام نماذج الذكاء الاصطناعي لتأليف أخبار، أو فبركة اقتباسات، أو توليد صور ومقاطع فيديو توهم القارئ بأنها أحداث حقيقية. يقتصر دور الذكاء الاصطناعي على تحسين محركات البحث، وتلخيص المقالات الطويلة، والتدقيق الإملائي، والترجمة، مع إلزامية مراجعة المحرر البشري ووسم أي محتوى معالج آلياً بشارة الشفافية المعتمدة.",
-    },
-    {
-      num: "المادة الخامسة",
-      title: "حماية المصادر الميدانية والشهود والمبلغين",
-      icon: Lock,
-      content:
-        "تضمن «الوطن اليوم» الحماية القانونية والأخلاقية الكاملة لكافة المصادر الميدانية والمبلغين وشهود العيان الذين يدلون بمعلومات حساسة للمنصة. لا يجوز لأي محرر الكشف عن هوية المصدر السري تحت أي ظرف ما لم يكن هناك تصريح كتابي صريح منه، وتُستخدم قنوات تشفير عالية الأمان لحماية بياناتهم.",
-    },
-    {
-      num: "المادة السادسة",
-      title: "الكرامة الإنسانية وحماية الأطفال وخصوصية الضحايا",
-      icon: HeartHandshake,
-      content:
-        "تلتزم المنصة باحترام كرامة الضحايا والمصابين وأسرهم، وتمنع نشر صور الجثامين المشوهة أو المشاهد الدامية الصادمة دون تنويه تحذيري وتعتيم بصري يحفظ حرمة الميت ومشاعر ذويه. كما يُحظر نشر أسماء وصور الأطفال القُصّر المتورطين في قضايا أمنية أو جنائية دون إذن أولياء أمورهم.",
-    },
-    {
-      num: "المادة السابعة",
-      title: "مكافحة خطاب الكراهية والتحريض والتمييز",
-      icon: AlertTriangle,
-      content:
-        "ترفض المنصة رفضاً قاطعاً أي خطاب يحرض على العنف، أو التكفير، أو التخوين، أو التمييز القائم على العرق، أو الدين، أو الجنسية، أو المذهب السياسي. كما تلتزم بتطبيق سياسة إشراف صارمة ومستمرة على مساحات التعليقات المجتمعية لضمان بقائها بيئة حوار حضارية وبناءة.",
-    },
-    {
-      num: "المادة الثامنة",
-      title: "سياسة التصحيح المفتوح والاعتراف الفوري بالخطأ",
-      icon: Scale,
-      content:
-        "تؤمن المنصة بأن الاعتراف بالخطأ وتصحيحه علناً وفورياً هو جوهر الشجاعة الصحفية ومقياس النزاهة. عند اكتشاف أي خطأ في اسم، أو رقم، أو سياق، تلتزم المنصة بتعديل المادة فوراً مع وضع صندوق تصحيح بارز يوضح ما تم تعديله وتاريخه وساعته، وتوثيق ذلك في سجل التصحيحات العلني.",
-    },
-    {
-      num: "المادة التاسعة",
-      title: "حظر تضارب المصالح والهدايا الصحفية",
-      icon: Award,
-      content:
-        "يُحظر على الصحفيين والمحررين العاملين في المنصة قبول أي هدايا، أو رحلات مدفوعة، أو مكافآت مالية من جهات أو شركات أو أحزاب تهدف للتأثير على استقلالية التغطية. كما يُلزم المحرر بالإفصاح عن أي علاقة شخصية أو مالية قد تتقاطع مع المادة التي يحررها.",
-    },
-    {
-      num: "المادة العاشرة",
-      title: "حماية حقوق الملكية الفكرية والعزو الصريح للمصادر",
-      icon: Globe,
-      content:
-        "تلتزم المنصة بحفظ حقوق كافة الناشرين والمصورين والمؤلفين، وتمنع النقل أو الاقتباس دون إشارة واضحة وصريحة للمصدر الأصلي مع رابط مباشر دائم (Canonical Link). كما تلتزم ببروتوكول الألفية الرقمية (DMCA) للتعامل الفوري مع أي شكاوى ملكية فكرية.",
-    },
-  ];
+  const [openArticle, setOpenArticle] = useState<string>("المادة 01");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [copiedLexicon, setCopiedLexicon] = useState<string | null>(null);
+
+  const toggleArticle = (num: string) => {
+    setOpenArticle((prev) => (prev === num ? "" : num));
+  };
+
+  const handleCopyTerm = (term: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(term);
+      setCopiedLexicon(term);
+      setTimeout(() => setCopiedLexicon(null), 2500);
+    }
+  };
+
+  const filteredArticles = ARTICLES.filter(
+    (art) =>
+      art.title.includes(searchQuery) ||
+      art.content.includes(searchQuery) ||
+      art.category.includes(searchQuery)
+  );
 
   return (
-    <div className="container-custom py-10 space-y-10">
-      <InstitutionalNav />
+    <div className="min-h-screen bg-[#0E0407] text-white selection:bg-[var(--gold)]/30 selection:text-white pb-24">
+      {/* شريط الملاحة المؤسسي الموحد */}
+      <InstitutionalNav current="editorial-policy" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* متن الوثيقة الدستورية (8 أعمدة) */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* مقدمة الدستور التحريري */}
-          <div className="card-hyper-luxury p-6 sm:p-8 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#730020] via-[#590018] to-[#26000A] text-[var(--gold)] flex items-center justify-center font-black shadow-md border border-[var(--gold)]/40">
-                <FileCheck2 className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono text-[var(--gold)] uppercase font-bold">
-                  الدستور المهني · وثيقة التحرير السيادية
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight">
-                  ميثاق الشرف التحريري ومعايير النشر 2026
-                </h1>
-              </div>
-            </div>
-
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed font-medium">
-              تضع «الوطن اليوم» هذا الميثاق ليكون عقداً أخلاقياً ملزماً بين المنصة وقرائها في كل مكان. هدفنا ليس السبق الصحفي على حساب الحقيقة، بل بناء مرجع إخباري ذي موثوقية سيادية يوازن بين دقة التحقيق الميداني والواجب الإنساني والوطني، مستنداً إلى أحدث المعايير الصحفية العالمية.
-            </p>
+      {/* 1. Hero Header السينمائي الفاخر */}
+      <div className="relative overflow-hidden border-b border-[var(--gold)]/20 bg-gradient-to-b from-[#1b020a] via-[#140006] to-[#0E0407] py-14 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-rose-950/20 to-transparent pointer-events-none" />
+        
+        <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 relative z-10 space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] text-xs font-bold shadow-md shadow-amber-950/20">
+            <FileCheck2 className="w-4 h-4" />
+            <span>الوثيقة الدستورية الرسمية للسياسة التحريرية وأخلاقيات المهنة</span>
           </div>
 
-          {/* استعراض المواد العشر بالتفصيل */}
-          <div className="space-y-4">
-            {articles.map((art, idx) => {
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            ميثاق الشرف التحريري والسياسة المعيارية 2026
+          </h1>
+
+          <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mx-auto leading-relaxed">
+            المرجع الدستوري الأعلى لكافة صحفيي، مراسلي، ومحرري «الوطن اليوم». نلتزم بنقل الحقيقة كما هي، ونعتز بالهوية الوطنية الفلسطينية، ونخضع أعمالنا لأعلى معايير الرقابة الجنائية والتدقيق الأخلاقي.
+          </p>
+
+          {/* محرك البحث في مواد الميثاق */}
+          <div className="max-w-md mx-auto pt-2">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ابحث في مواد الميثاق العشر..."
+                className="w-full px-4 py-3 ps-10 rounded-2xl border border-white/15 bg-black/60 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-[var(--gold)] shadow-inner transition-colors backdrop-blur-md"
+              />
+              <Search className="w-4 h-4 text-[var(--gold)] absolute top-3.5 start-3.5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-14">
+        {/* 2. المواد الدستورية العشر التفاعلية (10 Constitutional Articles) */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div>
+              <span className="text-xs font-black text-[var(--gold)] uppercase tracking-wider block">
+                الدستور الصحفي للمنصة
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+                المواد الدستورية العشر المعتمدة
+              </h2>
+            </div>
+            <span className="text-xs text-stone-400">
+              {filteredArticles.length} من {ARTICLES.length} مواد
+            </span>
+          </div>
+
+          <div className="space-y-3.5">
+            {filteredArticles.map((art) => {
               const Icon = art.icon;
+              const isOpen = openArticle === art.num;
+
               return (
                 <div
-                  key={idx}
-                  className="card-hyper-luxury p-6 space-y-3 border border-[var(--border)] hover:border-[var(--gold)]/40 transition-all duration-300"
+                  key={art.num}
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                    isOpen
+                      ? "border-[var(--gold)]/60 bg-gradient-to-b from-[#1e020a] to-[#120005] shadow-xl shadow-amber-950/20"
+                      : "border-white/10 bg-[#16060B]/70 hover:border-white/20"
+                  }`}
                 >
-                  <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-[var(--gold)]/15 text-[var(--gold)] flex items-center justify-center border border-[var(--gold)]/30">
-                        <Icon className="w-4 h-4" />
-                      </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleArticle(art.num)}
+                    className="w-full p-5 sm:p-6 flex items-center justify-between gap-4 text-right cursor-pointer"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 transition-colors ${
+                          isOpen
+                            ? "bg-[var(--gold)] text-slate-950 shadow-md shadow-amber-500/20"
+                            : "bg-white/5 text-stone-300 border border-white/10"
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
                       <div>
-                        <span className="text-[10px] font-mono text-[var(--gold)] font-bold">
-                          {art.num}
-                        </span>
-                        <h2 className="text-base sm:text-lg font-black text-[var(--text)]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono font-bold text-[var(--gold)]">
+                            {art.num}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-stone-400 border border-white/10">
+                            {art.category}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-sm sm:text-base text-white mt-0.5">
                           {art.title}
-                        </h2>
+                        </h3>
+                        <p className="text-xs text-stone-400 mt-1 line-clamp-1">
+                          {art.summary}
+                        </p>
                       </div>
                     </div>
 
-                    <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                      بند ملزم
-                    </span>
-                  </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-stone-400 transition-transform duration-300 shrink-0 ${
+                        isOpen ? "rotate-180 text-[var(--gold)]" : ""
+                      }`}
+                    />
+                  </button>
 
-                  <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                    {art.content}
-                  </p>
+                  {isOpen && (
+                    <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/10 space-y-4 animate-in fade-in duration-200">
+                      <p className="text-xs sm:text-sm text-stone-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-white/5">
+                        {art.content}
+                      </p>
+
+                      <div className="space-y-2">
+                        <span className="text-xs font-bold text-[var(--gold)] block">
+                          القواعد والضوابط التحريرية الإلزامية:
+                        </span>
+                        <ul className="space-y-2 text-xs text-stone-300">
+                          {art.rules.map((rule, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                              <span>{rule}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
+        </div>
 
-          {/* صندوق قسم الشرف الصحفي والتوقيع المعتمد */}
-          <div className="rounded-3xl glass-hud p-6 sm:p-8 space-y-4 border-2 border-[var(--gold)]/50 text-white shadow-2xl relative overflow-hidden">
-            <div className="flex items-center gap-2.5">
-              <Award className="w-6 h-6 text-[var(--gold)]" />
-              <h3 className="text-xl font-black text-[var(--gold)]">
-                قسم الأمانة الصحفية المعتمد لهيئة التحرير
-              </h3>
+        {/* 3. القاموس الوطني الفلسطيني الموحد (The Unified National Lexicon) */}
+        <div className="rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-[#062013]/90 via-[#0a1810]/90 to-[#040c07]/90 backdrop-blur-xl p-6 sm:p-8 space-y-6 shadow-2xl">
+          <div className="border-b border-emerald-500/20 pb-4 space-y-1">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400">
+              <BookOpen className="w-4 h-4" />
+              <span>معجم التحرير السيادي الملزم</span>
             </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              القاموس الوطني الفلسطيني الموحد
+            </h3>
+            <p className="text-xs text-stone-300">
+              دليل المصطلحات المعتمد لمواجهة التضليل اللغوي وترسيخ الرواية الأصيلة
+            </p>
+          </div>
 
-            <blockquote className="text-sm sm:text-base text-stone-200 leading-relaxed italic border-s-4 border-[var(--gold)] ps-4 my-3 font-serif">
-              «أقسم بالله العظيم أن أتحرى الحقيقة بنزاهة، وأن أضع دقة الخبر وأمانة الكلمة فوق كل اعتبار، وأن أنصف الضحايا والمظلومين، وألا أساوم على أمانة النقل أو كرامة الإنسان، وأن ألتزم بالقاموس الوطني الفلسطيني وبأصول هذا الميثاق ما حييت.»
-            </blockquote>
-
-            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-white/70">
-              <span className="font-bold text-white">صادر عن: مجلس الأمناء وهيئة التحرير المركزية · «الوطن اليوم»</span>
-              <span className="font-mono text-[var(--gold)]">ساري المفعول لعام 2026</span>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { wrong: "النزاع الإسرائيلي الفلسطيني", correct: "قضية الشعب الفلسطيني والاحتلال" },
+              { wrong: "المعابر الإسرائيلية", correct: "معابر قطاع غزة المحاصرة" },
+              { wrong: "قتلى الغارات", correct: "شهداء القصف والعدوان" },
+              { wrong: "حاجز أمني", correct: "حاجز عسكري استيطاني" },
+              { wrong: "القدس الشرقية", correct: "القدس المحتلة عاصمة فلسطين" },
+              { wrong: "مستوطنة شرعية", correct: "مستوطنة استعمارية غير شرعية" },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                onClick={() => handleCopyTerm(item.correct)}
+                className="p-3.5 rounded-2xl bg-black/40 border border-emerald-500/20 hover:border-emerald-500/50 transition-all cursor-pointer space-y-2 group"
+                title="انقر لنسخ المصطلح المعتمد"
+              >
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-rose-400 line-through">{item.wrong}</span>
+                  <span className="text-emerald-400 font-bold group-hover:scale-105 transition-transform flex items-center gap-1">
+                    <Copy className="w-3 h-3" />
+                    <span>{copiedLexicon === item.correct ? "تم النسخ!" : "نسخ"}</span>
+                  </span>
+                </div>
+                <div className="text-xs font-black text-emerald-300 leading-snug">
+                  ✓ {item.correct}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* الشريط الجانبي الاستراتيجي (4 أعمدة) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* بطاقة الضمان والاعتماد */}
-          <div className="card-hyper-luxury p-6 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-2 font-black text-sm text-[var(--text)] border-b border-[var(--border)] pb-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <span>شهادة الالتزام والتدقيق</span>
+        {/* 4. ختم النزاهة الصحفية والاعتماد الرسمي */}
+        <div className="rounded-3xl border border-[var(--gold)]/40 bg-gradient-to-r from-[#200008] via-[#2d000c] to-[#200008] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+          <div className="space-y-2 text-center md:text-right">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400">
+              <Award className="w-4 h-4" />
+              <span>شهادة الالتزام والاعتماد المؤسسي 2026</span>
             </div>
-
-            <ul className="space-y-3 text-xs text-[var(--text-muted)]">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>تحقق بشري مضاعف 100% لكافة العواجل</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>سجل تصحيحات علني مفصل ومفتوح</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>حماية كاملة لهوية المصادر الميدانية</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>عزو صريح وروابط مباشرة للمصادر الأصلية</span>
-              </li>
-            </ul>
-
-            <div className="pt-3 border-t border-[var(--border)]">
-              <Link
-                href="/corrections"
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#590018] to-[#730020] text-[var(--gold)] border border-[var(--gold)]/40 text-xs font-black hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Scale className="w-4 h-4" />
-                <span>الاطلاع على سجل التصحيحات العلني</span>
-              </Link>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              دستور ملزم.. أمانة تاريخية.. وكلمة مسؤولة
+            </h3>
+            <p className="text-xs text-stone-300 max-w-xl leading-relaxed">
+              يوقع على هذا الميثاق كل صحفي ومراسل ينضم لأسرة منصة «الوطن اليوم»، ويعد خرقه موجباً للمساءلة التحريرية والتصحيح العلني أمام الجمهور.
+            </p>
           </div>
 
-          {/* صندوق الإبلاغ الفوري عن مخالفة للميثاق */}
-          <div className="card-hyper-luxury p-6 space-y-3 border border-red-500/30 bg-red-950/10">
-            <div className="flex items-center gap-2 font-black text-sm text-red-500">
-              <AlertTriangle className="w-4 h-4" />
-              <span>لاحظت مخالفة لأحد بنود هذا الميثاق؟</span>
-            </div>
-            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              إذا لاحظت أي مادة صحفية تخالف أياً من المواد العشر أعلاه، يسعدنا استقبال بلاغك والتحقيق الفوري فيه وتصحيحه خلال أقل من ساعتين.
-            </p>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <Link
+              href="/corrections"
+              className="px-5 py-2.5 rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/10 hover:bg-[var(--gold)]/20 text-[var(--gold)] text-xs font-bold transition-all shadow-xs"
+            >
+              سجل التصحيحات العلني ←
+            </Link>
             <Link
               href="/submit-news"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-red-500 hover:underline pt-1"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-slate-950 text-xs font-black hover:brightness-110 active:scale-95 transition-all shadow-md shadow-amber-950/20"
             >
-              <span>تقديم بلاغ أو تصحيح خبر الآن ←</span>
+              تقديم بلاغ سري مشفر ←
             </Link>
           </div>
         </div>

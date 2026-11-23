@@ -397,41 +397,53 @@ export function Footer() {
       {/* 4. شريط السيادة والاعتماد القانوني النهائي (The Sovereign Legal Bar) */}
       <div className="border-t border-white/10 bg-black/80 py-5 text-xs text-stone-400 relative z-10">
         <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 text-[11px]">
-            <span>© 2026 منصة «الوطن اليوم». كافة الحقوق محفوظة ومسجلة رسميًا.</span>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 sm:gap-3 text-[11px]">
+            <span className="font-semibold text-white/90">© 2026 منصة «الوطن اليوم». صرح إعلامي سيادي موثق.</span>
             <span className="text-white/20">|</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
+            <Link href="/terms" className="hover:text-[var(--gold)] transition-colors">
               شروط الاستخدام
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              الخصوصية وأمان البيانات
+            <span className="text-white/20">·</span>
+            <Link href="/privacy" className="hover:text-[var(--gold)] transition-colors">
+              الخصوصية والبيانات
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/sources-policy" className="hover:text-white transition-colors">
-              سياسة عزو المصادر
+            <span className="text-white/20">·</span>
+            <Link href="/editorial-policy" className="hover:text-[var(--gold)] transition-colors">
+              ميثاق الشرف
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/corrections" className="hover:text-white transition-colors">
-              سجل التصحيحات العلني
+            <span className="text-white/20">·</span>
+            <Link href="/sources-policy" className="hover:text-[var(--gold)] transition-colors">
+              عزو المصادر
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/dmca" className="hover:text-white transition-colors">
+            <span className="text-white/20">·</span>
+            <Link href="/corrections" className="hover:text-[var(--gold)] transition-colors">
+              سجل التصحيحات
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link href="/submit-news" className="hover:text-emerald-400 font-bold transition-colors">
+              تقديم بلاغ سري
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link href="/dmca" className="hover:text-[var(--gold)] transition-colors">
               حقوق النشر (DMCA)
             </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/advertise" className="hover:text-[var(--gold)] font-bold transition-colors">
+            <span className="text-white/20">·</span>
+            <Link href="/contact" className="hover:text-[var(--gold)] transition-colors">
+              اتصل بهيئة التحرير
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link href="/advertise" className="hover:text-amber-300 font-black transition-colors">
               الإعلان والرعاية
             </Link>
           </div>
 
           <button
             onClick={scrollToTop}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 hover:text-[var(--gold)] border border-white/10 transition-colors text-xs cursor-pointer shrink-0 shadow-xs"
-            title="العودة لأعلى الصفحة"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/5 hover:bg-[var(--gold)]/20 text-stone-300 hover:text-[var(--gold)] border border-white/10 hover:border-[var(--gold)]/40 transition-all text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95 group"
+            title="العودة لأعلى الصرح"
           >
             <span>إلى قمة الصرح</span>
-            <ArrowUp className="w-3.5 h-3.5" />
+            <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
           </button>
         </div>
       </div>

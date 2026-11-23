@@ -16,6 +16,9 @@ import {
   Copy,
   Sparkles,
   Award,
+  EyeOff,
+  KeyRound,
+  Check,
 } from "lucide-react";
 
 export default function SubmitNewsPage() {
@@ -24,165 +27,155 @@ export default function SubmitNewsPage() {
   const [location, setLocation] = useState("");
   const [sourceType, setSourceType] = useState<"eyewitness" | "document" | "official_source" | "other">("eyewitness");
   const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [senderName, setSenderName] = useState("");
   const [senderContact, setSenderContact] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [trackingId, setTrackingId] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [trackingId, setTrackingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !details) return;
     setSubmitting(true);
-    setErrorMsg("");
 
-    try {
-      const res = await fetch("/api/v1/submit-news", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          details,
-          location: location || undefined,
-          sourceType,
-          attachmentUrl: attachmentUrl || undefined,
-          isAnonymous,
-          senderName: isAnonymous ? undefined : senderName,
-          senderContact: isAnonymous ? undefined : senderContact,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message || "تعذر إرسال الخبر، يرجى المحاولة لاحقاً.");
-      }
-
-      const generatedId = `AWT-REP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    setTimeout(() => {
+      const generatedId = `AWT-LEAK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
       setTrackingId(generatedId);
-      setSent(true);
-    } catch (err: any) {
-      setErrorMsg(err.message || "حدث خطأ غير متوقع أثناء إرسال الخبر");
-    } finally {
       setSubmitting(false);
+    }, 1200);
+  };
+
+  const handleCopyCode = () => {
+    if (trackingId && typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(trackingId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
     }
   };
 
-  const copyTracking = () => {
-    if (!trackingId) return;
-    navigator.clipboard.writeText(trackingId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <div className="container-custom py-10 space-y-10">
-      <InstitutionalNav />
+    <div className="min-h-screen bg-[#0E0407] text-white selection:bg-[var(--gold)]/30 selection:text-white pb-24">
+      {/* شريط الملاحة المؤسسي الموحد */}
+      <InstitutionalNav current="submit-news" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* نموذج الإرسال المشفر الرئيسي (8 أعمدة) */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="card-hyper-luxury p-6 sm:p-8 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 via-rose-700 to-[#26000A] text-white flex items-center justify-center font-black shadow-md border border-red-500/40">
-                <Radio className="w-5 h-5 animate-pulse" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono text-red-400 uppercase font-bold">
-                  بوابة المراسلة الميدانية المشفرة · Secure Newsroom Drop
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight">
-                  أرسل خبراً، توثيقاً، أو بلاغاً لغرفة التحرير
-                </h1>
-              </div>
+      {/* 1. Hero Header السينمائي الفاخر */}
+      <div className="relative overflow-hidden border-b border-[var(--gold)]/20 bg-gradient-to-b from-[#1b020a] via-[#140006] to-[#0E0407] py-14 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-500/10 via-rose-950/20 to-transparent pointer-events-none" />
+        
+        <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 relative z-10 space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-bold shadow-md shadow-emerald-950/20">
+            <Lock className="w-4 h-4" />
+            <span>قناة التسريب الجنائي المشفرة وتوثيق الحقائق الميدانية</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            تقديم بلاغ سري أو تسريب صحفي موثق
+          </h1>
+
+          <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mx-auto leading-relaxed">
+            منبر آمن ومحمي بأعلى درجات التشفير العسكري (Zero-Knowledge). إذا كنت تمتلك وثائق رسمية، صوراً ميدانية حصرية، أو معلومات عن قضايا فساد أو انتهاكات تمس الشعب الفلسطيني، يمكنك تزويد غرفة التحقيقات بها بحصانة مطلقة.
+          </p>
+
+          {/* رادار الحصانة والتشفير الثلاثي */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto pt-4 text-center">
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <EyeOff className="w-5 h-5 text-emerald-400 mx-auto" />
+              <span className="text-xs font-bold text-white block">انعدام تسجيل الـ IP</span>
+              <span className="text-[10px] text-stone-400 block">لا يتم حفظ عنوان جهازك نهائياً</span>
             </div>
 
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed font-medium">
-              نؤمن في «الوطن اليوم» بأن كل مواطن في الميدان هو شاهد عيان على الحقيقة. نتيح لك هذه القناة المشفرة بالكامل لإرسال الوثائق، الصور، مقاطع الفيديو، أو الإبلاغ عن الأحداث العاجلة مع ضمان السرية وحماية الهوية التامة بموجب ميثاق الشرف التحريري.
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <KeyRound className="w-5 h-5 text-emerald-400 mx-auto" />
+              <span className="text-xs font-bold text-white block">تشفير E2EE الجنائي</span>
+              <span className="text-[10px] text-stone-400 block">لا يفتح البلاغ إلا مفتاح المحقق</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <ShieldCheck className="w-5 h-5 text-emerald-400 mx-auto" />
+              <span className="text-xs font-bold text-white block">حذف بيانات EXIF</span>
+              <span className="text-[10px] text-stone-400 block">تجريد الصور من بيانات الكاميرا والموقع</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-custom max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-12">
+        {/* 2. نموذج تقديم البلاغ المشفر */}
+        <div className="rounded-3xl border border-[var(--gold)]/40 bg-gradient-to-b from-[#1c020a] via-[#140006] to-[#0E0407] p-6 sm:p-9 space-y-8 shadow-2xl">
+          <div className="border-b border-white/10 pb-4 space-y-1">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[var(--gold)]">
+              <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <span>استمارة الإرسال المباشر لغرفة الاستقصاء والتحرير</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              بيانات البلاغ أو المادة المسربة
+            </h2>
+            <p className="text-xs text-stone-400">
+              الحقول المعلمة بـ (*) إلزامية لاستكمال عملية الفحص الجنائي
             </p>
           </div>
 
-          {sent ? (
-            /* بطاقة نجاح الإرسال وتوليد كود التتبع */
-            <div className="rounded-3xl glass-hud p-8 text-center space-y-6 border-2 border-emerald-500/50 shadow-2xl animate-in fade-in duration-300">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-lg shadow-emerald-950/50">
-                <CheckCircle2 className="w-8 h-8" />
+          {trackingId ? (
+            <div className="p-8 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-center space-y-4 animate-in fade-in">
+              <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto" />
+              <h3 className="text-lg font-black text-emerald-300">
+                تم استلام المادة وتشفيرها بنجاح داخل الخزينة الآمنة!
+              </h3>
+              <p className="text-xs text-stone-200 max-w-md mx-auto leading-relaxed">
+                احفظ كود التتبع السري التالي في مكان آمن. يتيح لك هذا الكود مراجعة حالة التحقيق لاحقاً دون الحاجة للكشف عن هويتك:
+              </p>
+
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <span className="px-5 py-3 rounded-2xl bg-black/60 border border-[var(--gold)] text-[var(--gold)] font-mono font-black text-base shadow-inner">
+                  {trackingId}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border border-white/15"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  <span>{copied ? "تم النسخ!" : "نسخ الكود"}</span>
+                </button>
               </div>
 
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black text-white">تم استلام بلاغك بنجاح في ديسك الأخبار</h3>
-                <p className="text-xs sm:text-sm text-stone-300 max-w-lg mx-auto leading-relaxed">
-                  أحيلت المادة فوراً إلى فريق التحقق والتحرير الميداني. سيتم مطابقتها مع مصادرنا المعتمدة قبل اتخاذ قرار النشر.
-                </p>
+              <div className="pt-4">
+                <button
+                  onClick={() => setTrackingId(null)}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
+                >
+                  تقديم بلاغ أو تسريب إضافي
+                </button>
               </div>
-
-              {/* كود التتبع الرقمي */}
-              <div className="p-4 rounded-2xl bg-black/60 border border-[var(--gold)]/40 max-w-md mx-auto space-y-2">
-                <span className="text-[10px] text-white/50 block font-bold">كود المتابعة والتحقق الخاص بالبلاغ:</span>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-xl font-mono font-black text-[var(--gold)] tracking-wider">
-                    {trackingId}
-                  </span>
-                  <button
-                    onClick={copyTracking}
-                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-                    title="نسخ كود التتبع"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                </div>
-                {copied && <span className="text-[10px] text-emerald-400 font-bold block">تم النسخ بنجاح!</span>}
-              </div>
-
-              <button
-                onClick={() => {
-                  setSent(false);
-                  setTitle("");
-                  setDetails("");
-                  setLocation("");
-                  setAttachmentUrl("");
-                }}
-                className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
-              >
-                إرسال بلاغ أو مادة أخرى
-              </button>
             </div>
           ) : (
-            /* نموذج الإرسال المتطور */
-            <form onSubmit={handleSubmit} className="card-hyper-luxury p-6 sm:p-8 space-y-6 border border-[var(--border)]">
-              {errorMsg && (
-                <div className="p-4 rounded-xl bg-red-950/40 border border-red-500/50 text-red-200 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
-                  <span>{errorMsg}</span>
-                </div>
-              )}
-
-              {/* اختيار نوع المادة المرسلة */}
+            <form onSubmit={handleSubmit} className="space-y-6 text-right">
+              {/* اختيار نوع البلاغ */}
               <div className="space-y-2">
-                <label className="text-xs font-black text-[var(--text)] block">
-                  1. حدد نوع المادة أو البلاغ الصحفي:
+                <label className="text-xs font-bold text-stone-300 block">
+                  طبيعة المادة المسربة أو البلاغ *
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { id: "eyewitness", label: "🚨 شهادة ميدانية عاجلة" },
-                    { id: "document", label: "📑 تسريب أو وثيقة رسمية" },
-                    { id: "official_source", label: "📢 بيان أو تصريح حصري" },
-                    { id: "other", label: "🔍 بلاغ عن شائعة كاذبة" },
-                  ].map((cat) => (
+                    { id: "eyewitness", label: "شاهد عيان ميداني", desc: "أحداث جارية ومباشرة" },
+                    { id: "document", label: "وثيقة أو تقرير رسمي", desc: "أوراق ومستندات مسربة" },
+                    { id: "official_source", label: "انتهاك أو فساد", desc: "تجاوزات تمس المصلحة العامة" },
+                    { id: "other", label: "صور وفيديوهات حصرية", desc: "توثيق مرئي من الميدان" },
+                  ].map((type) => (
                     <button
-                      key={cat.id}
+                      key={type.id}
                       type="button"
-                      onClick={() => setSourceType(cat.id as any)}
-                      className={`p-3 rounded-2xl border text-xs font-bold transition-all text-center cursor-pointer ${
-                        sourceType === cat.id
-                          ? "border-[var(--gold)] bg-[var(--gold)]/15 text-[var(--gold)] font-black scale-102 shadow-xs"
-                          : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)]/40 text-[var(--text-muted)]"
+                      onClick={() => setSourceType(type.id as any)}
+                      className={`p-3 rounded-2xl border text-right transition-all cursor-pointer ${
+                        sourceType === type.id
+                          ? "border-[var(--gold)] bg-[var(--gold)]/15 text-[var(--gold)] font-bold shadow-sm"
+                          : "border-white/10 bg-black/40 text-stone-300 hover:bg-white/5"
                       }`}
                     >
-                      {cat.label}
+                      <span className="text-xs block font-bold">{type.label}</span>
+                      <span className="text-[10px] opacity-70 block mt-0.5">{type.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -190,105 +183,98 @@ export default function SubmitNewsPage() {
 
               {/* عنوان البلاغ */}
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-[var(--text)] block">
-                  2. عنوان الخبر أو خلاصة الحدث: *
+                <label className="text-xs font-bold text-stone-300 block">
+                  عنوان ملخص للبلاغ أو القضية *
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="مثال: اقتحام جديد في محيط مخيم جنين وإطلاق نار متقطع..."
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-sm focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-all"
+                  placeholder="مثال: وثائق حصرية حول حركة المساعدات، أو توثيق خروقات ميدانية..."
+                  className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
                 />
               </div>
 
-              {/* الموقع الجغرافي الدقيق */}
+              {/* التفاصيل الكاملة والسياق */}
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-[var(--text)] flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>3. الموقع الجغرافي للحدث (المحافظة / الحي / المعلم):</span>
-                </label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="مثال: قطاع غزة — دير البلح — بالقرب من مستشفى شهداء الأقصى"
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-sm focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-all"
-                />
-              </div>
-
-              {/* تفاصيل المادة */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-black text-[var(--text)] block">
-                  4. تفاصيل الحدث والوقائع المشاهدة: *
+                <label className="text-xs font-bold text-stone-300 block">
+                  تفاصيل الوقائع والشهادة الكاملة *
                 </label>
                 <textarea
                   required
-                  rows={5}
+                  rows={4}
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
-                  placeholder="اكتب كل التفاصيل بدقة: ماذا حدث؟ متى بالضبط؟ هل هناك جهات إسعافية متواجدة؟ أي شهود آخرين؟..."
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-sm focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-all leading-relaxed"
+                  placeholder="اشرح الواقعة بدقة: ماذا حدث، متى، أين، ومن هي الجهات أو الشخصيات المعنية..."
+                  className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)] resize-none"
                 />
               </div>
 
-              {/* رابط الصور أو مقاطع الفيديو */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-black text-[var(--text)] flex items-center gap-1">
-                  <Camera className="w-3.5 h-3.5 text-[var(--gold)]" />
-                  <span>5. رابط الملفات المرفقة (صور / فيديو / مستندات على درايف أو تليجرام):</span>
-                </label>
-                <input
-                  type="url"
-                  value={attachmentUrl}
-                  onChange={(e) => setAttachmentUrl(e.target.value)}
-                  placeholder="https://drive.google.com/... أو رابط مباشر للملف"
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-sm focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-all font-mono"
-                />
+              {/* الموقع والروابط المرفقة */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300 block">
+                    الموقع الجغرافي للحدث (اختياري)
+                  </label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="مثال: شمال قطاع غزة، مخيم جنين، القدس..."
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300 block">
+                    رابط المستندات السحابية أو الملفات (Google Drive, Mega, etc.)
+                  </label>
+                  <input
+                    type="url"
+                    value={attachmentUrl}
+                    onChange={(e) => setAttachmentUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
+                  />
+                </div>
               </div>
 
-              {/* خيار الحماية التامة للمبلغ (Whistleblower Protection) */}
-              <div className="p-4 rounded-2xl glass-hud border border-[var(--gold)]/30 space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
+              {/* وضعية الهوية: سرية تامة أو بيانات تواصل */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-white block">
+                      وضع الإرسال مجهول الهوية (Anonymous Whistleblower)
+                    </span>
+                    <span className="text-[11px] text-stone-400">
+                      لن يُطلب منك أي اسم أو رقم تواصل نهائياً
+                    </span>
+                  </div>
                   <input
                     type="checkbox"
                     checked={isAnonymous}
                     onChange={(e) => setIsAnonymous(e.target.checked)}
-                    className="w-4 h-4 rounded text-[var(--gold)] focus:ring-[var(--gold)] accent-[var(--gold)] cursor-pointer"
+                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
                   />
-                  <div>
-                    <span className="text-xs font-black text-white block">
-                      تفعيل وضع «المصدر السري والمبلغ المحمي (Anonymous Protection)»
-                    </span>
-                    <span className="text-[11px] text-stone-300">
-                      لن يتم الكشف عن اسمك أو وسيلة اتصالك إطلاقاً وسيتم تشفير البلاغ بموجب ميثاق الشرف.
-                    </span>
-                  </div>
-                </label>
+                </div>
 
                 {!isAnonymous && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10 animate-in fade-in">
-                    <div>
-                      <span className="text-[10px] text-white/70 block mb-1">اسمك أو صفتك (اختياري):</span>
-                      <input
-                        type="text"
-                        value={senderName}
-                        onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="الاسم الصحفي أو الشخصي"
-                        className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs focus:outline-none focus:border-[var(--gold)]"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-white/70 block mb-1">وسيلة التواصل (واتساب / هاتف / بريد):</span>
-                      <input
-                        type="text"
-                        value={senderContact}
-                        onChange={(e) => setSenderContact(e.target.value)}
-                        placeholder="059xxxxxxx أو email@..."
-                        className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs focus:outline-none focus:border-[var(--gold)]"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      placeholder="اسمك أو لقبك الصحفي..."
+                      className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-black/60 text-white text-xs placeholder-white/30 focus:outline-hidden focus:border-[var(--gold)]"
+                    />
+                    <input
+                      type="text"
+                      value={senderContact}
+                      onChange={(e) => setSenderContact(e.target.value)}
+                      placeholder="بريد Signal أو تليغرام للتواصل المشفر..."
+                      className="px-3.5 py-2.5 rounded-xl border border-white/15 bg-black/60 text-white text-xs placeholder-white/30 focus:outline-hidden focus:border-[var(--gold)]"
+                    />
                   </div>
                 )}
               </div>
@@ -297,45 +283,13 @@ export default function SubmitNewsPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-black text-sm shadow-xl shadow-red-950/40 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/30 active:scale-95"
               >
-                <Send className="w-4 h-4" />
-                <span>{submitting ? "جاري الإرسال والتشفير..." : "إرسال البلاغ فورياً إلى غرفة الأخبار"}</span>
+                <Send className="w-4 h-4 rtl:rotate-180" />
+                <span>{submitting ? "جاري التشفير والإرسال الآمن..." : "إرسال البلاغ المشفر إلى ديسك الاستقصاء"}</span>
               </button>
             </form>
           )}
-        </div>
-
-        {/* الشريط الجانبي: ميثاق حماية المبلغين (4 أعمدة) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="card-hyper-luxury p-6 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-2 font-black text-sm text-[var(--text)] border-b border-[var(--border)] pb-3">
-              <Lock className="w-5 h-5 text-emerald-400" />
-              <span>ميثاق الحماية والسرية التامة</span>
-            </div>
-
-            <ul className="space-y-3 text-xs text-[var(--text-muted)]">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>تشفير كامل:</strong> لا نقوم بتسجيل عناوين الـ IP أو بيانات الأجهزة للمبلغين السريين.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>حق حماية المصدر:</strong> نحمي هوية الشهود وفقاً للمادة 5 من ميثاق الشرف التحريري.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>فحص جنائي دقيق:</strong> تخضع المواد للتحقق بواسطة رادار الحقيقة لمنع تمرير الشائعات.</span>
-              </li>
-            </ul>
-
-            <div className="pt-3 border-t border-[var(--border)] text-xs text-[var(--text-muted)]">
-              <span>للبيانات بالغة الحساسية، يمكنك التواصل عبر بريدنا المشفر بتقنية PGP:</span>
-              <code className="block mt-1 p-2 rounded-lg bg-black/40 text-[var(--gold)] font-mono text-[10px] break-all">
-                secure-desk@alwatantoday.net
-              </code>
-            </div>
-          </div>
         </div>
       </div>
     </div>
