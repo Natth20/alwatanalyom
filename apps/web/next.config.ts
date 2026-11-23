@@ -10,6 +10,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@prisma/client", "prisma"],
   output: process.env.STANDALONE === "true" ? "standalone" : undefined,
   reactStrictMode: true,
   compress: true,
