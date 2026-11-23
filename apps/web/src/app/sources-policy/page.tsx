@@ -1,6 +1,7 @@
-import Link from "next/link";
-import { Metadata } from "next";
-import { InstitutionalNav } from "@/components/InstitutionalNav";
+"use client";
+
+import { useState } from "react";
+import InstitutionalNav from "@/components/InstitutionalNav";
 import {
   FileSearch,
   ShieldCheck,
@@ -12,198 +13,304 @@ import {
   Globe,
   Radio,
   FileText,
+  Workflow,
+  Cpu,
+  UserCheck,
+  Share2,
+  Lock,
 } from "lucide-react";
+import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "سياسة عزو المصادر وحماية الاقتباس الصحفي — الوطن اليوم",
-  description: "المعايير الصارمة لنسب الأخبار لمصادرها الأصلية، وهرم الثقة، وحماية حقوق الوكالات والمراسلين في الوطن اليوم.",
-};
+interface PipelineStep {
+  step: string;
+  title: string;
+  duration: string;
+  description: string;
+  icon: any;
+  techBadge: string;
+}
+
+const PIPELINE_STEPS: PipelineStep[] = [
+  {
+    step: "01",
+    title: "الالتقاط اللحظي من الوكالات المعتمدة (Ingest)",
+    duration: "< 3 ثوانٍ",
+    description: "سحب البرقيات الإخبارية فور صدورها من 16 مصدراً معتمداً (وفا، رويترز، أ ف ب، الأناضول، بيانات الصحة والهلال الأحمر).",
+    icon: Radio,
+    techBadge: "Webhooks & RSS 2.0 Engine",
+  },
+  {
+    step: "02",
+    title: "الفحص الدلالي وكشف التكرار (AI Deduplication)",
+    duration: "< 1.5 ثانية",
+    description: "خوارزمية ذكاء اصطناعي تحلل سياق الخبر، تقارنه بما تم نشره خلال 24 ساعة، وتمنع التكرار وتصفي الصياغات الدعائية.",
+    icon: Cpu,
+    techBadge: "Gemini 2.5 Flash / Semantic Vector",
+  },
+  {
+    step: "03",
+    title: "المراجعة والتدقيق التحريري البشري (Human Fact-Check)",
+    duration: "دقيقة إلى دقيقتين",
+    description: "إحالة الأخبار الحساسة لغرفة التحرير الميداني للمطابقة الجنائية مع الصور والشهود على الأرض قبل الإفراج للنشر.",
+    icon: UserCheck,
+    techBadge: "Newsroom Review Desk 24/7",
+  },
+  {
+    step: "04",
+    title: "العزو الإلزامي وتثبيت رابط التحقق (Attribution)",
+    duration: "لحظي",
+    description: "تثبيت اسم الوكالة الأصلية، ووقت الصدور، ورابط التوثيق في ترويسة المقال لتمكين القارئ من الرجوع للأصل فوراً.",
+    icon: ShieldCheck,
+    techBadge: "Cryptographic Source Stamp",
+  },
+];
+
+interface CredibilityTier {
+  tier: string;
+  percent: string;
+  title: string;
+  color: string;
+  borderColor: string;
+  bgColor: string;
+  agencies: string[];
+  rules: string[];
+}
+
+const CREDIBILITY_TIERS: CredibilityTier[] = [
+  {
+    tier: "المستوى الأول · الثقة السيادية والميدانية",
+    percent: "100%",
+    title: "الوكالات الرسمية والمنظمات الإنسانية الميدانية",
+    color: "text-emerald-400",
+    borderColor: "border-emerald-500/40",
+    bgColor: "from-[#062013]/90 to-[#031008]/90",
+    agencies: [
+      "وكالة الأنباء الفلسطينية الرسمية (وفا)",
+      "بيانات وزارة الصحة الفلسطينية",
+      "جمعية الهلال الأحمر الفلسطيني",
+      "وكالة غوث وتشغيل اللاجئين (الأونروا)",
+      "الدفاع المدني الفلسطيني",
+    ],
+    rules: [
+      "ذكر المصدر في مقدمة الخبر أو كبسولة الاعتماد الرئاسية.",
+      "توثيق تاريخ وساعة صدور البيان بدقة متناهية.",
+      "نشر صور الأقمار الصناعية والإحداثيات الجغرافية الموثقة.",
+    ],
+  },
+  {
+    tier: "المستوى الثاني · الثقة الدولية المعتمدة",
+    percent: "90%",
+    title: "وكالات الأنباء الدولية والصحافة الاستقصائية العالمية",
+    color: "text-sky-400",
+    borderColor: "border-sky-500/40",
+    bgColor: "from-[#061826]/90 to-[#020b12]/90",
+    agencies: [
+      "وكالة رويترز للأنباء (Reuters)",
+      "وكالة الصحافة الفرنسية (AFP)",
+      "وكالة أسوشيتد برس (AP)",
+      "وكالة الأناضول (Anadolu)",
+      "شبكة الجزيرة نت",
+    ],
+    rules: [
+      "النسب الصريح لاسم الوكالة الدولية في سياق الخبر.",
+      "التدقيق في الترجمة العربية للمصطلحات لضمان عدم تزييف السياق.",
+      "مراعاة القاموس الوطني الفلسطيني المعتمد عند ترجمة تقارير الوكالات الغربية.",
+    ],
+  },
+  {
+    tier: "المستوى الثالث · التحقيقات مفتوحة المصدر (OSINT)",
+    percent: "85%",
+    title: "المختبرات الجنائية الرقمية وفحص الأقمار الصناعية",
+    color: "text-amber-400",
+    borderColor: "border-amber-500/40",
+    bgColor: "from-[#201504]/90 to-[#100a02]/90",
+    agencies: [
+      "صور الأقمار الصناعية التجارية (Sentinel, Planet)",
+      "مختبرات فحص الأدلة الجنائية المرئية",
+      "سجلات الطيران ومراقبة الملاحة الجوية والبحرية",
+    ],
+    rules: [
+      "نشر منهجية التحقيق بالتفصيل مع الصور قبل وبعد التكبير.",
+      "إتاحة الروابط الخام للجمهور لتمكينه من إعادة التحقق بشكل مستقل.",
+      "الإشارة الواضحة لأي هامش احتمالي في التحليل.",
+    ],
+  },
+];
 
 export default function SourcesPolicyPage() {
-  const trustTiers = [
-    {
-      tier: "المستوى الأول · الثقة السيادية (100%)",
-      title: "الوكالات الرسمية والمنظمات الإنسانية المعتمدة",
-      badge: "نشر مباشر مع تدقيق التحرير",
-      badgeColor: "bg-emerald-950/60 text-emerald-400 border-emerald-500/40",
-      description:
-        "المصادر الرسمية ذات التمثيل الميداني والقانوني الموثق، ويشمل ذلك في الشأن الفلسطيني وكالات الأنباء الرسمية المعتمدة (وفا، صفا، شهاب)، وبيانات وزارة الصحة الفلسطينية، وتقارير جمعية الهلال الأحمر الفلسطيني، والدفاع المدني، وبيانات وكالة الأونروا.",
-      rules: [
-        "ذكر اسم المصدر في مقدمة الخبر أو كبسولة المصدر المعتمد.",
-        "توثيق تاريخ ووقت صدور البيان الرسمي بدقة.",
-        "وضع رابط مباشر للمصدر الأصلي أو حسابه الرسمي الموثق متى أمكن.",
-      ],
-    },
-    {
-      tier: "المستوى الثاني · الثقة الدولية المعتمدة (90%)",
-      title: "وكالات الأنباء العالمية والصحافة الرصينة",
-      badge: "اعتماد وتدقيق التوافق",
-      badgeColor: "bg-sky-950/60 text-sky-400 border-sky-500/40",
-      description:
-        "وكالات الأنباء الدولية الرائدة (رويترز، وكالة الصحافة الفرنسية AFP، أسوشيتد برس AP)، والصحف والشبكات الإخبارية ذات مجالس التحرير المستقلة والمعايير المهنية الصارمة.",
-      rules: [
-        "النسب الصريح لاسم الوكالة الدولية في سياق الخبر.",
-        "التدقيق في الترجمة العربية للمصطلحات لضمان عدم تحريف المعنى الأصلي.",
-        "مراعاة القاموس الوطني الفلسطيني المعتمد عند ترجمة تقارير الوكالات الغربية.",
-      ],
-    },
-    {
-      tier: "المستوى الثالث · مصادر قيد الفحص والمطابقة (60%)",
-      title: "شهود العيان والنشطاء الميدانيون وشبكات التواصل",
-      badge: "يخضع لبروتوكول رادار الحقيقة",
-      badgeColor: "bg-amber-950/60 text-amber-400 border-amber-500/40",
-      description:
-        "مقاطع الفيديو والصور والتسجيلات الواردة من المواطنين في مناطق الحدث الميداني، أو القنوات الإخبارية المحلية على تيليجرام ومنصات التواصل الاجتماعي.",
-      rules: [
-        "حظر النشر الفوري حتى يتم التحقق من بيانات الملف الوصفية (Metadata / Geolocation).",
-        "مطابقة الرواية مع شاهد ثانٍ أو جهة إسعافية متواجدة في نفس النطاق الجغرافي.",
-        "وضع وسم «قيد التحقق الميداني» في حال كان الخبر عاجلاً وله تداعيات إنسانية ملحة.",
-      ],
-    },
-    {
-      tier: "المستوى الرابع · مصادر محظورة النشر (0%)",
-      title: "الحسابات المجهولة والشائعات غير المنسوبة",
-      badge: "حظر مطلق للنشر",
-      badgeColor: "bg-red-950/60 text-red-400 border-red-500/40",
-      description:
-        "القنوات والصفحات المجهولة التي تروج لأخبار بدون إسناد، الحسابات المشبوهة التي تنشر مقاطع قديمة أو خارج سياقها لإثارة الهلع، والبيانات المزورة غير الصادرة عن جهات رسمية.",
-      rules: [
-        "حظر النقل أو إعادة النشر أو الإشارة إليها كأخبار موثوقة.",
-        "إحالتها فورياً إلى وحدة رادار الحقيقة لتفنيدها وتفكيكها بالأدلة الجنائية.",
-        "توعية القراء بخطورة الشائعات ومصادرها المشبوهة.",
-      ],
-    },
-  ];
+  const [activePipelineStep, setActivePipelineStep] = useState<number>(0);
 
   return (
-    <div className="container-custom py-10 space-y-10">
-      <InstitutionalNav />
+    <div className="min-h-screen bg-[#0E0407] text-white selection:bg-[var(--gold)]/30 selection:text-white pb-24">
+      {/* شريط الملاحة المؤسسي الموحد */}
+      <InstitutionalNav current="sources-policy" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* المحتوى الرئيسي (8 أعمدة) */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="card-hyper-luxury p-6 sm:p-8 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#730020] via-[#590018] to-[#26000A] text-[var(--gold)] flex items-center justify-center font-black shadow-md border border-[var(--gold)]/40">
-                <FileSearch className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono text-[var(--gold)] uppercase font-bold">
-                  أمانة الاقتباس وحماية الحقوق · Attribution Standards
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight">
-                  سياسة عزو المصادر وحماية الاقتباس الصحفي
-                </h1>
-              </div>
-            </div>
-
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed font-medium">
-              السرقة الصحفية وإعادة تدوير الأخبار دون ذكر مصادرها الأصلية جريمة مهنية ترفضها «الوطن اليوم» جملة وتفصيلاً. نلتزم بنسب كل معلومة، تصريح، أو صورة فوتوغرافية إلى صاحبها أو وكالتها الأصلية، ونعتمد هرم ثقة علمي صارم يحكم كل كلمة تُنشر في المنصة.
-            </p>
+      {/* 1. Hero Header السينمائي الفاخر */}
+      <div className="relative overflow-hidden border-b border-[var(--gold)]/20 bg-gradient-to-b from-[#1b020a] via-[#140006] to-[#0E0407] py-14 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-rose-950/20 to-transparent pointer-events-none" />
+        
+        <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 relative z-10 space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] text-xs font-bold shadow-md shadow-amber-950/20">
+            <FileSearch className="w-4 h-4" />
+            <span>بروتوكول التدقيق الجنائي الرباعي وإسناد الأخبار لمصادرها</span>
           </div>
 
-          {/* استعراض مستويات هرم الثقة الأربعة */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-black text-[var(--text)] flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)]" />
-              <span>هرم الثقة والمعايير المعتمدة لتدقيق المصادر</span>
-            </h2>
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            سياسة عزو المصادر وحماية النزاهة الصحفية
+          </h1>
 
-            {trustTiers.map((t, idx) => (
-              <div
-                key={idx}
-                className="card-hyper-luxury p-6 space-y-3.5 border border-[var(--border)] hover:border-[var(--gold)]/40 transition-all duration-300"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
-                  <div>
-                    <span className="text-[10px] font-mono text-[var(--gold)] font-bold block">
-                      {t.tier}
-                    </span>
-                    <h3 className="text-base sm:text-lg font-black text-[var(--text)]">
-                      {t.title}
+          <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mx-auto leading-relaxed">
+            الصحافة النزيهة لا تخترع الأخبار ولا تنسب لنفسها ما لا تملكه. في «الوطن اليوم»، نلتزم بميثاق العزو الإلزامي، حيث يُسند كل خبر لبرقيته الأصلية ووكالته المعتمدة فوراً وبشفافية لا تقبل الشك.
+          </p>
+        </div>
+      </div>
+
+      <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-14">
+        {/* 2. مخطط مسار التحقق الجنائي التفاعلي (Interactive Ingestion Flowchart) */}
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-black text-[var(--gold)] uppercase tracking-wider">
+              هندسة المعالجة التحريرية 2026
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              مسار التحقق الجنائي الرباعي قبل نشر أي مادة
+            </h2>
+          </div>
+
+          {/* خطوات المسار التفاعلية */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {PIPELINE_STEPS.map((step, idx) => {
+              const Icon = step.icon;
+              const isActive = activePipelineStep === idx;
+
+              return (
+                <div
+                  key={step.step}
+                  onClick={() => setActivePipelineStep(idx)}
+                  className={`rounded-2xl border p-5 transition-all duration-300 cursor-pointer text-right flex flex-col justify-between ${
+                    isActive
+                      ? "border-[var(--gold)] bg-gradient-to-b from-[#24000a] to-[#120005] shadow-xl shadow-amber-950/30 scale-[1.02]"
+                      : "border-white/10 bg-[#16060B]/70 hover:border-white/20"
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-[var(--gold)]">
+                        المرحلة {step.step}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 font-mono text-stone-300">
+                        {step.duration}
+                      </span>
+                    </div>
+
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[var(--gold)]">
+                      <Icon className="w-5 h-5" />
+                    </div>
+
+                    <h3 className="font-bold text-sm text-white leading-snug">
+                      {step.title}
                     </h3>
+
+                    <p className="text-xs text-stone-300 leading-relaxed line-clamp-3">
+                      {step.description}
+                    </p>
                   </div>
 
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full border ${t.badgeColor}`}>
-                    {t.badge}
+                  <div className="pt-4 border-t border-white/5 mt-4">
+                    <span className="text-[10px] font-mono text-stone-400 block truncate">
+                      {step.techBadge}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. هرم تصنيف موثوقية المصادر المعتمدة (Source Credibility Hierarchy) */}
+        <div className="space-y-6">
+          <div className="border-b border-white/10 pb-4">
+            <span className="text-xs font-black text-[var(--gold)] uppercase tracking-wider block">
+              هرم الثقة المؤسسي
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+              تصنيف المصادر المعتمدة ومعايير إسنادها
+            </h2>
+          </div>
+
+          <div className="space-y-6">
+            {CREDIBILITY_TIERS.map((tier) => (
+              <div
+                key={tier.tier}
+                className={`rounded-3xl border ${tier.borderColor} bg-gradient-to-b ${tier.bgColor} backdrop-blur-xl p-6 sm:p-7 shadow-xl space-y-5`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div>
+                    <span className="text-xs font-bold text-stone-400 block">{tier.tier}</span>
+                    <h3 className={`text-lg font-black ${tier.color} mt-0.5`}>
+                      {tier.title}
+                    </h3>
+                  </div>
+                  <span className={`text-2xl font-black ${tier.color} font-mono`}>
+                    {tier.percent}
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                  {t.description}
-                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* قائمة الوكالات المعتمدة */}
+                  <div className="lg:col-span-5 space-y-2">
+                    <span className="text-xs font-bold text-white block">أبرز الشركاء والوكالات المعتمدة:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {tier.agencies.map((agency) => (
+                        <span
+                          key={agency}
+                          className="px-2.5 py-1 rounded-xl bg-black/40 border border-white/10 text-xs text-stone-200"
+                        >
+                          {agency}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="pt-2 border-t border-[var(--border)] space-y-1.5">
-                  <span className="text-[11px] font-black text-[var(--text)] block">
-                    قواعد التعامل التحريري الإلزامية:
-                  </span>
-                  <ul className="space-y-1 text-xs text-[var(--text-muted)]">
-                    {t.rules.map((r, rIdx) => (
-                      <li key={rIdx} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span>{r}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* القواعد والضوابط التحريرية */}
+                  <div className="lg:col-span-7 space-y-2">
+                    <span className="text-xs font-bold text-white block">قواعد النشر الإلزامية:</span>
+                    <ul className="space-y-2 text-xs text-stone-300">
+                      {tier.rules.map((rule, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className={`w-4 h-4 ${tier.color} mt-0.5 shrink-0`} />
+                          <span>{rule}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-
-          {/* بروتوكول الروابط المباشرة وحماية الحقوق (Canonical Attribution) */}
-          <div className="rounded-3xl glass-hud p-6 sm:p-8 space-y-4 border-2 border-[var(--gold)]/40 text-white shadow-xl">
-            <div className="flex items-center gap-2.5">
-              <Globe className="w-6 h-6 text-[var(--gold)]" />
-              <h3 className="text-lg sm:text-xl font-black text-[var(--gold)]">
-                بروتوكول الروابط المباشرة والأمانة الرقمية (Canonical Links)
-              </h3>
-            </div>
-            <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-normal">
-              لا نكتفي بذكر اسم الوكالة كتابياً، بل يلتزم محررونا بوضع روابط تشعبية مباشرة (Do-Follow Links) تنقل القارئ إلى الصفحة الأصلية للتقرير متى كانت متاحة، مما يعزز مصداقية المحتوى ويمنح الناشر الأصلي حقه التام في حركة الزيارات وحقوق السيو الرقمي.
-            </p>
-          </div>
         </div>
 
-        {/* الشريط الجانبي (4 أعمدة) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="card-hyper-luxury p-6 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-2 font-black text-sm text-[var(--text)] border-b border-[var(--border)] pb-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <span>الشركاء والوكالات المعتمدة</span>
+        {/* 4. تعهد النزاهة الرقمي والختم الرسمي */}
+        <div className="rounded-3xl border border-[var(--gold)]/40 bg-gradient-to-r from-[#200008] via-[#2d000c] to-[#200008] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+          <div className="space-y-2 text-center md:text-right">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400">
+              <Award className="w-4 h-4" />
+              <span>ختم الاعتماد والنزاهة الصحفية 2026</span>
             </div>
-
-            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              تعتمد المنصة شريطاً إخبارياً متكاملاً يتغذى من مصادر موثوقة تشمل:
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              تعهد الأمانة: لا خبر مجهول المصدر في «الوطن اليوم»
+            </h3>
+            <p className="text-xs text-stone-300 max-w-xl leading-relaxed">
+              تلتزم هيئة التحرير بحظر استخدام صياغات "أفادت مصادر مطلعة" إلا في أضيق الحدود الاستقصائية المحمية قانونياً، مع التزامنا التام بتوفير رابط التحقق لكل قارئ.
             </p>
-
-            <ul className="space-y-2 text-xs font-bold text-[var(--text)]">
-              <li className="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
-                <span>وكالة الأنباء الفلسطينية (وفا)</span>
-                <span className="text-[10px] text-emerald-400">شريك معتمد</span>
-              </li>
-              <li className="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
-                <span>وكالة الصحافة الفلسطينية (صفا)</span>
-                <span className="text-[10px] text-emerald-400">شريك معتمد</span>
-              </li>
-              <li className="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
-                <span>شبكة يلا سبورت الرياضية</span>
-                <span className="text-[10px] text-[var(--gold)]">شريك رياضي حصري</span>
-              </li>
-              <li className="p-2.5 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
-                <span>رويترز العالمية (Reuters)</span>
-                <span className="text-[10px] text-sky-400">تغطية دولية</span>
-              </li>
-            </ul>
-
-            <div className="pt-3 border-t border-[var(--border)]">
-              <Link
-                href="/editorial-policy"
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#590018] to-[#730020] text-[var(--gold)] border border-[var(--gold)]/40 text-xs font-black hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <span>مراجعة ميثاق الشرف التحريري</span>
-              </Link>
-            </div>
           </div>
+
+          <Link
+            href="/corrections"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-slate-950 text-xs font-black hover:brightness-110 active:scale-95 transition-all shadow-md shadow-amber-950/20 shrink-0"
+          >
+            سجل التصحيحات العلني ←
+          </Link>
         </div>
       </div>
     </div>

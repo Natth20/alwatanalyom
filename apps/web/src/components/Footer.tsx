@@ -55,6 +55,20 @@ export function Footer() {
     london: "",
   });
 
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail) {
+      setNewsletterSubscribed(true);
+      setTimeout(() => {
+        setNewsletterSubscribed(false);
+        setNewsletterEmail("");
+      }, 6000);
+    }
+  };
+
   useEffect(() => {
     const updateTimes = () => {
       const now = new Date();
@@ -102,27 +116,33 @@ export function Footer() {
             </p>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              window.location.href = "/newsletter";
-            }}
-            className="flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-md mx-auto lg:mx-0"
-          >
-            <input
-              type="email"
-              required
-              placeholder="أدخل بريدك الإلكتروني المهني المعتمد..."
-              className="w-full sm:flex-1 px-4 py-3 rounded-2xl border border-[var(--gold)]/40 bg-black/60 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-[var(--gold)] shadow-inner transition-colors backdrop-blur-md"
-            />
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140005] text-xs font-black hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-[var(--gold-glow)]"
+          {newsletterSubscribed ? (
+            <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs animate-in fade-in duration-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>تم اشتراكك بنجاح! سيصلك إيجاز الفجر بمصادره المعتمدة غداً صباحاً.</span>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-md mx-auto lg:mx-0"
             >
-              <Send className="w-4 h-4 rtl:rotate-180" />
-              <span>اشتراك فوري</span>
-            </button>
-          </form>
+              <input
+                type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="أدخل بريدك الإلكتروني المهني المعتمد..."
+                className="w-full sm:flex-1 px-4 py-3 rounded-2xl border border-[var(--gold)]/40 bg-black/60 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-[var(--gold)] shadow-inner transition-colors backdrop-blur-md"
+              />
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140005] text-xs font-black hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-[var(--gold-glow)]"
+              >
+                <Send className="w-4 h-4 rtl:rotate-180" />
+                <span>اشتراك فوري</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
 

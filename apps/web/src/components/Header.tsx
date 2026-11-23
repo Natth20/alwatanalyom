@@ -12,8 +12,6 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { LowBandwidthToggle } from "@/components/LowBandwidthToggle";
 import { SavedCounterBadge } from "@/components/SavedCounterBadge";
 import {
-  Flame,
-  Radio,
   Menu,
   X,
   ChevronDown,
@@ -25,15 +23,9 @@ import {
   Film,
   Sparkles,
   Map,
-  Compass,
-  FileSearch,
-  Activity,
-  Headphones,
-  Gamepad2,
-  ExternalLink,
-  Clock,
   Layers,
-  ArrowUpRight,
+  Gamepad2,
+  Headphones,
 } from "lucide-react";
 
 type ActiveMegaMenu = "palestine" | "world" | "sports" | "economy" | "digital" | null;
@@ -80,7 +72,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 select-none shadow-xl">
+    <header className="sticky top-0 z-40 w-full transition-all duration-300 select-none shadow-2xl">
       {/* 0. زر التخطي للمحتوى الرئيسي لتعزيز إمكانية الوصول */}
       <a
         href="#main-content"
@@ -89,14 +81,16 @@ export function Header() {
         تخطي إلى المحتوى الرئيسي
       </a>
 
-      {/* 1. الشريط الرئاسي فائق النحافة (Tier 1: The Presidential Micro-Ribbon) */}
+      {/* ========================================================================= */}
+      {/* 1. الشريط الرئاسي الميداني (Tier 1: The Presidential Micro-Ribbon - 36px) */}
+      {/* ========================================================================= */}
       <div
-        className={`bg-gradient-to-r from-[#110004] via-[#220008] to-[#110004] border-b border-[var(--gold)]/20 text-white text-[11px] transition-all duration-300 ease-in-out ${
+        className={`bg-gradient-to-r from-[#0d0003] via-[#1d0007] to-[#0d0003] border-b border-[var(--gold)]/20 text-white text-[11px] transition-all duration-300 ease-in-out ${
           scrolled ? "h-0 opacity-0 overflow-hidden py-0 border-none" : "h-9 opacity-100 py-1"
         }`}
       >
         <div className="container-custom max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 sm:px-6 h-full overflow-hidden">
-          {/* اليمين: معلومات التاريخ والصلوات */}
+          {/* اليمين: معلومات التاريخ وكبسولة الصلوات المنبثقة */}
           <div className="flex items-center gap-2.5 shrink-0">
             <TopBarInfo />
           </div>
@@ -125,7 +119,7 @@ export function Header() {
             <LowBandwidthToggle />
             <ThemeToggle />
 
-            {/* بوابة اللغة الإنجليزية */}
+            {/* بوابة النسخة الإنجليزية */}
             <Link
               href="/en"
               className="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-[10px] font-bold text-stone-200 transition-colors"
@@ -147,23 +141,66 @@ export function Header() {
         </div>
       </div>
 
-      {/* 2. الترويسة الماسية الموحدة (Tier 2: The Unified Architectural Masthead) */}
-      <div
-        ref={navContainerRef}
-        className="border-b border-[var(--gold)]/20 bg-[#160006]/95 dark:bg-[#120004]/95 backdrop-blur-2xl transition-all relative w-full"
-      >
-        <div className="container-custom max-w-7xl mx-auto flex items-center justify-between gap-2 xl:gap-4 px-4 sm:px-6 h-16 sm:h-[68px]">
+      {/* ========================================================================= */}
+      {/* 2. ترويسة الصرح الملكية والبحث الموثق (Tier 2: The Royal Media Masthead - 72px) */}
+      {/* ========================================================================= */}
+      <div className="border-b border-[var(--gold)]/25 bg-[#140005]/98 dark:bg-[#100004]/98 backdrop-blur-2xl transition-all relative w-full h-[70px] sm:h-[72px] flex items-center">
+        <div className="container-custom max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 w-full">
           {/* الجناح الأيمن: الشعار الملكي الرسمي المعتمد */}
           <div className="shrink-0 flex items-center">
             <BrandLogo variant="header" />
           </div>
 
-          {/* الجناح الأوسط: شريط الأقسام التحريرية المركزي ذو التباعد المتزن بدون أي تزاحم */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 text-xs font-bold text-white whitespace-nowrap">
+          {/* الجناح الأوسط: كبسولة البحث والاستقصاء الموثق الذكية الموسعة */}
+          <div className="hidden md:flex flex-1 items-center justify-center max-w-xl mx-4">
+            <SearchTrigger expanded className="w-full" />
+          </div>
+
+          {/* الجناح الأيسر: زر البث المباشر المضيء، التنبيهات، المحفوظات، وزر القائمة للموبايل */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* في الشاشات الصغيرة: زر بحث مضغوط */}
+            <div className="md:hidden">
+              <SearchTrigger compact />
+            </div>
+
+            {/* زر البث المباشر المتوهج */}
+            <Link
+              href="/live"
+              className="px-3 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white text-[11px] sm:text-xs font-black flex items-center gap-2 shadow-lg shadow-red-900/40 transition-all active:scale-95 shrink-0 border border-red-500/40"
+              title="غرفة المتابعة والبث الحي المستمر 24/7"
+            >
+              <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping shrink-0" />
+              <span>البث الحي</span>
+            </Link>
+
+            <NotificationCenter />
+            <SavedCounterBadge />
+
+            {/* زر القائمة للشاشات الصغيرة */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl border border-white/15 bg-white/5 text-white hover:border-[var(--gold)] transition-colors cursor-pointer"
+              aria-label="تبديل القائمة"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. ممشى الأقسام التحريرية الفسيح (Tier 3: The Editorial Nave - 46px)       */}
+      {/* ========================================================================= */}
+      <div
+        ref={navContainerRef}
+        className="hidden lg:block border-b border-white/10 bg-[#1a0006]/95 dark:bg-[#0e0003]/95 backdrop-blur-2xl relative w-full h-[46px]"
+      >
+        <div className="container-custom max-w-7xl mx-auto flex items-center justify-center gap-2 xl:gap-3 px-4 sm:px-6 h-full">
+          <nav className="flex items-center gap-1 xl:gap-2 text-xs font-bold text-white whitespace-nowrap">
             {/* الرئيسية */}
             <Link
               href="/"
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all font-black text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all font-black text-xs ${
                 pathname === "/"
                   ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
                   : "hover:bg-white/10 text-stone-300 hover:text-white"
@@ -177,7 +214,7 @@ export function Header() {
               type="button"
               onClick={() => toggleMega("palestine")}
               onMouseEnter={() => setActiveMega("palestine")}
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 font-black cursor-pointer text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-black cursor-pointer text-xs ${
                 pathname.startsWith("/palestine") || activeMega === "palestine"
                   ? "bg-[#0E472A] text-white border border-emerald-400/50 shadow-xs"
                   : "hover:bg-emerald-500/15 text-emerald-400"
@@ -186,7 +223,7 @@ export function Header() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
               <span>فلسطين والميدان</span>
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-300 shrink-0 ${activeMega === "palestine" ? "rotate-180" : ""}`}
+                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "palestine" ? "rotate-180" : ""}`}
               />
             </button>
 
@@ -195,7 +232,7 @@ export function Header() {
               type="button"
               onClick={() => toggleMega("world")}
               onMouseEnter={() => setActiveMega("world")}
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 font-bold cursor-pointer text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold cursor-pointer text-xs ${
                 pathname === "/arab-world" || pathname === "/world" || activeMega === "world"
                   ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
                   : "hover:bg-white/10 text-stone-300 hover:text-white"
@@ -203,7 +240,7 @@ export function Header() {
             >
               <span>عربياً ودولياً</span>
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-300 shrink-0 ${activeMega === "world" ? "rotate-180" : ""}`}
+                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "world" ? "rotate-180" : ""}`}
               />
             </button>
 
@@ -212,7 +249,7 @@ export function Header() {
               type="button"
               onClick={() => toggleMega("sports")}
               onMouseEnter={() => setActiveMega("sports")}
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 font-black cursor-pointer text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-black cursor-pointer text-xs ${
                 pathname === "/sports" || activeMega === "sports"
                   ? "bg-emerald-800 text-white border border-emerald-400/50 shadow-xs"
                   : "hover:bg-emerald-500/15 text-emerald-300"
@@ -221,7 +258,7 @@ export function Header() {
               <Trophy className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span>يلا سبورت</span>
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-300 shrink-0 ${activeMega === "sports" ? "rotate-180" : ""}`}
+                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "sports" ? "rotate-180" : ""}`}
               />
             </button>
 
@@ -230,7 +267,7 @@ export function Header() {
               type="button"
               onClick={() => toggleMega("economy")}
               onMouseEnter={() => setActiveMega("economy")}
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 font-bold cursor-pointer text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold cursor-pointer text-xs ${
                 pathname === "/economy" || activeMega === "economy"
                   ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
                   : "hover:bg-amber-500/15 text-amber-300"
@@ -239,14 +276,14 @@ export function Header() {
               <TrendingUp className="w-3.5 h-3.5 text-[var(--gold)] shrink-0" />
               <span>المال والأعمال</span>
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-300 shrink-0 ${activeMega === "economy" ? "rotate-180" : ""}`}
+                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "economy" ? "rotate-180" : ""}`}
               />
             </button>
 
-            {/* المساعدات */}
+            {/* 5. المساعدات */}
             <Link
               href="/aid"
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 font-bold text-[11px] xl:text-xs ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs ${
                 pathname === "/aid"
                   ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
                   : "hover:bg-amber-500/15 text-amber-300"
@@ -256,51 +293,22 @@ export function Header() {
               <span>المساعدات</span>
             </Link>
 
-            {/* 5. قائمة المنصات الرقمية ورادار الحقيقة المنسدلة */}
+            {/* 6. قائمة الصحافة الرقمية المنسدلة */}
             <button
               type="button"
               onClick={() => toggleMega("digital")}
               onMouseEnter={() => setActiveMega("digital")}
-              className={`px-2.5 xl:px-3 py-1.5 rounded-xl border border-[var(--gold)]/40 bg-gradient-to-r from-[#2c000c] to-[#420013] text-[var(--gold)] text-[11px] xl:text-xs font-black flex items-center gap-1 transition-all shadow-xs cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl border border-[var(--gold)]/40 bg-gradient-to-r from-[#2c000c] to-[#420013] text-[var(--gold)] text-xs font-black flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
                 activeMega === "digital" ? "ring-2 ring-[var(--gold)]" : "hover:border-[var(--gold)]"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span>الصحافة الرقمية</span>
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-300 shrink-0 ${activeMega === "digital" ? "rotate-180" : ""}`}
+                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "digital" ? "rotate-180" : ""}`}
               />
             </button>
           </nav>
-
-          {/* الجناح الأيسر: كبسولة البحث، البث المباشر، الإشعارات، والمحفوظات */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* زر البحث الفاخر المصغر غير الضاغط */}
-            <div className="hidden sm:block">
-              <SearchTrigger />
-            </div>
-
-            {/* زر البث المباشر المضيء مع نبض الرادار */}
-            <Link
-              href="/live"
-              className="px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white text-[10px] sm:text-[11px] font-black flex items-center gap-1.5 shadow-md shadow-red-900/40 transition-transform active:scale-95 shrink-0 border border-red-500/30"
-            >
-              <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping shrink-0" />
-              <span>البث الحي</span>
-            </Link>
-
-            <NotificationCenter />
-            <SavedCounterBadge />
-
-            {/* زر فتح القائمة للشاشات الصغيرة */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl border border-white/15 bg-white/5 text-white hover:border-[var(--gold)] transition-colors cursor-pointer"
-              aria-label="تبديل القائمة"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
         </div>
 
         {/* ----------------- لوحات الميجا منيو المنسدلة الخمس المتقنة ----------------- */}
@@ -806,10 +814,12 @@ export function Header() {
         )}
       </div>
 
-      {/* 3. قائمة الهواتف الذكية المنزلقة (Mobile Navigation Drawer) */}
+      {/* ========================================================================= */}
+      {/* 4. قائمة الهواتف الذكية المنزلقة (Mobile Navigation Drawer)               */}
+      {/* ========================================================================= */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-[var(--gold)]/20 bg-[#160006]/98 p-5 space-y-5 animate-in slide-in-from-top-4 duration-300 shadow-2xl backdrop-blur-3xl text-white">
-          <SearchTrigger className="w-full" />
+          <SearchTrigger expanded className="w-full" />
 
           <div className="grid grid-cols-2 gap-2.5 text-xs font-bold">
             <Link

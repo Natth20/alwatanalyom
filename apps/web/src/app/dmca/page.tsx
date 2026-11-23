@@ -14,6 +14,9 @@ import {
   Clock,
   ExternalLink,
   Award,
+  Lock,
+  Gavel,
+  BookOpen,
 } from "lucide-react";
 
 export default function DmcaPage() {
@@ -24,135 +27,169 @@ export default function DmcaPage() {
   const [requestedAction, setRequestedAction] = useState("takedown");
   const [statementChecked, setStatementChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!statementChecked) return;
     setSubmitting(true);
     setTimeout(() => {
+      const ticketId = `AWT-DMCA-${Math.floor(1000 + Math.random() * 9000)}`;
+      setSubmittedTicket(ticketId);
       setSubmitting(false);
-      setSubmitted(true);
     }, 1200);
   };
 
   return (
-    <div className="container-custom py-10 space-y-10">
-      <InstitutionalNav />
+    <div className="min-h-screen bg-[#0E0407] text-white selection:bg-[var(--gold)]/30 selection:text-white pb-24">
+      {/* شريط الملاحة المؤسسي الموحد */}
+      <InstitutionalNav current="dmca" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* المحتوى الرئيسي (8 أعمدة) */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="card-hyper-luxury p-6 sm:p-8 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#730020] via-[#590018] to-[#26000A] text-[var(--gold)] flex items-center justify-center font-black shadow-md border border-[var(--gold)]/40">
-                <ShieldCheck className="w-5 h-5" />
+      {/* 1. Hero Header السينمائي الفاخر */}
+      <div className="relative overflow-hidden border-b border-[var(--gold)]/20 bg-gradient-to-b from-[#1b020a] via-[#140006] to-[#0E0407] py-14 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-rose-950/20 to-transparent pointer-events-none" />
+        
+        <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 relative z-10 space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] text-xs font-bold shadow-md shadow-amber-950/20">
+            <ShieldCheck className="w-4 h-4" />
+            <span>حماية الملكية الفكرية الرقمية وميثاق الحقوق المعرفية</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            حقوق النشر والملكية الفكرية (DMCA)
+          </h1>
+
+          <p className="text-xs sm:text-sm text-stone-300 max-w-2xl mx-auto leading-relaxed">
+            نحترم حقوق المؤلفين، المصورين، والوكالات الإخبارية في كل مكان. إذا كنت تعتقد بحسن نية أن مادة منشورة على منصة «الوطن اليوم» تنتهك حقوقك الفكرية، يرجى تقديم إشعار رسمي لنقوم بالتحقق الفوري والبت فيه خلال أقل من 24 ساعة.
+          </p>
+        </div>
+      </div>
+
+      <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-14">
+        {/* 2. درع حماية المحتوى ودليل الاقتباس الصحفي المشروع */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 sm:p-7 space-y-4 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/40">
+                <BookOpen className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-mono text-[var(--gold)] uppercase font-bold">
-                  حماية الملكية الفكرية الدولية · DMCA & Copyright Compliance
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight">
-                  حقوق الملكية الفكرية وطلبات إزالة المحتوى (DMCA)
-                </h1>
+                <h3 className="font-bold text-white text-base">دليل الاستخدام الصحفي المشروع</h3>
+                <span className="text-[11px] text-stone-400">معايير الاقتباس المصرح بها</span>
               </div>
             </div>
 
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed font-medium">
-              تلتزم منصة «الوطن اليوم» بالامتثال التام لقوانين حماية حقوق المؤلف الدولية، بما في ذلك قانون الألفية الرقمية الأمريكي (DMCA) ومعاهدات المنظمة العالمية للملكية الفكرية (WIPO). نحترم حقوق الصحفيين والمصورين والناشرين، ونطبق بروتوكول استجابة فورية وحاسمة لأي إشعار انتهاك قانوني موثق.
+            <ul className="space-y-3 text-xs text-stone-300 leading-relaxed">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <span>يجوز للمؤسسات التعليمية والأكاديمية والباحثين الاستشهاد بالتقارير دون إذن مسبق مع العزو الصريح.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <span>الصور التي تحمل وسم «الوطن اليوم» أو أسماء مصورينا الميدانيين في غزة والقدس تخضع لترخيص النشر المعتمد.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <span>يُحظر الاستخدام التجاري للخرائط الرقمية وقواعد بيانات أطلس القرى المهجرة دون موافقة كتابية.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 sm:p-7 space-y-4 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/40">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-base">تعهد البت والتدقيق السريع</h3>
+                <span className="text-[11px] text-stone-400">آلية الاستجابة القانونية</span>
+              </div>
+            </div>
+
+            <ul className="space-y-3 text-xs text-stone-300 leading-relaxed">
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                <span>مراجعة الطلب من قبل المستشار القانوني لهيئة التحرير فور استلام الإشعار.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                <span>حجب المادة موقتاً كإجراء احترازي أثناء التحقق من ملكية المصنف الأصلي.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                <span>الرد النهائي مع بيان الإجراء المتخذ خلال موعد أقصاه 24 ساعة عمل.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 3. نموذج تقديم إشعار انتهاك DMCA الإلكتروني المشفر */}
+        <div className="rounded-3xl border border-[var(--gold)]/40 bg-gradient-to-b from-[#1c020a] via-[#140006] to-[#0E0407] p-6 sm:p-8 space-y-6 shadow-2xl">
+          <div className="border-b border-white/10 pb-4 space-y-1">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[var(--gold)]">
+              <Gavel className="w-4 h-4" />
+              <span>النموذج القانوني الموحد لإخطارات الألفية الرقمية</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              تقديم إشعار انتهاك حقوق الملكية الفكرية
+            </h3>
+            <p className="text-xs text-stone-400">
+              يرجى تعبئة كافة الحقول بدقة لتسريع التحقق والبت القانوني من فريق العمليات
             </p>
           </div>
 
-          {/* بروتوكول الإشعار والإزالة السريعة (4-Hour Protocol) */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-black text-[var(--text)] flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)]" />
-              <span>بروتوكول الإشعار والإزالة الفورية (Notice & Takedown Protocol)</span>
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl glass-hud border border-white/10 space-y-2 text-center">
-                <span className="w-8 h-8 rounded-full bg-red-600/30 text-red-400 border border-red-500/40 flex items-center justify-center mx-auto text-xs font-black">
-                  1
-                </span>
-                <h3 className="text-xs font-black text-white">الاستلام والتجميد الفوري</h3>
-                <p className="text-[11px] text-stone-300 leading-relaxed">
-                  تجميد المادة المدعى عليها مؤقتاً خلال 4 ساعات كحد أقصى لحين استكمال الفحص القانوني.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl glass-hud border border-white/10 space-y-2 text-center">
-                <span className="w-8 h-8 rounded-full bg-amber-600/30 text-amber-400 border border-amber-500/40 flex items-center justify-center mx-auto text-xs font-black">
-                  2
-                </span>
-                <h3 className="text-xs font-black text-white">إخطار الناشر والمحرر</h3>
-                <p className="text-[11px] text-stone-300 leading-relaxed">
-                  مراسلة محرر المادة لفحص مصدر المحتوى وسند الترخيص أو الاستخدام العادل الصحفي.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl glass-hud border border-white/10 space-y-2 text-center">
-                <span className="w-8 h-8 rounded-full bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto text-xs font-black">
-                  3
-                </span>
-                <h3 className="text-xs font-black text-white">السحب أو التسوية الدائمة</h3>
-                <p className="text-[11px] text-stone-300 leading-relaxed">
-                  الحذف النهائي، تصحيح العزو والرابط، أو الرد القانوني الرسمي خلال أقل من 24 ساعة.
-                </p>
-              </div>
+          {submittedTicket ? (
+            <div className="p-8 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-center space-y-4 animate-in fade-in">
+              <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto" />
+              <h4 className="text-lg font-black text-emerald-300">
+                تم استلام إشعار DMCA بنجاح وتوليد رقم التتبع!
+              </h4>
+              <p className="text-xs text-stone-200 max-w-md mx-auto leading-relaxed">
+                رقم الملف القانوني المولد: <strong className="text-[var(--gold)] font-mono text-sm">{submittedTicket}</strong>. سيتواصل المستشار القانوني معك عبر بريدك الإلكتروني خلال 24 ساعة.
+              </p>
+              <button
+                onClick={() => setSubmittedTicket(null)}
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
+              >
+                تقديم إشعار جديد
+              </button>
             </div>
-          </div>
-
-          {/* نموذج تقديم طلب الإزالة التفاعلي */}
-          <div className="card-hyper-luxury p-6 sm:p-8 space-y-6 border border-[var(--border)]">
-            <div className="flex items-center gap-2 font-black text-base text-[var(--text)] border-b border-[var(--border)] pb-3">
-              <FileText className="w-5 h-5 text-[var(--primary)]" />
-              <span>تقديم إشعار رسمي بانتهاك حقوق الملكية الفكرية</span>
-            </div>
-
-            {submitted ? (
-              <div className="p-6 rounded-2xl glass-hud border border-emerald-500/40 text-center space-y-3 animate-in fade-in">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-black text-white">تم تسجيل طلب الإزالة وإحالته للدائرة القانونية</h3>
-                <p className="text-xs text-stone-300 max-w-md mx-auto leading-relaxed">
-                  تم إرسال نسخة من الإشعار إلى <code className="text-[var(--gold)] font-mono">dmca@alwatantoday.net</code>. سيتم تجميد المادة فوراً والرد عليك رسمياً خلال أقل من 24 ساعة.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-black text-[var(--text)] block">
-                      اسم المالك القانوني أو الوكيل المفوض: *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={claimantName}
-                      onChange={(e) => setClaimantName(e.target.value)}
-                      placeholder="اسم المؤسسة أو المالك الفردي"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--gold)]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-black text-[var(--text)] block">
-                      البريد الإلكتروني الرسمي للتواصل: *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={claimantEmail}
-                      onChange={(e) => setClaimantEmail(e.target.value)}
-                      placeholder="legal@yourdomain.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--gold)] font-mono"
-                    />
-                  </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">
+                    الاسم الكامل لصاحب الحق أو الوكيل القانوني *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={claimantName}
+                    onChange={(e) => setClaimantName(e.target.value)}
+                    placeholder="الاسم الرسمي أو اسم المؤسسة / الوكالة..."
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
+                  />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-black text-[var(--text)] block">
-                    رابط المادة المعنية على منصة «الوطن اليوم»: *
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">
+                    البريد الإلكتروني المهني للتواصل *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={claimantEmail}
+                    onChange={(e) => setClaimantEmail(e.target.value)}
+                    placeholder="legal@organization.com"
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">
+                    رابط المادة على موقعنا المتنازع عليها *
                   </label>
                   <input
                     type="url"
@@ -160,100 +197,84 @@ export default function DmcaPage() {
                     value={infringingUrl}
                     onChange={(e) => setInfringingUrl(e.target.value)}
                     placeholder="https://alwatantoday.net/article/..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--gold)] font-mono"
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-black text-[var(--text)] block">
-                    رابط العمل الأصلي أو سند الملكية الفكرية: *
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">
+                    رابط المصنف الأصلي أو دليل إثبات الملكية *
                   </label>
                   <input
                     type="url"
                     required
                     value={originalWorkUrl}
                     onChange={(e) => setOriginalWorkUrl(e.target.value)}
-                    placeholder="رابط التقرير أو الصورة في موقعكم الأصلي"
-                    className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--gold)] font-mono"
+                    placeholder="رابط المصنف الأصلي على موقع صاحب الحق..."
+                    className="w-full px-4 py-3 rounded-xl border border-white/15 bg-black/50 text-white placeholder-white/30 text-xs focus:outline-hidden focus:border-[var(--gold)]"
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-black text-[var(--text)] block">
-                    الإجراء القانوني المطلوب تنفيذه:
-                  </label>
-                  <select
-                    value={requestedAction}
-                    onChange={(e) => setRequestedAction(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--gold)] cursor-pointer"
-                  >
-                    <option value="takedown">حذف وسحب المادة بالكامل من المنصة (HTTP 410)</option>
-                    <option value="attribute">تعديل المادة ووضع عزو صريح ورابط مباشر للمصدر</option>
-                    <option value="rss-stop">إيقاف استيراد الخلاصات نهائياً من موقعنا</option>
-                  </select>
-                </div>
-
-                {/* الإقرار القانوني الملزم */}
-                <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={statementChecked}
-                      onChange={(e) => setStatementChecked(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded text-[var(--gold)] accent-[var(--gold)]"
-                    />
-                    <span className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                      أقر بحسن نية بأنني المالك الحصري لحقوق الطبع والنشر أو مفوض رسمياً بالتصرف نيابة عنه، وأن استخدام المحتوى لم يُرخص به من قبلي، وأتحمل المسؤولية القانونية الكاملة عن صحة هذه البيانات بموجب أحكام DMCA.
-                    </span>
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#590018] to-[#730020] text-[var(--gold)] font-black text-xs border border-[var(--gold)]/40 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>{submitting ? "جاري تسجيل الإشعار..." : "إرسال إشعار الإزالة القانوني الرسمي"}</span>
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-
-        {/* الشريط الجانبي: المسؤول القانوني (4 أعمدة) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="card-hyper-luxury p-6 space-y-4 border border-[var(--gold)]/30">
-            <div className="flex items-center gap-2 font-black text-sm text-[var(--text)] border-b border-[var(--border)] pb-3">
-              <Scale className="w-5 h-5 text-[var(--gold)]" />
-              <span>مكتب الامتثال والمسؤول القانوني</span>
-            </div>
-
-            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              للمراسلات المباشرة من الإدارات القانونية والوكالات الإخبارية، يرجى التوجيه إلى وكيل الـ DMCA المعتمد لدى المنصة:
-            </p>
-
-            <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-2 text-xs">
-              <div>
-                <span className="text-[10px] text-white/50 block">البريد القانوني الرسمي:</span>
-                <code className="text-emerald-400 font-mono text-xs font-bold">dmca@alwatantoday.net</code>
               </div>
-              <div>
-                <span className="text-[10px] text-white/50 block">المهلة القصوى للبت:</span>
-                <span className="text-stone-200 font-bold">24 ساعة عمل رسمية</span>
-              </div>
-            </div>
 
-            <div className="pt-2 border-t border-[var(--border)]">
-              <Link
-                href="/terms"
-                className="text-xs font-black text-[var(--gold)] hover:underline inline-flex items-center gap-1"
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-300">
+                  الإجراء المطلوب من هيئة التحرير
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { id: "takedown", label: "حذف المادة بالكامل" },
+                    { id: "attribute", label: "تعديل الإسناد والعزو باسم المصدر" },
+                    { id: "replace", label: "استبدال الصورة أو المرفق فقط" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.id}
+                      className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer text-xs transition-colors ${
+                        requestedAction === opt.id
+                          ? "border-[var(--gold)] bg-[var(--gold)]/15 text-[var(--gold)] font-bold"
+                          : "border-white/10 bg-black/40 text-stone-300 hover:bg-white/5"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="action"
+                        value={opt.id}
+                        checked={requestedAction === opt.id}
+                        onChange={() => setRequestedAction(opt.id)}
+                        className="accent-[var(--gold)]"
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="statement"
+                  checked={statementChecked}
+                  onChange={(e) => setStatementChecked(e.target.checked)}
+                  className="mt-1 accent-[var(--gold)] w-4 h-4 rounded cursor-pointer shrink-0"
+                />
+                <label htmlFor="statement" className="text-xs text-stone-300 leading-relaxed cursor-pointer">
+                  أقر بأنني المالك القانوني للمصنف الأصلي أو المفوض رسمياً للتصرف نيابة عنه، وأن جميع البيانات المدخلة صحيحة وتحت طائلة المسؤولية القانونية.
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!statementChecked || submitting}
+                className={`w-full sm:w-auto px-7 py-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-950/20 ${
+                  statementChecked && !submitting
+                    ? "bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-slate-950 hover:brightness-110 active:scale-95"
+                    : "bg-white/10 text-stone-500 cursor-not-allowed"
+                }`}
               >
-                <span>مراجعة شروط الاستخدام والترخيص ←</span>
-              </Link>
-            </div>
-          </div>
+                <Send className="w-4 h-4 rtl:rotate-180" />
+                <span>{submitting ? "جاري تشفير الإشعار وإرساله..." : "إرسال إشعار DMCA المعتمد"}</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>
