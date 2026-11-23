@@ -67,16 +67,16 @@ export function ThemeToggle() {
           ? "المظهر: فاتح (انقر للتبديل إلى تلقائي)"
           : "المظهر: تلقائي حسب النظام (انقر للتبديل إلى داكن)"
       }
-      className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--primary)] transition-colors flex items-center gap-1 text-xs cursor-pointer select-none"
+      className="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white hover:border-[var(--gold)] transition-colors flex items-center gap-1 text-[10px] cursor-pointer select-none whitespace-nowrap"
     >
       {theme === "dark" ? (
-        <Moon className="w-3.5 h-3.5 text-sky-400" />
+        <Moon className="w-3 h-3 text-sky-300" />
       ) : theme === "light" ? (
-        <Sun className="w-3.5 h-3.5 text-amber-500" />
+        <Sun className="w-3 h-3 text-amber-400" />
       ) : (
-        <Laptop className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+        <Laptop className="w-3 h-3 text-white/60" />
       )}
-      <span className="hidden sm:inline font-mono text-[10px]">
+      <span className="hidden sm:inline font-sans text-[10px] font-bold">
         {theme === "dark" ? "داكن" : theme === "light" ? "فاتح" : "تلقائي"}
       </span>
     </button>

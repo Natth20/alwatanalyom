@@ -77,12 +77,12 @@ export function Footer() {
   };
 
   return (
-    <footer className="border-t-2 border-[var(--gold)]/40 bg-gradient-to-b from-[#180006] via-[#100004] to-[#080002] text-white mt-24 text-sm transition-colors relative overflow-hidden">
+    <footer className="border-t-2 border-[var(--gold)]/40 bg-gradient-to-b from-[#160006] via-[#0E0004] to-[#050001] text-white mt-20 text-sm transition-colors relative overflow-hidden select-none">
       {/* هالة أورورا ضوئية خافتة خلف الفوتر */}
       <div className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-[var(--maroon)]/20 to-transparent pointer-events-none" />
 
-      {/* 1. محراب إيجاز الصباح الملكي (The Royal Newsletter Sanctuary) */}
-      <div className="border-b border-white/10 py-12 bg-gradient-to-r from-[#220009] via-[#35000e] to-[#220009] relative">
+      {/* 1. محراب إيجاز الفجر الملكي (The Royal Newsletter Sanctuary) */}
+      <div className="border-b border-white/10 py-10 sm:py-12 bg-gradient-to-r from-[#200008] via-[#33000d] to-[#200008] relative">
         <div className="container-custom max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-4 sm:px-6 relative z-10">
           <div className="space-y-2.5 max-w-2xl text-center lg:text-right">
             <div className="inline-flex items-center gap-2">
@@ -113,11 +113,11 @@ export function Footer() {
               type="email"
               required
               placeholder="أدخل بريدك الإلكتروني المهني المعتمد..."
-              className="w-full sm:flex-1 px-4 py-3.5 rounded-2xl border border-[var(--gold)]/40 bg-black/50 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-[var(--gold)] shadow-inner transition-colors backdrop-blur-md"
+              className="w-full sm:flex-1 px-4 py-3 rounded-2xl border border-[var(--gold)]/40 bg-black/60 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-[var(--gold)] shadow-inner transition-colors backdrop-blur-md"
             />
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140005] text-xs font-black hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-[var(--gold-glow)]"
+              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-[#140005] text-xs font-black hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-[var(--gold-glow)]"
             >
               <Send className="w-4 h-4 rtl:rotate-180" />
               <span>اشتراك فوري</span>
@@ -127,7 +127,7 @@ export function Footer() {
       </div>
 
       {/* 2. شريط شراكة يلا سبورت ومؤشرات العواصم الإقليمية */}
-      <div className="border-b border-white/10 py-3 bg-[#082214]/80 backdrop-blur-md">
+      <div className="border-b border-white/10 py-3 bg-[#061c10]/90 backdrop-blur-md">
         <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black text-base shadow-md shrink-0">
@@ -140,39 +140,39 @@ export function Footer() {
           </div>
 
           {/* ساعات العواصم الحية */}
-          <div className="flex items-center gap-4 text-xs font-mono text-stone-300">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>القدس: {times.jerusalem || "12:00"}</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-mono text-stone-300">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>🇵🇸 القدس: {times.jerusalem || "12:00"}</span>
             </span>
             <span className="text-white/20">·</span>
-            <span>مكة: {times.mecca || "12:00"}</span>
+            <span>🇸🇦 مكة: {times.mecca || "12:00"}</span>
             <span className="text-white/20">·</span>
-            <span>القاهرة: {times.cairo || "11:00"}</span>
+            <span>🇪🇬 القاهرة: {times.cairo || "11:00"}</span>
             <span className="text-white/20">·</span>
-            <span>لندن: {times.london || "09:00"}</span>
+            <span>🇬🇧 لندن: {times.london || "09:00"}</span>
           </div>
         </div>
       </div>
 
       {/* 3. الأروقة الخمسة المهيبة لصرح الوطن اليوم (The Five Architectural Wings) */}
-      <div className="container-custom max-w-7xl mx-auto py-16 px-4 sm:px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 items-start">
+      <div className="container-custom max-w-7xl mx-auto py-14 px-4 sm:px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* الرواق الأول: هوية الصرح والشعار الماسي الرسمي (4 أعمدة) */}
-          <div className="lg:col-span-4 space-y-6 border-b lg:border-b-0 lg:border-e border-white/10 pb-8 lg:pb-0 lg:pe-8">
+          <div className="lg:col-span-4 space-y-5 border-b lg:border-b-0 lg:border-e border-white/10 pb-8 lg:pb-0 lg:pe-8">
             <BrandLogo variant="footer" />
 
-            <div className="space-y-2 text-xs text-stone-300 leading-relaxed">
+            <div className="space-y-2.5 text-xs text-stone-300 leading-relaxed">
               <p>
                 صحافة رقمية سيادية تستند للتحقق الجنائي وتلتزم بعزو الأخبار إلى وكالاتها ومصادرها المعتمدة، لتقديم الحقيقة الكاملة دون تحريف أو تزييف.
               </p>
               <div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-400 font-bold">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>مرخصة ومسجلة رسميًا · اعتماد النزاهة 2026</span>
               </div>
             </div>
 
-            {/* روابط المنصات الرسمية */}
+            {/* روابط المنصات الرسمية وخط الاتصال */}
             <div className="pt-2 flex flex-wrap items-center gap-2">
               <a
                 href="https://twitter.com"
@@ -375,10 +375,10 @@ export function Footer() {
       </div>
 
       {/* 4. شريط السيادة والاعتماد القانوني النهائي (The Sovereign Legal Bar) */}
-      <div className="border-t border-white/10 bg-black/60 py-6 text-xs text-stone-400 relative z-10">
+      <div className="border-t border-white/10 bg-black/80 py-5 text-xs text-stone-400 relative z-10">
         <div className="container-custom max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-[11px]">
-            <span>© 2026 منصة «الوطن اليوم». كافة الحقوق محفوظة.</span>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 text-[11px]">
+            <span>© 2026 منصة «الوطن اليوم». كافة الحقوق محفوظة ومسجلة رسميًا.</span>
             <span className="text-white/20">|</span>
             <Link href="/terms" className="hover:text-white transition-colors">
               شروط الاستخدام
@@ -410,7 +410,7 @@ export function Footer() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 hover:text-[var(--gold)] border border-white/10 transition-colors text-xs cursor-pointer shrink-0 shadow-xs"
             title="العودة لأعلى الصفحة"
           >
-            <span>أعلى الصفحة</span>
+            <span>إلى قمة الصرح</span>
             <ArrowUp className="w-3.5 h-3.5" />
           </button>
         </div>

@@ -182,15 +182,15 @@ export function NotificationCenter() {
       {/* زر جرس الإشعارات الملكي */}
       <button
         onClick={handleToggle}
-        className="relative p-2 sm:p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)] text-[var(--text)] transition-all duration-300 shadow-2xs cursor-pointer group hover:scale-105 active:scale-95"
+        className="relative p-2 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[var(--gold)]/70 text-white/90 transition-all duration-200 shadow-xs cursor-pointer group shrink-0 select-none"
         title="مركز الإشعارات والتنبيهات المباشرة"
         aria-label="مركز الإشعارات"
       >
-        <Bell className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-[var(--gold)] transition-colors" />
+        <Bell className="w-4 h-4 group-hover:text-[var(--gold)] transition-colors" />
 
         {/* شارة عدد الإشعارات غير المقروءة النابضة */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white text-[9px] font-black shadow-md border-2 border-[var(--surface)] animate-pulse">
+          <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white text-[9px] font-black shadow-md border border-[#160006] animate-pulse">
             {unreadCount}
           </span>
         )}

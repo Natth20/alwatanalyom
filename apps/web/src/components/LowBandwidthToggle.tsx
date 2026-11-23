@@ -38,10 +38,10 @@ export function LowBandwidthToggle() {
     <button
       type="button"
       onClick={toggleMode}
-      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border select-none ${
+      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border select-none whitespace-nowrap ${
         isLowBandwidth
-          ? "bg-amber-500 text-slate-950 border-amber-400 shadow-xs animate-pulse"
-          : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border)] hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400"
+          ? "bg-amber-400 text-black border-amber-300 shadow-xs animate-pulse"
+          : "bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/15 hover:border-[var(--gold)]"
       }`}
       title={
         isLowBandwidth

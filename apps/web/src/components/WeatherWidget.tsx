@@ -41,16 +41,16 @@ export function WeatherWidget() {
   };
 
   return (
-    <div className="relative inline-block text-xs">
+    <div className="relative inline-block text-[11px]">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2 py-0.5 rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors border border-transparent hover:border-[var(--border)]"
+        className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-[10px] font-semibold text-white/90 hover:border-[var(--gold)] transition-colors cursor-pointer select-none"
         title="انقر لتبديل المدينة"
       >
         {renderIcon(current.icon)}
-        <span className="font-semibold text-[var(--text)]">{current.cityAr}</span>
-        <span className="font-bold text-[var(--text)] font-mono">{current.temp}°C</span>
-        <ChevronDown className="w-3 h-3 opacity-60" />
+        <span className="font-semibold text-white">{current.cityAr}</span>
+        <span className="font-bold text-[var(--gold)] font-mono">{current.temp}°C</span>
+        <ChevronDown className={`w-2.5 h-2.5 text-white/60 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Clock, MapPin, ChevronDown } from "lucide-react";
-import { WeatherWidget } from "./WeatherWidget";
 
 interface PrayerTimes {
   fajr: string;
@@ -15,7 +14,6 @@ interface PrayerTimes {
 const CITY_PRAYERS: Record<string, PrayerTimes> = {
   jerusalem: { fajr: "04:46", dhuhr: "11:34", asr: "14:42", maghrib: "17:04", isha: "18:24" },
   gaza: { fajr: "04:48", dhuhr: "11:36", asr: "14:44", maghrib: "17:06", isha: "18:26" },
-  ramallah: { fajr: "04:46", dhuhr: "11:34", asr: "14:42", maghrib: "17:04", isha: "18:24" },
 };
 
 export function TopBarInfo() {
@@ -50,107 +48,102 @@ export function TopBarInfo() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-3 text-xs text-white/70">
-        <span>المكان الرئيسي لجميع الأخبار بمصادرها الأصلية</span>
+      <div className="flex items-center gap-2 text-[11px] text-white/70 whitespace-nowrap">
+        <span>الوطن اليوم · المكان الرئيسي للأخبار بمصادرها الأصلية</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-white/85">
+    <div className="flex items-center gap-2.5 sm:gap-3 text-[11px] text-white/90 whitespace-nowrap select-none">
       {/* التاريخ الميلادي والهجري */}
       <div className="flex items-center gap-1.5 font-medium">
         <span>{gregorianStr}</span>
         {hijriStr && (
           <>
-            <span className="text-white/20">|</span>
+            <span className="text-white/25">|</span>
             <span className="text-[var(--gold)] font-bold">{hijriStr}</span>
           </>
         )}
       </div>
 
-      <span className="hidden lg:inline text-white/20">•</span>
+      <span className="hidden md:inline text-white/20">•</span>
 
-      {/* نافذة مواقيت الصلاة في القدس وغزة */}
-      <div className="relative hidden md:flex items-center gap-2">
+      {/* نافذة مواقيت الصلاة المدمجة الفاخرة */}
+      <div className="relative hidden md:inline-flex items-center">
         <button
           type="button"
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-white/20 bg-white/10 text-[11px] font-semibold text-white hover:border-[var(--gold)] transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-[10px] font-semibold text-white/90 hover:border-[var(--gold)] transition-colors cursor-pointer"
+          title="مواقيت الصلاة في فلسطين"
         >
           <Clock className="w-3 h-3 text-[var(--gold)]" />
-          <span>مواقيت الصلاة:</span>
+          <span>مواقيت:</span>
           <span className="text-[var(--gold)] font-bold">
-            {selectedCity === "jerusalem" ? "القدس الشريف" : "غزة العزة"}
+            {selectedCity === "jerusalem" ? "القدس" : "غزة"}
           </span>
-          <ChevronDown className="w-3 h-3 text-white/60" />
+          <span className="text-white/40">·</span>
+          <span>الظهر: <strong className="text-white">{prayers.dhuhr}</strong></span>
+          <ChevronDown className={`w-2.5 h-2.5 text-white/60 transition-transform ${showDropdown ? "rotate-180" : ""}`} />
         </button>
 
-        {/* أوقات الصلاة السريعة */}
-        <div className="hidden xl:flex items-center gap-2 text-[10px] text-white/75">
-          <span>الفجر: <strong className="text-white">{prayers.fajr}</strong></span>
-          <span>الظهر: <strong className="text-white">{prayers.dhuhr}</strong></span>
-          <span>العصر: <strong className="text-white">{prayers.asr}</strong></span>
-          <span>المغرب: <strong className="text-[var(--gold)] font-bold">{prayers.maghrib}</strong></span>
-          <span>العشاء: <strong className="text-white">{prayers.isha}</strong></span>
-        </div>
-
-        {/* قائمة اختيار المدينة */}
+        {/* قائمة جدول الصلوات الكامل واختيار المدينة */}
         {showDropdown && (
           <div
-            className="absolute top-full start-0 mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl p-2 min-w-[200px] space-y-1 animate-in fade-in"
+            className="absolute top-full start-0 mt-2 z-50 bg-[#160006]/98 border border-[var(--gold)]/30 rounded-2xl shadow-2xl p-3 min-w-[240px] space-y-2.5 backdrop-blur-2xl animate-in fade-in slide-in-from-top-1 text-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-[10px] font-bold text-[var(--text-muted)] px-2 py-1 block">
-              اختر المدينة لعرض المواقيت:
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCity("jerusalem");
-                setShowDropdown(false);
-              }}
-              className={`w-full text-start px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                selectedCity === "jerusalem"
-                  ? "bg-[var(--primary)]/10 text-[var(--primary)] font-bold"
-                  : "hover:bg-[var(--bg)] text-[var(--text)]"
-              }`}
-            >
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" />
-                <span>القدس الشريف</span>
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="text-[10px] font-black text-[var(--gold)] uppercase tracking-wider">
+                مواقيت الصلاة اليوم
               </span>
-              <span className="text-[10px] text-[var(--text-muted)]">المسجد الأقصى</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCity("gaza");
-                setShowDropdown(false);
-              }}
-              className={`w-full text-start px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                selectedCity === "gaza"
-                  ? "bg-[var(--primary)]/10 text-[var(--primary)] font-bold"
-                  : "hover:bg-[var(--bg)] text-[var(--text)]"
-              }`}
-            >
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" />
-                <span>غزة</span>
-              </span>
-              <span className="text-[10px] text-[var(--text-muted)]">قطاع غزة</span>
-            </button>
+              <div className="flex items-center gap-1 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCity("jerusalem")}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+                    selectedCity === "jerusalem" ? "bg-[var(--gold)] text-black" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  القدس
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCity("gaza")}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+                    selectedCity === "gaza" ? "bg-[var(--gold)] text-black" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  غزة
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1 text-center text-[10px]">
+              <div className="p-1.5 rounded-lg bg-white/5">
+                <span className="text-white/50 block text-[9px]">الفجر</span>
+                <strong className="text-white font-mono">{prayers.fajr}</strong>
+              </div>
+              <div className="p-1.5 rounded-lg bg-[var(--gold)]/10 border border-[var(--gold)]/30">
+                <span className="text-[var(--gold)] block text-[9px] font-bold">الظهر</span>
+                <strong className="text-[var(--gold)] font-mono">{prayers.dhuhr}</strong>
+              </div>
+              <div className="p-1.5 rounded-lg bg-white/5">
+                <span className="text-white/50 block text-[9px]">العصر</span>
+                <strong className="text-white font-mono">{prayers.asr}</strong>
+              </div>
+              <div className="p-1.5 rounded-lg bg-white/5">
+                <span className="text-white/50 block text-[9px]">المغرب</span>
+                <strong className="text-white font-mono">{prayers.maghrib}</strong>
+              </div>
+              <div className="p-1.5 rounded-lg bg-white/5">
+                <span className="text-white/50 block text-[9px]">العشاء</span>
+                <strong className="text-white font-mono">{prayers.isha}</strong>
+              </div>
+            </div>
           </div>
         )}
-      </div>
-
-      <span className="hidden xl:inline text-[var(--border)]">•</span>
-
-      {/* ودجة الأحوال الجوية */}
-      <div className="hidden sm:inline-block">
-        <WeatherWidget />
       </div>
     </div>
   );
 }
-

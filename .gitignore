@@ -33,6 +33,9 @@ logs/
 
 # Prisma
 packages/db/src/generated/
+.prisma/
+apps/web/.prisma/
+apps/web/apps/
 
 # OS
 Thumbs.db

@@ -77,17 +77,17 @@ export function BrandLogo({
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-3 group focus:outline-hidden shrink-0 ${className}`}
+      className={`inline-flex items-center gap-2 group focus:outline-hidden shrink-0 ${className}`}
       title="منصة الوطن اليوم — الرئيسية"
     >
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--gold)]/50 bg-[#0d0004] p-1 sm:p-1.5 shadow-md group-hover:border-[var(--gold)] group-hover:shadow-[0_0_20px_rgba(245,185,0,0.4)] transition-all duration-300">
+      <div className="relative overflow-hidden rounded-xl border border-[var(--gold)]/40 bg-gradient-to-b from-[#1c0007] to-[#0a0003] p-1 sm:p-1.5 shadow-md group-hover:border-[var(--gold)] group-hover:shadow-[0_0_20px_rgba(245,185,0,0.4)] transition-all duration-300">
         <Image
           src="/brand/logo-banner.jpg"
           alt="الوطن اليوم — الشعار الرسمي"
-          width={180}
-          height={48}
+          width={160}
+          height={44}
           priority
-          className="h-9 sm:h-11 md:h-12 w-auto object-contain rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
+          className="h-8 sm:h-9 md:h-10 w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
         />
         {/* نقطة النبض الإخباري الحي */}
         <span className="absolute top-1 start-1 flex h-2 w-2">
