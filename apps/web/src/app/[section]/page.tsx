@@ -89,7 +89,7 @@ export default async function SectionPage({ params }: Props) {
         {section.children.length > 0 && (
           <div className="flex items-center gap-2.5 overflow-x-auto pt-2 scrollbar-none">
             <span className="text-xs text-[var(--text-muted)] font-black shrink-0">التصنيفات الميدانية:</span>
-            {section.children.map((sub) => (
+            {section.children.map((sub: any) => (
               <Link
                 key={sub.id}
                 href={`/${sectionSlug}/${sub.slug}`}

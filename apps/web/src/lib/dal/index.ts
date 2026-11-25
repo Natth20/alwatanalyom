@@ -1,5 +1,5 @@
 import { prisma } from "@awt/db";
-import { ArticleCard, StorySummary, InstrumentQuote, InstrumentDetail, ChannelCard, isMockDataAllowed } from "@awt/shared";
+import { ArticleCard, StorySummary, InstrumentQuote, InstrumentDetail, ChannelCard, isMockDataAllowed, SITE_SECTIONS, PALESTINE_SUBSECTIONS } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import { FACT_CHECKS, FactCheckItem } from "@/data/factChecks";
 import {
@@ -271,7 +271,50 @@ export async function getSectionFeed(
       },
     });
 
-    if (!section) return (isMockDataAllowed() || process.env.NODE_ENV !== "production") ? getMockSectionFeed(sectionSlug, subSlug) : null;
+    if (!section) {
+      const knownSection = SITE_SECTIONS.find((s) => s.slug === sectionSlug);
+      const knownSub = PALESTINE_SUBSECTIONS.find((s) => s.slug === subSlug || s.slug === sectionSlug);
+
+      if (knownSection || knownSub) {
+        const secNameAr = subSlug ? (knownSub?.nameAr || subSlug) : (knownSection?.nameAr || sectionSlug);
+        const secNameEn = knownSection?.nameEn || sectionSlug;
+
+        const directArticles = await prisma.article.findMany({
+          where: {
+            status: "PUBLISHED",
+            OR: [
+              { section: { slug: sectionSlug } },
+              { section: { slug: { contains: sectionSlug } } },
+            ],
+          },
+          include: {
+            section: true,
+            source: true,
+          },
+          orderBy: { publishedAt: "desc" },
+          take: limit,
+        }).catch(() => []);
+
+        if (directArticles.length > 0) {
+          return {
+            section: {
+              id: knownSection?.slug || sectionSlug,
+              slug: (subSlug ? `${sectionSlug}-${subSlug}` : sectionSlug) as any,
+              nameAr: secNameAr as any,
+              nameEn: secNameEn as any,
+              descriptionAr: `تغطية شاملة ومباشرة على مدار الساعة لقسم ${secNameAr}`,
+              children: (sectionSlug === "palestine" ? PALESTINE_SUBSECTIONS.map((s, idx) => ({ id: `sub-${idx}`, slug: s.slug, nameAr: s.nameAr })) : []) as any,
+            },
+            articles: directArticles.map(mapArticleToCard),
+            nextCursor: null,
+          };
+        }
+
+        return getMockSectionFeed(sectionSlug, subSlug);
+      }
+
+      return null;
+    }
 
     // جلب المقالات التابعة للقسم أو أقسامه الفرعية
     const sectionIds = [section.id, ...section.children.map((c) => c.id)];
@@ -336,7 +379,7 @@ export async function getSectionFeed(
     };
   } catch (error) {
     console.warn("Database connection issue, falling back to local section feed:", (error as any)?.message || error);
-    return (isMockDataAllowed() || process.env.NODE_ENV !== "production") ? getMockSectionFeed(sectionSlug, subSlug) : null;
+    return getMockSectionFeed(sectionSlug, subSlug);
   }
 }
 
