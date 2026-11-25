@@ -5,13 +5,17 @@
  */
 
 export function isMockDataAllowed(): boolean {
-  // محجوبة تماماً في بيئة الإنتاج بدون أي استثناء
+  // إذا تم تمكين البيانات البديلة صراحة عبر المتغير البيئي
+  if (process.env["ENABLE_MOCK_DATA"] === "true") {
+    return true;
+  }
+
+  // في الإنتاج بدون تمكين صريح تكون محجوبة
   if (process.env.NODE_ENV === "production") {
     return false;
   }
 
-  // في غير الإنتاج: تشترط وجود راية بيئية صريحة
-  return process.env["ENABLE_MOCK_DATA"] === "true";
+  return false;
 }
 
 /**

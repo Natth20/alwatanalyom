@@ -8,7 +8,7 @@ export async function GET() {
     // اختبار بسيط للاتصال بقاعدة البيانات
     await prisma.$queryRaw`SELECT 1`;
   } catch (err: any) {
-    dbStatus = process.env.ENABLE_MOCK_DATA === "true" ? "STANDBY_MOCK" : `FAIL: ${err.message}`;
+    dbStatus = `FAIL: ${err.message || String(err)}`;
   }
 
   const isHealthy = dbStatus === "OK" || dbStatus === "STANDBY_MOCK";
