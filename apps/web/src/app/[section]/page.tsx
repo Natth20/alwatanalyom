@@ -5,7 +5,9 @@ import { getSectionFeed } from "@/lib/dal";
 import { ArticleCard } from "@/components/ArticleCard";
 import { TodayMatchesWidget } from "@/components/sports/TodayMatchesWidget";
 import { YallaSportBanner } from "@/components/sports/YallaSportBanner";
-import { ShieldCheck, ChevronLeft, Sparkles, Layers } from "lucide-react";
+import { LiveWarRoomMap } from "@/components/LiveWarRoomMap";
+import { PalestineCommoditiesWidget } from "@/components/PalestineCommoditiesWidget";
+import { ShieldCheck, ChevronLeft, Sparkles, Layers, Activity, Trophy, Coins } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +88,7 @@ export default async function SectionPage({ params }: Props) {
         {/* شريط الأقسام الفرعية (Sub-sections Pills) */}
         {section.children.length > 0 && (
           <div className="flex items-center gap-2.5 overflow-x-auto pt-2 scrollbar-none">
-            <span className="text-xs text-[var(--text-muted)] font-black shrink-0">التصنيفات:</span>
+            <span className="text-xs text-[var(--text-muted)] font-black shrink-0">التصنيفات الميدانية:</span>
             {section.children.map((sub) => (
               <Link
                 key={sub.id}
@@ -159,7 +161,14 @@ export default async function SectionPage({ params }: Props) {
         )}
       </div>
 
-      {/* 2. قسم الرياضة الخاص: جدول مباريات اليوم وبانر يلا سبورت */}
+      {/* 2. ويدجت رادار الميدان الحي المباشر لقسم فلسطين */}
+      {sectionSlug === "palestine" && (
+        <div className="space-y-6">
+          <LiveWarRoomMap />
+        </div>
+      )}
+
+      {/* 3. قسم الرياضة الخاص: جدول مباريات اليوم وبانر يلا سبورت */}
       {sectionSlug === "sports" && (
         <div className="space-y-6">
           <TodayMatchesWidget />
@@ -167,7 +176,14 @@ export default async function SectionPage({ params }: Props) {
         </div>
       )}
 
-      {/* 3. شبكة المقالات والمواد الصحفية المصورة بالكامل */}
+      {/* 4. قسم الاقتصاد الخاص: البورصة والسلع الحيوية */}
+      {sectionSlug === "economy" && (
+        <div className="space-y-6">
+          <PalestineCommoditiesWidget />
+        </div>
+      )}
+
+      {/* 5. شبكة المقالات والمواد الصحفية المصورة بالكامل */}
       {articles.length > 0 ? (
         <div className="space-y-10">
           {/* الكتلة الأولى: مادة بطلة عريضة + 3 مواد مصغرة بجانبها */}

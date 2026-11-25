@@ -1,10 +1,11 @@
-import { getLatestQuotes } from "@/lib/dal";
+import { getLatestQuotes, getSectionFeed } from "@/lib/dal";
 import { QuoteTile } from "@/components/QuoteTile";
 import { CurrencyConverter } from "@/components/CurrencyConverter";
 import { GoldCalculator } from "@/components/GoldCalculator";
 import { PalestineCommoditiesWidget } from "@/components/PalestineCommoditiesWidget";
 import { EconomicCalendarWidget } from "@/components/EconomicCalendarWidget";
-import { TrendingUp, Coins, Fuel, Banknote, ShieldAlert } from "lucide-react";
+import { ArticleCard } from "@/components/ArticleCard";
+import { TrendingUp, Coins, Fuel, Banknote, ShieldAlert, Newspaper } from "lucide-react";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +15,11 @@ export const metadata: Metadata = {
   description: "مركز المال والأعمال: أسعار الذهب بالأعيرة، العملات والصرف، أسعار المحروقات، والنفط والسلع بمصادرها الرسمية الموثقة.",
 };
 
+
 export default async function EconomyPage() {
   const quotes = await getLatestQuotes();
+  const economyFeed = await getSectionFeed("economy");
+  const economyArticles = economyFeed?.articles || [];
 
   const energy = quotes.filter((q) => q.category === "energy");
   const metals = quotes.filter((q) => q.category === "metals");
@@ -138,6 +142,27 @@ export default async function EconomyPage() {
           </div>
         )}
       </div>
+
+      {/* تقارير وتحليلات الاقتصاد والمال الميدانية */}
+      {economyArticles.length > 0 && (
+        <section className="space-y-6 pt-4 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black text-[var(--text)] flex items-center gap-2">
+              <Newspaper className="w-5 h-5 text-amber-500" />
+              <span>آخر أخبار وتحليلات المال والأسواق</span>
+            </h2>
+            <span className="text-xs text-[var(--text-muted)] font-mono">
+              {economyArticles.length} مادة معتمدة
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {economyArticles.map((art) => (
+              <ArticleCard key={art.id} article={art} variant="medium" />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
