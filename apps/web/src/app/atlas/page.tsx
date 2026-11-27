@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, type MouseEvent } from "react";
 import Link from "next/link";
+import { HubsNav } from "@/components/HubsNav";
 import {
   Map, Search, MapPin, Filter, Users, Compass, Landmark, X, Share2,
   BookOpen, ArrowRight, Radio, ExternalLink, Newspaper, Check, Copy,
@@ -296,6 +297,7 @@ export default function AtlasPage() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#0E0407] text-[var(--text)] print:bg-white print:text-black">
+      <HubsNav current="/atlas" />
       {/* Dramatic Full-Width Emerald/Olive Hero Section */}
       <section className="relative overflow-hidden border-b border-emerald-500/25 bg-gradient-to-br from-[#062417] via-[#0B1C14] to-[#0E0407]">
         <div className="pointer-events-none absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl" />

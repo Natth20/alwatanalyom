@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { HubsNav } from "@/components/HubsNav";
 import {
   ArrowLeft, Award, BookOpen, Check, CheckCircle2, Compass, Crown,
   Flame, Landmark, MapPin, Medal, Play, RotateCcw, ScrollText, Share2,
@@ -393,6 +394,7 @@ export default function GamesMemoryPage() {
 
   return (
     <div dir="rtl" style={ARENA_THEME_VARS} className="min-h-screen bg-[var(--bg)] text-[var(--text)] pb-24 selection:bg-[var(--gold)]/30 relative overflow-hidden">
+      <HubsNav current="/games" />
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -top-40 right-1/4 w-[520px] h-[520px] rounded-full bg-[#590018]/35 blur-[130px]" />
         <div className="absolute top-1/3 -left-32 w-[420px] h-[420px] rounded-full bg-[#f5b900]/10 blur-[140px]" />

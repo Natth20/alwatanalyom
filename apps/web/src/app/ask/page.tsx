@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { HubsNav } from "@/components/HubsNav";
 import {
   Sparkles, Send, Bot, User, ShieldCheck, RotateCcw, Copy, Check, ExternalLink,
   Volume2, VolumeX, Database, FileText, BookOpen, ThumbsUp, ThumbsDown, Clock,
@@ -217,6 +218,7 @@ export default function AskNewsroomPage() {
 
   return (
     <div dir="rtl" style={OBSIDIAN_GOLD_THEME_VARS} className="min-h-screen bg-[var(--bg)] text-[var(--text)] pb-20 selection:bg-[var(--gold)]/30">
+      <HubsNav current="/ask" />
       <style>{`
         @keyframes goldParticleFloat {
           0%, 100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.35; }

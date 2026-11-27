@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFactChecks } from "@/lib/dal";
 import type { FactCheckItem } from "@/data/factChecks";
 import { FactCheckClientLab } from "./FactCheckClientLab";
+import { HubsNav } from "@/components/HubsNav";
 import {
   ShieldCheck, Radar, ScanEye, History, Building2, FileCheck2,
   XCircle, AlertTriangle, CheckCircle2, Clock, Lock, Fingerprint, type LucideIcon,
@@ -87,7 +88,9 @@ export default async function FactCheckPage() {
   );
 
   return (
-    <div dir="rtl" className="container-custom py-10 max-w-6xl space-y-10">
+    <div dir="rtl" className="min-h-screen bg-[#0E0407] text-[var(--text)] selection:bg-rose-500/30">
+      <HubsNav current="/fact-check" />
+      <div className="container-custom py-10 md:py-14 max-w-6xl space-y-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildClaimReviewJsonLd(factChecks)) }} />
       <style>{`@keyframes osintScan{0%{transform:translateY(-100%);opacity:0}15%{opacity:.9}85%{opacity:.9}100%{transform:translateY(520%);opacity:0}}.osint-scan-beam{animation:osintScan 5.5s linear infinite}`}</style>
 
@@ -177,6 +180,7 @@ export default async function FactCheckPage() {
       </section>
 
       <FactCheckClientLab initialItems={factChecks} />
+      </div>
     </div>
   );
 }

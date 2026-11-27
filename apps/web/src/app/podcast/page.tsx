@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { HubsNav } from "@/components/HubsNav";
 import {
   Headphones, Play, Pause, Radio, Clock, SkipForward, SkipBack, ExternalLink, Volume2,
   Mic, Activity, TrendingUp, TrendingDown, Coins, DollarSign, ChevronDown, ChevronUp,
@@ -224,6 +225,7 @@ export default function PodcastPage() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#0E0407] text-white">
+      <HubsNav current="/podcast" />
       <style>{`
         @keyframes studioEqPulse { 0%, 100% { transform: scaleY(0.28); opacity: 0.55; } 50% { transform: scaleY(1); opacity: 1; } }
         @keyframes studioWaveFlow { 0%, 100% { transform: scaleY(0.32); opacity: 0.35; } 50% { transform: scaleY(1); opacity: 0.9; } }
