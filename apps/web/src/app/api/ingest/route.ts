@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { runLiveIngest } from "@awt/ingest";
 import { prisma } from "@awt/db";
 import { triggerWebRevalidation } from "@/lib/admin/revalidate";
@@ -7,6 +7,12 @@ export const maxDuration = 60; // 60 seconds max
 
 export async function POST(req: Request) {
   try {
+    if (!prisma) {
+      return NextResponse.json(
+        { ok: false, error: "قاعدة البيانات غير متاحة حالياً" },
+        { status: 503 }
+      );
+    }
     let sourceId: string | undefined;
     let limitPerSource = 10;
 
@@ -54,6 +60,12 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
+    if (!prisma) {
+      return NextResponse.json({
+        ok: true,
+        stats: { totalArticles: 0, totalSources: 0, lastArticleTime: null, lastArticleTitle: null },
+      });
+    }
     const totalArticles = await prisma.article.count();
     const totalSources = await prisma.source.count({ where: { enabled: true } });
     const lastArticle = await prisma.article.findFirst({

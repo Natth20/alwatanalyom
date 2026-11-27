@@ -1,11 +1,19 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function PoliciesAdminPage() {
-  const policy = await prisma.publishPolicy.findFirst({
-    where: { enabled: true },
-  });
+  let policy: Prisma.PublishPolicyGetPayload<{}> | null = null;
+
+  if (prisma) {
+    try {
+      policy = await prisma.publishPolicy.findFirst({
+        where: { enabled: true },
+      });
+    } catch (err) {
+      console.warn("Admin policies query failed:", err);
+    }
+  }
 
   const rules = (policy?.rules as any) || {
     autoPublishMinConfidence: 0.85,

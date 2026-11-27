@@ -6,6 +6,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ ok: false, error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
+    }
     const { id } = await params;
     const body = await req.json();
 
@@ -49,6 +52,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ ok: false, error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
+    }
     const { id } = await params;
 
     await prisma.adCampaign.delete({

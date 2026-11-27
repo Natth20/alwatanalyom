@@ -9,22 +9,24 @@ export async function GET() {
 
   let articles: any[] = [];
   try {
-    articles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        publishedAt: { gte: fortyEightHoursAgo },
-        displayPolicy: { in: ["EXCERPT", "SUMMARY", "LICENSED_FULL"] },
-      },
-      select: {
-        id: true,
-        slug: true,
-        titleAr: true,
-        publishedAt: true,
-        lang: true,
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 1000,
-    });
+    if (prisma) {
+      articles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          publishedAt: { gte: fortyEightHoursAgo },
+          displayPolicy: { in: ["EXCERPT", "SUMMARY", "LICENSED_FULL"] },
+        },
+        select: {
+          id: true,
+          slug: true,
+          titleAr: true,
+          publishedAt: true,
+          lang: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 1000,
+      });
+    }
   } catch {
     // تجاهل في حالة عدم توفر الاتصال
   }

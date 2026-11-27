@@ -4,107 +4,128 @@ import { Zap, ShieldCheck, Target, Smartphone, Share2, AlertCircle, CheckCircle2
 export const dynamic = "force-dynamic";
 
 export default async function ExcellenceIndicatorsPage() {
-  // 1. حساب مؤشر السرعة والتحديث الحقيقي (Speed & Latency)
-  const recentArticles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      sourcePublishedAt: { not: null },
-      publishedAt: { not: null },
-    },
-    select: {
-      publishedAt: true,
-      sourcePublishedAt: true,
-      isBreaking: true,
-    },
-    orderBy: { publishedAt: "desc" },
-    take: 50,
-  });
-
   let avgLatencyMinutes: number | null = null;
   let breakingAvgLatencyMinutes: number | null = null;
+  let totalArticles = 0;
+  let attributedArticles = 0;
+  let correctionsCount = 0;
+  let withdrawnCount = 0;
+  let palestineCount = 0;
+  let aidCount = 0;
+  let jobsCount = 0;
+  let sportsCount = 0;
+  let confirmedSubscribers = 0;
+  let pushSubscribers = 0;
 
-  if (recentArticles.length > 0) {
-    const latencies = recentArticles
-      .map((a) => {
-        if (!a.publishedAt || !a.sourcePublishedAt) return null;
-        const diffMs = a.publishedAt.getTime() - a.sourcePublishedAt.getTime();
-        return Math.max(0, diffMs / (1000 * 60)); // بالدقائق
-      })
-      .filter((l): l is number => l !== null);
-
-    if (latencies.length > 0) {
-      avgLatencyMinutes = Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length);
-    }
-
-    const breakingLatencies = recentArticles
-      .filter((a) => a.isBreaking && a.publishedAt && a.sourcePublishedAt)
-      .map((a) => {
-        const diffMs = (a.publishedAt?.getTime() || 0) - (a.sourcePublishedAt?.getTime() || 0);
-        return Math.max(0, diffMs / (1000 * 60));
+  if (prisma) {
+    try {
+      // 1. حساب مؤشر السرعة والتحديث الحقيقي (Speed & Latency)
+      const recentArticles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          sourcePublishedAt: { not: null },
+          publishedAt: { not: null },
+        },
+        select: {
+          publishedAt: true,
+          sourcePublishedAt: true,
+          isBreaking: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 50,
       });
 
-    if (breakingLatencies.length > 0) {
-      breakingAvgLatencyMinutes = Math.round(breakingLatencies.reduce((a, b) => a + b, 0) / breakingLatencies.length);
+      if (recentArticles.length > 0) {
+        const latencies = recentArticles
+          .map((a) => {
+            if (!a.publishedAt || !a.sourcePublishedAt) return null;
+            const diffMs = a.publishedAt.getTime() - a.sourcePublishedAt.getTime();
+            return Math.max(0, diffMs / (1000 * 60)); // بالدقائق
+          })
+          .filter((l): l is number => l !== null);
+
+        if (latencies.length > 0) {
+          avgLatencyMinutes = Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length);
+        }
+
+        const breakingLatencies = recentArticles
+          .filter((a) => a.isBreaking && a.publishedAt && a.sourcePublishedAt)
+          .map((a) => {
+            const diffMs = (a.publishedAt?.getTime() || 0) - (a.sourcePublishedAt?.getTime() || 0);
+            return Math.max(0, diffMs / (1000 * 60));
+          });
+
+        if (breakingLatencies.length > 0) {
+          breakingAvgLatencyMinutes = Math.round(
+            breakingLatencies.reduce((a, b) => a + b, 0) / breakingLatencies.length
+          );
+        }
+      }
+
+      // 2. حساب مؤشر الثقة والنزاهة الصحفية (Trust & Attribution)
+      totalArticles = await prisma.article.count({ where: { status: "PUBLISHED" } });
+      attributedArticles = await prisma.article.count({
+        where: {
+          status: "PUBLISHED",
+          sourceId: { not: null },
+          sourceUrl: { not: null },
+        },
+      });
+
+      correctionsCount = await prisma.correction.count().catch(() => 0);
+      withdrawnCount = await prisma.article.count({ where: { status: "WITHDRAWN" } }).catch(() => 0);
+
+      // 3. حساب مؤشر التخصص والتفوق (Strategic Focus)
+      palestineCount = await prisma.article.count({
+        where: {
+          status: "PUBLISHED",
+          section: { slug: { startsWith: "palestine" } },
+        },
+      });
+
+      aidCount = await prisma.article.count({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { section: { slug: "aid" } },
+            { titleAr: { contains: "مساعدات", mode: "insensitive" } },
+            { titleAr: { contains: "إغاث", mode: "insensitive" } },
+          ],
+        },
+      });
+
+      jobsCount = await prisma.article.count({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { section: { slug: "jobs" } },
+            { titleAr: { contains: "وظائف", mode: "insensitive" } },
+            { titleAr: { contains: "توظيف", mode: "insensitive" } },
+          ],
+        },
+      });
+
+      sportsCount = await prisma.article.count({
+        where: {
+          status: "PUBLISHED",
+          section: { slug: "sports" },
+        },
+      });
+
+      // 4. مؤشر السيو والتوزيع (SEO & Distribution)
+      confirmedSubscribers = await prisma.newsletterSubscriber
+        .count({
+          where: { confirmedAt: { not: null } },
+        })
+        .catch(() => 0);
+
+      pushSubscribers = (await (prisma as any).pushSubscription?.count().catch(() => 0)) || 0;
+    } catch (err) {
+      console.warn("Admin excellence indicators query failed:", err);
     }
   }
 
-  // 2. حساب مؤشر الثقة والنزاهة الصحفية (Trust & Attribution)
-  const totalArticles = await prisma.article.count({ where: { status: "PUBLISHED" } });
-  const attributedArticles = await prisma.article.count({
-    where: {
-      status: "PUBLISHED",
-      sourceId: { not: null },
-      sourceUrl: { not: null },
-    },
-  });
-
   const attributionRate = totalArticles > 0 ? ((attributedArticles / totalArticles) * 100).toFixed(1) : "100.0";
-  const correctionsCount = await prisma.correction.count().catch(() => 0);
-  const withdrawnCount = await prisma.article.count({ where: { status: "WITHDRAWN" } }).catch(() => 0);
-
-  // 3. حساب مؤشر التخصص والتفوق (Strategic Focus)
-  const palestineCount = await prisma.article.count({
-    where: {
-      status: "PUBLISHED",
-      section: { slug: { startsWith: "palestine" } },
-    },
-  });
-
-  const aidCount = await prisma.article.count({
-    where: {
-      status: "PUBLISHED",
-      OR: [
-        { section: { slug: "aid" } },
-        { titleAr: { contains: "مساعدات", mode: "insensitive" } },
-        { titleAr: { contains: "إغاث", mode: "insensitive" } },
-      ],
-    },
-  });
-
-  const jobsCount = await prisma.article.count({
-    where: {
-      status: "PUBLISHED",
-      OR: [
-        { section: { slug: "jobs" } },
-        { titleAr: { contains: "وظائف", mode: "insensitive" } },
-        { titleAr: { contains: "توظيف", mode: "insensitive" } },
-      ],
-    },
-  });
-
-  const sportsCount = await prisma.article.count({
-    where: {
-      status: "PUBLISHED",
-      section: { slug: "sports" },
-    },
-  });
-
-  // 4. مؤشر السيو والتوزيع (SEO & Distribution)
-  const confirmedSubscribers = await prisma.newsletterSubscriber.count({
-    where: { confirmedAt: { not: null } },
-  }).catch(() => 0);
-
-  const pushSubscribers = await (prisma as any).pushSubscription?.count().catch(() => 0) || 0;
 
   return (
     <div className="space-y-8 max-w-6xl">

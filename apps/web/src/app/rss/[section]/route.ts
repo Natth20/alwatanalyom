@@ -17,23 +17,25 @@ export async function GET(_request: NextRequest, { params }: Props) {
   let articles: any[] = [];
 
   try {
-    const section = await prisma.section.findUnique({
-      where: { slug: sectionSlug },
-    });
+    if (prisma) {
+      const section = await prisma.section.findUnique({
+        where: { slug: sectionSlug },
+      });
 
-    if (section) {
-      sectionName = section.nameAr;
+      if (section) {
+        sectionName = section.nameAr;
+      }
+
+      articles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          ...(section ? { sectionId: section.id } : {}),
+        },
+        include: { source: true, section: true },
+        orderBy: { publishedAt: "desc" },
+        take: 50,
+      });
     }
-
-    articles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        ...(section ? { sectionId: section.id } : {}),
-      },
-      include: { source: true, section: true },
-      orderBy: { publishedAt: "desc" },
-      take: 50,
-    });
   } catch {
     // fallback
   }

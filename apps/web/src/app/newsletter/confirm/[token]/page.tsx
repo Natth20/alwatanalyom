@@ -14,17 +14,19 @@ export default async function ConfirmNewsletterPage({ params }: Props) {
   let email = "";
 
   try {
-    const subscriber = await prisma.newsletterSubscriber.findUnique({
-      where: { token },
-    });
-
-    if (subscriber) {
-      await prisma.newsletterSubscriber.update({
-        where: { id: subscriber.id },
-        data: { confirmedAt: new Date() },
+    if (prisma) {
+      const subscriber = await prisma.newsletterSubscriber.findUnique({
+        where: { token },
       });
-      success = true;
-      email = subscriber.email;
+
+      if (subscriber) {
+        await prisma.newsletterSubscriber.update({
+          where: { id: subscriber.id },
+          data: { confirmedAt: new Date() },
+        });
+        success = true;
+        email = subscriber.email;
+      }
     }
   } catch {
     // fallback

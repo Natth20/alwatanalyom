@@ -7,6 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = PushSubscribeSchema.parse(body);
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: { code: "DB_UNAVAILABLE", message: "خدمة الإشعارات غير متاحة مؤقتاً" } },
+        { status: 503 }
+      );
+    }
+
     const sub = await prisma.pushSubscription.upsert({
       where: { endpoint: parsed.endpoint },
       update: {
@@ -38,6 +45,10 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     if (!body?.endpoint) {
       return NextResponse.json({ error: "Missing endpoint" }, { status: 400 });
+    }
+
+    if (!prisma) {
+      return new NextResponse(null, { status: 204 });
     }
 
     await prisma.pushSubscription.deleteMany({

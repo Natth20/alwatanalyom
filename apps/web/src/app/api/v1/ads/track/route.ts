@@ -10,6 +10,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "طلب غير صالح" }, { status: 400 });
     }
 
+    if (!prisma) {
+      return NextResponse.json({ ok: true });
+    }
+
     if (event === "impression") {
       await prisma.adCampaign.update({
         where: { id },

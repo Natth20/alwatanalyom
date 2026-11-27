@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@awt/db";
+import { isMockDataAllowed } from "@awt/shared";
 
 export async function GET() {
   let dbStatus = "OK";
+  let dbDetail: string | undefined;
 
-  try {
-    // اختبار بسيط للاتصال بقاعدة البيانات
-    await prisma.$queryRaw`SELECT 1`;
-  } catch (err: any) {
-    dbStatus = `FAIL: ${err.message || String(err)}`;
+  if (!prisma) {
+    dbStatus = isMockDataAllowed() ? "STANDBY_MOCK" : "FAIL: PrismaClient unavailable";
+    dbDetail = "PrismaClient initialized as null";
+  } else {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch (err: any) {
+      dbDetail = err?.message || String(err);
+      dbStatus = isMockDataAllowed() ? "STANDBY_MOCK" : `FAIL: ${dbDetail}`;
+    }
   }
 
   const isHealthy = dbStatus === "OK" || dbStatus === "STANDBY_MOCK";
@@ -19,10 +26,10 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       services: {
         database: dbStatus,
+        ...(dbDetail ? { databaseDetail: dbDetail } : {}),
         webApp: "OK",
       },
     },
     { status: isHealthy ? 200 : 503 }
   );
 }
-

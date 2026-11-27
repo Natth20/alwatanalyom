@@ -1,14 +1,22 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 import { ExportAuditButton } from "./ExportAuditButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuditLogAdminPage() {
-  const logs = await prisma.auditLog.findMany({
-    include: { user: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  let logs: Prisma.AuditLogGetPayload<{ include: { user: true } }>[] = [];
+
+  if (prisma) {
+    try {
+      logs = await prisma.auditLog.findMany({
+        include: { user: true },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+    } catch (err) {
+      console.warn("Admin audit log query failed:", err);
+    }
+  }
 
   const exportableLogs = logs.map((l) => ({
     id: l.id,

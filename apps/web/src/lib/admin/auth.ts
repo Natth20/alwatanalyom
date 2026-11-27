@@ -58,6 +58,8 @@ export async function getSessionUser(token?: string): Promise<SessionUser | null
   if (!userId) return null;
 
   try {
+    if (!prisma) return null;
+
     const user = await prisma.user.findUnique({
       where: { id: userId, active: true },
       select: {

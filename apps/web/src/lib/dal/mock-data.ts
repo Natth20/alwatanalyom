@@ -495,6 +495,10 @@ export function getMockArticleById(id: string): ArticleDetail {
 
 export function getMockSectionFeed(sectionSlug: string, subSlug?: string) {
   const secMeta = SITE_SECTIONS.find((s) => s.slug === sectionSlug);
+  const subMeta = subSlug
+    ? PALESTINE_SUBSECTIONS.find((s) => s.slug === subSlug)
+    : undefined;
+
   if (!secMeta) {
     return null;
   }
@@ -510,10 +514,19 @@ export function getMockSectionFeed(sectionSlug: string, subSlug?: string) {
 
   let articles: ArticleCard[] = [];
   if (sectionSlug === "palestine") {
-    articles = [
+    const allPal = [
       ...MOCK_HERO_STORY.articles,
       ...MOCK_PALESTINE_STORIES.flatMap((s) => s.articles),
     ];
+    if (subSlug === "jerusalem") {
+      const jer = allPal.filter((a) => a.titleAr.includes("القدس") || a.titleAr.includes("الأقصى"));
+      articles = [...jer, ...allPal.filter((a) => !jer.includes(a))];
+    } else if (subSlug === "west-bank") {
+      const wb = allPal.filter((a) => a.titleAr.includes("جنين") || a.titleAr.includes("الضفة"));
+      articles = [...wb, ...allPal.filter((a) => !wb.includes(a))];
+    } else {
+      articles = allPal;
+    }
   } else if (sectionSlug === "arab-world") {
     articles = MOCK_SECTION_ARTICLES.arabWorld;
   } else if (sectionSlug === "world") {
@@ -549,13 +562,15 @@ export function getMockSectionFeed(sectionSlug: string, subSlug?: string) {
     ];
   }
 
+  const displayName = subMeta?.nameAr || (subSlug ? subSlug : secMeta.nameAr);
+
   return {
     section: {
-      id: `sec-${secMeta.slug}`,
-      slug: secMeta.slug,
-      nameAr: secMeta.nameAr,
+      id: `sec-${subSlug ? `${secMeta.slug}-${subSlug}` : secMeta.slug}`,
+      slug: subSlug ? `${secMeta.slug}-${subSlug}` : secMeta.slug,
+      nameAr: displayName,
       nameEn: secMeta.nameEn,
-      descriptionAr: `تغطية شاملة ومباشرة لكافة أخبار وتقارير ومستجدات ${secMeta.nameAr} وفق أعلى معايير الدقة والنزاهة الصحفية.`,
+      descriptionAr: `تغطية شاملة ومباشرة لكافة أخبار وتقارير ومستجدات ${displayName} وفق أعلى معايير الدقة والنزاهة الصحفية.`,
       children,
     },
     articles,

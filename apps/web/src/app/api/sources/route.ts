@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma, SourceType, IngestMethod, DisplayPolicy, ConnectionState } from "@awt/db";
 import { assertSafeUrl } from "@awt/ingest";
 import { generateArabicSlug } from "@awt/shared";
@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: "غير مصرح لك بإضافة مصادر" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
     }
 
     const body = await request.json();
@@ -106,6 +110,10 @@ export async function PATCH(request: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: "غير مصرح لك بتعديل المصادر" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
     }
 
     const body = await request.json();

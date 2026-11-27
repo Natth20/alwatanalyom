@@ -1,17 +1,27 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function EconomyAdminPage() {
-  const instruments = await prisma.instrument.findMany({
-    include: {
-      quotes: {
-        orderBy: { asOf: "desc" },
-        take: 1,
-      },
-    },
-    orderBy: { category: "asc" },
-  });
+  let instruments: Prisma.InstrumentGetPayload<{
+    include: { quotes: true };
+  }>[] = [];
+
+  if (prisma) {
+    try {
+      instruments = await prisma.instrument.findMany({
+        include: {
+          quotes: {
+            orderBy: { asOf: "desc" },
+            take: 1,
+          },
+        },
+        orderBy: { category: "asc" },
+      });
+    } catch (err) {
+      console.warn("Admin economy query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

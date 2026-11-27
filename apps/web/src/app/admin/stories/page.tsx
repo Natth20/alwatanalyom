@@ -1,19 +1,32 @@
 import Link from "next/link";
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function StoriesAdminPage() {
-  const stories = await prisma.story.findMany({
+  let stories: Prisma.StoryGetPayload<{
     include: {
-      section: true,
-      articles: {
-        include: { source: true },
-      },
-    },
-    orderBy: [{ pinned: "desc" }, { lastUpdatedAt: "desc" }],
-    take: 30,
-  });
+      section: true;
+      articles: { include: { source: true } };
+    };
+  }>[] = [];
+
+  if (prisma) {
+    try {
+      stories = await prisma.story.findMany({
+        include: {
+          section: true,
+          articles: {
+            include: { source: true },
+          },
+        },
+        orderBy: [{ pinned: "desc" }, { lastUpdatedAt: "desc" }],
+        take: 30,
+      });
+    } catch (err) {
+      console.warn("Admin stories query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

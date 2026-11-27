@@ -14,10 +14,91 @@ import {
   getMockStoryById,
 } from "./mock-data";
 
+function buildMockHomeFeed(breakingOverride?: ArticleCard[], quotesOverride?: InstrumentQuote[]) {
+  const fallbackFastStream: ArticleCard[] = [
+    ...MOCK_BREAKING,
+    ...MOCK_HERO_STORY.articles,
+    ...MOCK_PALESTINE_STORIES.flatMap((s) => s.articles),
+    ...MOCK_SECTION_ARTICLES.arabWorld,
+    ...MOCK_SECTION_ARTICLES.world,
+    ...MOCK_SECTION_ARTICLES.economy,
+    ...MOCK_SECTION_ARTICLES.tech,
+    ...MOCK_SECTION_ARTICLES.sports,
+  ];
+  const fallbackVideos: ArticleCard[] = [
+    ...MOCK_HERO_STORY.articles.slice(0, 1),
+    ...MOCK_PALESTINE_STORIES.flatMap((s) => s.articles).slice(0, 1),
+    ...MOCK_SECTION_ARTICLES.sports.slice(0, 1),
+  ];
+
+  return {
+    breaking: breakingOverride && breakingOverride.length > 0 ? breakingOverride : MOCK_BREAKING,
+    heroStories: [MOCK_HERO_STORY],
+    trendingStories: MOCK_PALESTINE_STORIES,
+    palestineStories: MOCK_PALESTINE_STORIES,
+    arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
+    worldArticles: MOCK_SECTION_ARTICLES.world,
+    economyArticles: MOCK_SECTION_ARTICLES.economy,
+    techArticles: MOCK_SECTION_ARTICLES.tech,
+    sportsArticles: MOCK_SECTION_ARTICLES.sports,
+    quotes: quotesOverride && quotesOverride.length > 0 ? quotesOverride : MOCK_QUOTES,
+    fastStreamArticles: fallbackFastStream,
+    videoArticles: fallbackVideos,
+  };
+}
+
+function buildEmptyHomeFeed(breaking: ArticleCard[] = [], quotes: InstrumentQuote[] = []) {
+  return {
+    breaking,
+    heroStories: [] as StorySummary[],
+    trendingStories: [] as StorySummary[],
+    palestineStories: [] as StorySummary[],
+    arabWorldArticles: [] as ArticleCard[],
+    worldArticles: [] as ArticleCard[],
+    economyArticles: [] as ArticleCard[],
+    techArticles: [] as ArticleCard[],
+    sportsArticles: [] as ArticleCard[],
+    quotes,
+    fastStreamArticles: [] as ArticleCard[],
+    videoArticles: [] as ArticleCard[],
+  };
+}
+
+function buildSectionFallback(sectionSlug: string, subSlug?: string) {
+  if (isMockDataAllowed()) {
+    return getMockSectionFeed(sectionSlug, subSlug);
+  }
+  const knownSection = SITE_SECTIONS.find((s) => s.slug === sectionSlug);
+  const knownSub = subSlug ? PALESTINE_SUBSECTIONS.find((s) => s.slug === subSlug) : undefined;
+  if (!knownSection && !knownSub) {
+    return null;
+  }
+  const secNameAr = knownSub?.nameAr || (subSlug || knownSection?.nameAr || sectionSlug);
+  const secNameEn = knownSection?.nameEn || sectionSlug;
+  return {
+    section: {
+      id: knownSection?.slug || sectionSlug,
+      slug: (subSlug ? `${sectionSlug}-${subSlug}` : sectionSlug) as any,
+      nameAr: secNameAr as any,
+      nameEn: secNameEn as any,
+      descriptionAr: `تغطية شاملة ومباشرة على مدار الساعة لقسم ${secNameAr}`,
+      children: (sectionSlug === "palestine"
+        ? PALESTINE_SUBSECTIONS.map((s, idx) => ({ id: `sub-${idx}`, slug: s.slug, nameAr: s.nameAr }))
+        : []) as any,
+    },
+    articles: [] as ArticleCard[],
+    nextCursor: null as string | null,
+  };
+}
+
 /**
  * جلب شريط الأخبار العاجلة النشطة (آخر 60 دقيقة)
  */
 export async function getActiveBreaking(): Promise<ArticleCard[]> {
+  if (!prisma) {
+    return isMockDataAllowed() ? MOCK_BREAKING : [];
+  }
+
   try {
     const articles = await prisma.article.findMany({
       where: {
@@ -68,6 +149,10 @@ export async function getActiveBreaking(): Promise<ArticleCard[]> {
  * جلب بيانات الصفحة الرئيسية مع الوحدات العشر وتطبيق قاعدة عدم التكرار (shownStoryIds)
  */
 export async function getHomeFeed() {
+  if (!prisma) {
+    return isMockDataAllowed() ? buildMockHomeFeed() : buildEmptyHomeFeed();
+  }
+
   const shownStoryIds = new Set<string>();
 
   try {
@@ -174,20 +259,7 @@ export async function getHomeFeed() {
 
     if (heroStoriesRaw.length === 0 && palestineStoriesRaw.length === 0) {
       if (isMockDataAllowed()) {
-        return {
-          breaking: breaking.length > 0 ? breaking : MOCK_BREAKING,
-          heroStories: [MOCK_HERO_STORY],
-          trendingStories: MOCK_PALESTINE_STORIES,
-          palestineStories: MOCK_PALESTINE_STORIES,
-          arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
-          worldArticles: MOCK_SECTION_ARTICLES.world,
-          economyArticles: MOCK_SECTION_ARTICLES.economy,
-          techArticles: MOCK_SECTION_ARTICLES.tech,
-          sportsArticles: MOCK_SECTION_ARTICLES.sports,
-          quotes: quotes.length > 0 ? quotes : MOCK_QUOTES,
-          fastStreamArticles,
-          videoArticles,
-        };
+        return buildMockHomeFeed(breaking, quotes);
       }
       return {
         breaking,
@@ -219,37 +291,11 @@ export async function getHomeFeed() {
       fastStreamArticles,
       videoArticles,
     };
-  } catch (error) {
+  } catch {
     if (isMockDataAllowed()) {
-      return {
-        breaking: MOCK_BREAKING,
-        heroStories: [MOCK_HERO_STORY],
-        trendingStories: MOCK_PALESTINE_STORIES,
-        palestineStories: MOCK_PALESTINE_STORIES,
-        arabWorldArticles: MOCK_SECTION_ARTICLES.arabWorld,
-        worldArticles: MOCK_SECTION_ARTICLES.world,
-        economyArticles: MOCK_SECTION_ARTICLES.economy,
-        techArticles: MOCK_SECTION_ARTICLES.tech,
-        sportsArticles: MOCK_SECTION_ARTICLES.sports,
-        quotes: MOCK_QUOTES,
-        fastStreamArticles: [],
-        videoArticles: [],
-      };
+      return buildMockHomeFeed();
     }
-    return {
-      breaking: [],
-      heroStories: [],
-      trendingStories: [],
-      palestineStories: [],
-      arabWorldArticles: [],
-      worldArticles: [],
-      economyArticles: [],
-      techArticles: [],
-      sportsArticles: [],
-      quotes: [],
-      fastStreamArticles: [],
-      videoArticles: [],
-    };
+    return buildEmptyHomeFeed();
   }
 }
 
@@ -262,6 +308,10 @@ export async function getSectionFeed(
   cursor?: string,
   limit = 15
 ) {
+  if (!prisma) {
+    return buildSectionFallback(sectionSlug, subSlug);
+  }
+
   try {
     const section = await prisma.section.findUnique({
       where: { slug: subSlug ? `${sectionSlug}-${subSlug}` : sectionSlug },
@@ -310,7 +360,7 @@ export async function getSectionFeed(
           };
         }
 
-        return getMockSectionFeed(sectionSlug, subSlug);
+        return buildSectionFallback(sectionSlug, subSlug);
       }
 
       return null;
@@ -379,7 +429,7 @@ export async function getSectionFeed(
     };
   } catch (error) {
     console.warn("Database connection issue, falling back to local section feed:", (error as any)?.message || error);
-    return getMockSectionFeed(sectionSlug, subSlug);
+    return buildSectionFallback(sectionSlug, subSlug);
   }
 }
 
@@ -387,6 +437,10 @@ export async function getSectionFeed(
  * جلب قصة مجمعة وتغطياتها المتعددة
  */
 export async function getStoryById(id: string) {
+  if (!prisma) {
+    return isMockDataAllowed() ? getMockStoryById(id) : null;
+  }
+
   try {
     const story = await prisma.story.findUnique({
       where: { id },
@@ -463,6 +517,34 @@ export async function searchArticles(query: string, sectionSlug?: string, limit 
       // إكمال البحث عبر قاعدة البيانات إذا كان Meilisearch غير متاح
     }
 
+    if (!prisma) {
+      if (!isMockDataAllowed()) return [];
+      const q = query.trim().toLowerCase();
+      const pool = [
+        ...MOCK_BREAKING,
+        ...MOCK_HERO_STORY.articles,
+        ...MOCK_PALESTINE_STORIES.flatMap((s) => s.articles),
+        ...MOCK_SECTION_ARTICLES.arabWorld,
+        ...MOCK_SECTION_ARTICLES.world,
+        ...MOCK_SECTION_ARTICLES.economy,
+        ...MOCK_SECTION_ARTICLES.tech,
+        ...MOCK_SECTION_ARTICLES.sports,
+      ];
+      return pool
+        .filter((a) => (!sectionSlug || a.sectionSlug === sectionSlug) && (a.titleAr.toLowerCase().includes(q) || (a.summaryAr || "").toLowerCase().includes(q)))
+        .slice(0, limit)
+        .map((a) => ({
+          id: a.id,
+          slug: a.slug,
+          titleAr: a.titleAr,
+          summaryAr: a.summaryAr,
+          publishedAt: a.publishedAt,
+          sectionNameAr: a.sectionNameAr,
+          sectionSlug: a.sectionSlug,
+          sourceNameAr: a.source?.nameAr || "مصدر",
+        }));
+    }
+
     // 2. الرجوع التلقائي إلى قاعدة البيانات (Database Full-text / Trigram Fallback)
     const articles = await prisma.article.findMany({
       where: {
@@ -501,6 +583,10 @@ export async function searchArticles(query: string, sectionSlug?: string, limit 
  * جلب مقال كامل بواسطة معرّفه
  */
 export async function getArticleById(id: string) {
+  if (!prisma) {
+    return isMockDataAllowed() ? getMockArticleById(id) : null;
+  }
+
   try {
     const article = await prisma.article.findUnique({
       where: { id },
@@ -581,6 +667,8 @@ export function mapArticleToCard(a: any): ArticleCard {
  * جلب مقالات قسم محدد
  */
 async function getSectionArticles(sectionSlug: string, take: number, shownStoryIds: Set<string>): Promise<ArticleCard[]> {
+  if (!prisma) return [];
+
   const articles = await prisma.article.findMany({
     where: {
       status: "PUBLISHED",
@@ -602,6 +690,10 @@ async function getSectionArticles(sectionSlug: string, take: number, shownStoryI
  * جلب أحدث أسعار المؤشرات
  */
 export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuote[]> {
+  if (!prisma) {
+    return isMockDataAllowed() ? MOCK_QUOTES : [];
+  }
+
   try {
     const instruments = await prisma.instrument.findMany({
       where: {
@@ -646,6 +738,30 @@ export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuo
  */
 export async function getInstrumentDetails(symbol: string): Promise<InstrumentDetail | null> {
   const normSymbol = symbol.trim().toUpperCase();
+
+  const buildMockDetail = (): InstrumentDetail | null => {
+    if (!isMockDataAllowed()) return null;
+    const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
+    if (!mock) return null;
+    const basePrice = mock.price ? parseFloat(mock.price) : 100;
+    return {
+      ...mock,
+      history: [
+        { time: new Date(Date.now() - 3600000 * 4).toISOString(), price: Number((basePrice * 0.98).toFixed(2)) },
+        { time: new Date(Date.now() - 3600000 * 3).toISOString(), price: Number((basePrice * 0.99).toFixed(2)) },
+        { time: new Date(Date.now() - 3600000 * 2).toISOString(), price: Number((basePrice * 0.985).toFixed(2)) },
+        { time: new Date(Date.now() - 3600000 * 1).toISOString(), price: Number((basePrice * 1.01).toFixed(2)) },
+        { time: new Date().toISOString(), price: basePrice },
+      ],
+      high24h: Number((basePrice * 1.02).toFixed(2)),
+      low24h: Number((basePrice * 0.97).toFixed(2)),
+    };
+  };
+
+  if (!prisma) {
+    return buildMockDetail();
+  }
+
   try {
     const inst = await prisma.instrument.findUnique({
       where: { symbol: normSymbol },
@@ -702,26 +818,7 @@ export async function getInstrumentDetails(symbol: string): Promise<InstrumentDe
       };
     }
 
-    if (isMockDataAllowed()) {
-      const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
-      if (mock) {
-        const basePrice = mock.price ? parseFloat(mock.price) : 100;
-        return {
-          ...mock,
-          history: [
-            { time: new Date(Date.now() - 3600000 * 4).toISOString(), price: Number((basePrice * 0.98).toFixed(2)) },
-            { time: new Date(Date.now() - 3600000 * 3).toISOString(), price: Number((basePrice * 0.99).toFixed(2)) },
-            { time: new Date(Date.now() - 3600000 * 2).toISOString(), price: Number((basePrice * 0.985).toFixed(2)) },
-            { time: new Date(Date.now() - 3600000 * 1).toISOString(), price: Number((basePrice * 1.01).toFixed(2)) },
-            { time: new Date().toISOString(), price: basePrice },
-          ],
-          high24h: Number((basePrice * 1.02).toFixed(2)),
-          low24h: Number((basePrice * 0.97).toFixed(2)),
-        };
-      }
-    }
-
-    return null;
+    return buildMockDetail();
   } catch {
     if (isMockDataAllowed()) {
       const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
@@ -742,6 +839,10 @@ export async function getInstrumentDetails(symbol: string): Promise<InstrumentDe
  * جلب قنوات دليل البث الرسمي (إخفاء القنوات المعطلة وفق متطلبات المرحلة 5)
  */
 export async function getChannels(): Promise<ChannelCard[]> {
+  if (!prisma) {
+    return isMockDataAllowed() ? MOCK_CHANNELS : [];
+  }
+
   try {
     const channels = await prisma.channel.findMany({
       where: {
@@ -789,41 +890,45 @@ export async function verifyChannelHealth(channelId: string, url: string): Promi
     clearTimeout(timeout);
     const ok = res.status < 400;
 
-    await prisma.channelCheck.create({
-      data: {
-        channelId,
-        ok,
-        httpStatus: res.status,
-        note: ok ? "رابط البث الرسمي متاح ويعمل بنجاح" : `خطأ استجابة الخادم: ${res.status}`,
-      },
-    });
-
-    await prisma.channel.update({
-      where: { id: channelId },
-      data: {
-        status: ok ? ("AVAILABLE" as any) : ("UNAVAILABLE" as any),
-        lastCheckedAt: new Date(),
-      },
-    });
-
-    return ok;
-  } catch (err: any) {
-    try {
+    if (prisma) {
       await prisma.channelCheck.create({
         data: {
           channelId,
-          ok: false,
-          note: err?.message || "انتهت مهلة الاتصال أو فشل الرابط",
+          ok,
+          httpStatus: res.status,
+          note: ok ? "رابط البث الرسمي متاح ويعمل بنجاح" : `خطأ استجابة الخادم: ${res.status}`,
         },
       });
+
       await prisma.channel.update({
         where: { id: channelId },
         data: {
-          status: "UNAVAILABLE" as any,
+          status: ok ? ("AVAILABLE" as any) : ("UNAVAILABLE" as any),
           lastCheckedAt: new Date(),
         },
       });
-    } catch {}
+    }
+
+    return ok;
+  } catch (err: any) {
+    if (prisma) {
+      try {
+        await prisma.channelCheck.create({
+          data: {
+            channelId,
+            ok: false,
+            note: err?.message || "انتهت مهلة الاتصال أو فشل الرابط",
+          },
+        });
+        await prisma.channel.update({
+          where: { id: channelId },
+          data: {
+            status: "UNAVAILABLE" as any,
+            lastCheckedAt: new Date(),
+          },
+        });
+      } catch {}
+    }
     return false;
   }
 }
@@ -881,6 +986,8 @@ function mapStoryToSummary(s: any): StorySummary {
  * جلب الحملة الإعلانية الفعالة لموقع محدد
  */
 export async function getAdCampaign(position: string) {
+  if (!prisma) return null;
+
   try {
     const campaign = await (prisma as any).adCampaign.findFirst({
       where: {
@@ -914,6 +1021,8 @@ export async function getAdCampaign(position: string) {
  * جلب التغطية الحية المباشرة للأحداث وتحديثاتها اللحظية
  */
 export async function getActiveLiveCoverage() {
+  if (!prisma) return null;
+
   try {
     const coverage = await (prisma as any).liveCoverage.findFirst({
       where: { isActive: true },
@@ -975,85 +1084,86 @@ export interface VerifiedAidItem {
  * جلب بيانات بوابة المساعدات الإنسانية والروابط الرسمية الموثقة
  */
 export async function getAidData() {
-  try {
-    // 1. جلب المقالات الإخبارية المرتبطة بالمساعدات الإنسانية
-    const articles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: [
-          { section: { slug: { in: ["aid", "palestine-humanitarian"] } } },
-          { titleAr: { contains: "مساعدات", mode: "insensitive" } },
-          { titleAr: { contains: "إغاث", mode: "insensitive" } },
-          { titleAr: { contains: "أونروا", mode: "insensitive" } },
-        ],
-      },
-      include: {
-        section: true,
-        source: true,
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 12,
-    });
+  // قائمة الأدلة والروابط الرسمية الموثقة للجهات الإغاثية المعتمدة
+  // جميع الروابط تنتهي بنطاقات رسمية معتمدة (.org, .int, .gov.ps) بدون أي روابط وسيطة
+  const verifiedOfficialPrograms: VerifiedAidItem[] = [
+    {
+      id: "unrwa-cash-verification",
+      titleAr: "بوابة الأونروا: تحديث بيانات المستفيدين وتدقيق المساعدات النقدية الطارئة",
+      organization: "وكالة غوث وتشغيل اللاجئين الفلسطينيين (UNRWA)",
+      orgType: "UN",
+      category: "CASH",
+      targetAudience: "اللاجئون والأسر المتضررة والنازحة المسجلة في سجلات الوكالة",
+      status: "UPDATING",
+      officialUrl: "https://www.unrwa.org/ar",
+      verifiedAt: new Date().toISOString(),
+      notesAr: "التسجيل وتحديث البيانات يتم حصراً عبر المنظومة الرسمية للوكالة مجاناً دون أي وسيط.",
+      requirements: ["رقم بطاقة التسجيل (كرت المؤن)", "الرقم الوطني / الهوية", "رقم هاتف فعّال لاستقبال رسائل SMS"],
+    },
+    {
+      id: "wfp-food-assistance",
+      titleAr: "برنامج الأغذية العالمي (WFP): منصة التحقق من القسائم الغذائية والطرود",
+      organization: "برنامج الأغذية العالمي التابع للأمم المتحدة",
+      orgType: "UN",
+      category: "FOOD",
+      targetAudience: "الأسر المصنفة تحت خط انعدام الأمن الغذائي الحاد",
+      status: "VERIFIED_INFO",
+      officialUrl: "https://ar.wfp.org",
+      verifiedAt: new Date().toISOString(),
+      notesAr: "تُصرف المساعدات والطرود عبر نقاط التوزيع المعتمدة ونظام الرسائل النصية القصيرة.",
+      requirements: ["الهوية الشخصية لمستلم الرسالة", "رمز القسيمة المستلم عبر SMS الرسمي"],
+    },
+    {
+      id: "prcs-emergency-medical",
+      titleAr: "جمعية الهلال الأحمر الفلسطيني: خدمات الإسعاف والإغاثة والتحويلات الطبية",
+      organization: "جمعية الهلال الأحمر الفلسطيني (PRCS)",
+      orgType: "RED_CRESCENT",
+      category: "MEDICAL",
+      targetAudience: "المصابون والمرضى والحالات الإنسانية الحرجة",
+      status: "OPEN",
+      officialUrl: "https://www.palestinercs.org/ar",
+      verifiedAt: new Date().toISOString(),
+      notesAr: "الخط الساخن الوطني للطوارئ: 101. الإسعاف والإغاثة الطبية متواصلة مجاناً على مدار الساعة.",
+      requirements: ["التواصل المباشر مع غرفة العمليات المركزية", "تحديد الموقع بدقة"],
+    },
+    {
+      id: "mops-social-registry",
+      titleAr: "وزارة التنمية الاجتماعية: البوابة الموحدة للمساعدات النقدية والطارئة",
+      organization: "وزارة التنمية الاجتماعية",
+      orgType: "GOV",
+      category: "CASH",
+      targetAudience: "أسر الشهداء، ذوو الإعاقة، والأسر الأشد فقراً",
+      status: "VERIFIED_INFO",
+      officialUrl: "http://www.mosa.gov.ps",
+      verifiedAt: new Date().toISOString(),
+      notesAr: "الاستعلام يتم عبر نظام الدخول الموحد الحكومي المعتمد.",
+      requirements: ["حساب الدخول الموحد الحكومي", "رقم الهوية وتاريخ الميلاد"],
+    },
+  ];
 
-    // 2. قائمة الأدلة والروابط الرسمية الموثقة للجهات الإغاثية المعتمدة
-    // جميع الروابط تنتهي بنطاقات رسمية معتمدة (.org, .int, .gov.ps) بدون أي روابط وسيطة
-    const verifiedOfficialPrograms: VerifiedAidItem[] = [
-      {
-        id: "unrwa-cash-verification",
-        titleAr: "بوابة الأونروا: تحديث بيانات المستفيدين وتدقيق المساعدات النقدية الطارئة",
-        organization: "وكالة غوث وتشغيل اللاجئين الفلسطينيين (UNRWA)",
-        orgType: "UN",
-        category: "CASH",
-        targetAudience: "اللاجئون والأسر المتضررة والنازحة المسجلة في سجلات الوكالة",
-        status: "UPDATING",
-        officialUrl: "https://www.unrwa.org/ar",
-        verifiedAt: new Date().toISOString(),
-        notesAr: "التسجيل وتحديث البيانات يتم حصراً عبر المنظومة الرسمية للوكالة مجاناً دون أي وسيط.",
-        requirements: ["رقم بطاقة التسجيل (كرت المؤن)", "الرقم الوطني / الهوية", "رقم هاتف فعّال لاستقبال رسائل SMS"],
-      },
-      {
-        id: "wfp-food-assistance",
-        titleAr: "برنامج الأغذية العالمي (WFP): منصة التحقق من القسائم الغذائية والطرود",
-        organization: "برنامج الأغذية العالمي التابع للأمم المتحدة",
-        orgType: "UN",
-        category: "FOOD",
-        targetAudience: "الأسر المصنفة تحت خط انعدام الأمن الغذائي الحاد",
-        status: "VERIFIED_INFO",
-        officialUrl: "https://ar.wfp.org",
-        verifiedAt: new Date().toISOString(),
-        notesAr: "تُصرف المساعدات والطرود عبر نقاط التوزيع المعتمدة ونظام الرسائل النصية القصيرة.",
-        requirements: ["الهوية الشخصية لمستلم الرسالة", "رمز القسيمة المستلم عبر SMS الرسمي"],
-      },
-      {
-        id: "prcs-emergency-medical",
-        titleAr: "جمعية الهلال الأحمر الفلسطيني: خدمات الإسعاف والإغاثة والتحويلات الطبية",
-        organization: "جمعية الهلال الأحمر الفلسطيني (PRCS)",
-        orgType: "RED_CRESCENT",
-        category: "MEDICAL",
-        targetAudience: "المصابون والمرضى والحالات الإنسانية الحرجة",
-        status: "OPEN",
-        officialUrl: "https://www.palestinercs.org/ar",
-        verifiedAt: new Date().toISOString(),
-        notesAr: "الخط الساخن الوطني للطوارئ: 101. الإسعاف والإغاثة الطبية متواصلة مجاناً على مدار الساعة.",
-        requirements: ["التواصل المباشر مع غرفة العمليات المركزية", "تحديد الموقع بدقة"],
-      },
-      {
-        id: "mops-social-registry",
-        titleAr: "وزارة التنمية الاجتماعية: البوابة الموحدة للمساعدات النقدية والطارئة",
-        organization: "وزارة التنمية الاجتماعية",
-        orgType: "GOV",
-        category: "CASH",
-        targetAudience: "أسر الشهداء، ذوو الإعاقة، والأسر الأشد فقراً",
-        status: "VERIFIED_INFO",
-        officialUrl: "http://www.mosa.gov.ps",
-        verifiedAt: new Date().toISOString(),
-        notesAr: "الاستعلام يتم عبر نظام الدخول الموحد الحكومي المعتمد.",
-        requirements: ["حساب الدخول الموحد الحكومي", "رقم الهوية وتاريخ الميلاد"],
-      },
-    ];
+  let articles: ArticleCard[] = [];
 
-    return {
-      articles: articles.map((a) => ({
+  if (prisma) {
+    try {
+      const dbArticles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { section: { slug: { in: ["aid", "palestine-humanitarian"] } } },
+            { titleAr: { contains: "مساعدات", mode: "insensitive" } },
+            { titleAr: { contains: "إغاث", mode: "insensitive" } },
+            { titleAr: { contains: "أونروا", mode: "insensitive" } },
+          ],
+        },
+        include: {
+          section: true,
+          source: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 12,
+      });
+
+      articles = dbArticles.map((a) => ({
         id: a.id,
         slug: a.slug,
         titleAr: a.titleAr,
@@ -1075,13 +1185,16 @@ export async function getAidData() {
               homepageUrl: a.source.homepageUrl,
             }
           : null,
-      })),
-      verifiedPrograms: verifiedOfficialPrograms,
-    };
-  } catch (error) {
-    console.warn("Database connection issue for aid data:", (error as any)?.message || error);
-    return { articles: [], verifiedPrograms: [] };
+      }));
+    } catch (error) {
+      console.warn("Database connection issue for aid articles:", (error as any)?.message || error);
+    }
   }
+
+  return {
+    articles,
+    verifiedPrograms: verifiedOfficialPrograms,
+  };
 }
 
 export interface VerifiedJobItem {
@@ -1101,67 +1214,69 @@ export interface VerifiedJobItem {
  * جلب بيانات بوابة الوظائف وفرص العمل الموثقة
  */
 export async function getJobsData() {
-  try {
-    const articles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: [
-          { section: { slug: "jobs" } },
-          { titleAr: { contains: "وظائف", mode: "insensitive" } },
-          { titleAr: { contains: "وظيفة", mode: "insensitive" } },
-          { titleAr: { contains: "فرص عمل", mode: "insensitive" } },
-          { titleAr: { contains: "شواغر", mode: "insensitive" } },
-        ],
-      },
-      include: {
-        section: true,
-        source: true,
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 12,
-    });
+  const verifiedJobs: VerifiedJobItem[] = [
+    {
+      id: "un-careers-portal",
+      titleAr: "بوابة التوظيف الموحدة للأمم المتحدة (UN Careers) في الشرق الأوسط",
+      organization: "الأمم المتحدة (United Nations)",
+      sector: "UN_INGO",
+      location: "فلسطين / الأردن / إقليمياً",
+      employmentType: "FULL_TIME",
+      deadline: "تحديث أسبوعي مستمر",
+      officialApplyUrl: "https://careers.un.org",
+      verifiedAt: new Date().toISOString(),
+      requirements: ["شهادة جامعية معتمدة في التخصص المطلوب", "إتقان اللغتين العربية والإنجليزية", "خبرة عملية موثقة في العمل الإنساني"],
+    },
+    {
+      id: "unrwa-careers",
+      titleAr: "شواغر وكالة الغوث (الأونروا) في التعليم والصحة والخدمات الإغاثية",
+      organization: "وكالة الأمم المتحدة لإغاثة وتشغيل اللاجئين (UNRWA)",
+      sector: "EDUCATION",
+      location: "الضفة الغربية وغزة والأردن",
+      employmentType: "CONTRACT",
+      deadline: "حسب إعلان كل وظيفة عبر Inspira",
+      officialApplyUrl: "https://www.unrwa.org/careers",
+      verifiedAt: new Date().toISOString(),
+      requirements: ["تقديم الطلب عبر منصة Inspira الرسمية", "اجتياز اختبارات الكفاءة والمقابلة المهنية"],
+    },
+    {
+      id: "remote-tech-careers",
+      titleAr: "مبادرات التوظيف الرقمي والعمل الحر عن بعد للكفاءات الفلسطينية والعربية",
+      organization: "مبادرات التمكين الرقمي ومنصات العمل الحر الدولية",
+      sector: "TECH",
+      location: "عن بعد (Remote)",
+      employmentType: "REMOTE",
+      deadline: "متاح ومحدث باستمرار",
+      officialApplyUrl: "https://alwatantoday.net/jobs",
+      verifiedAt: new Date().toISOString(),
+      requirements: ["إتقان مهارات البرمجة أو التصميم أو الترجمة", "معرض أعمال (Portfolio) احترافي", "حساب دفع إلكتروني دولي معتمد"],
+    },
+  ];
 
-    const verifiedJobs: VerifiedJobItem[] = [
-      {
-        id: "un-careers-portal",
-        titleAr: "بوابة التوظيف الموحدة للأمم المتحدة (UN Careers) في الشرق الأوسط",
-        organization: "الأمم المتحدة (United Nations)",
-        sector: "UN_INGO",
-        location: "فلسطين / الأردن / إقليمياً",
-        employmentType: "FULL_TIME",
-        deadline: "تحديث أسبوعي مستمر",
-        officialApplyUrl: "https://careers.un.org",
-        verifiedAt: new Date().toISOString(),
-        requirements: ["شهادة جامعية معتمدة في التخصص المطلوب", "إتقان اللغتين العربية والإنجليزية", "خبرة عملية موثقة في العمل الإنساني"],
-      },
-      {
-        id: "unrwa-careers",
-        titleAr: "شواغر وكالة الغوث (الأونروا) في التعليم والصحة والخدمات الإغاثية",
-        organization: "وكالة الأمم المتحدة لإغاثة وتشغيل اللاجئين (UNRWA)",
-        sector: "EDUCATION",
-        location: "الضفة الغربية وغزة والأردن",
-        employmentType: "CONTRACT",
-        deadline: "حسب إعلان كل وظيفة عبر Inspira",
-        officialApplyUrl: "https://www.unrwa.org/careers",
-        verifiedAt: new Date().toISOString(),
-        requirements: ["تقديم الطلب عبر منصة Inspira الرسمية", "اجتياز اختبارات الكفاءة والمقابلة المهنية"],
-      },
-      {
-        id: "remote-tech-careers",
-        titleAr: "مبادرات التوظيف الرقمي والعمل الحر عن بعد للكفاءات الفلسطينية والعربية",
-        organization: "مبادرات التمكين الرقمي ومنصات العمل الحر الدولية",
-        sector: "TECH",
-        location: "عن بعد (Remote)",
-        employmentType: "REMOTE",
-        deadline: "متاح ومحدث باستمرار",
-        officialApplyUrl: "https://alwatantoday.net/jobs",
-        verifiedAt: new Date().toISOString(),
-        requirements: ["إتقان مهارات البرمجة أو التصميم أو الترجمة", "معرض أعمال (Portfolio) احترافي", "حساب دفع إلكتروني دولي معتمد"],
-      },
-    ];
+  let articles: ArticleCard[] = [];
 
-    return {
-      articles: articles.map((a) => ({
+  if (prisma) {
+    try {
+      const dbArticles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { section: { slug: "jobs" } },
+            { titleAr: { contains: "وظائف", mode: "insensitive" } },
+            { titleAr: { contains: "وظيفة", mode: "insensitive" } },
+            { titleAr: { contains: "فرص عمل", mode: "insensitive" } },
+            { titleAr: { contains: "شواغر", mode: "insensitive" } },
+          ],
+        },
+        include: {
+          section: true,
+          source: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 12,
+      });
+
+      articles = dbArticles.map((a) => ({
         id: a.id,
         slug: a.slug,
         titleAr: a.titleAr,
@@ -1183,19 +1298,24 @@ export async function getJobsData() {
               homepageUrl: a.source.homepageUrl,
             }
           : null,
-      })),
-      verifiedJobs,
-    };
-  } catch (error) {
-    console.warn("Database connection issue for jobs data:", (error as any)?.message || error);
-    return { articles: [], verifiedJobs: [] };
+      }));
+    } catch (error) {
+      console.warn("Database connection issue for jobs articles:", (error as any)?.message || error);
+    }
   }
+
+  return {
+    articles,
+    verifiedJobs,
+  };
 }
 
 /**
  * جلب تقارير الفيديو والمحتوى المرئي الصحفي
  */
 export async function getVideosData() {
+  if (!prisma) return [];
+
   try {
     const articles = await prisma.article.findMany({
       where: {
@@ -1238,6 +1358,8 @@ export async function getVideosData() {
  * جلب مقالات وسم محدد
  */
 export async function getTagFeed(tagSlug: string, limit = 20) {
+  if (!prisma) return null;
+
   try {
     const tag = await prisma.tag.findUnique({
       where: { slug: tagSlug },
@@ -1303,6 +1425,8 @@ export async function getTagFeed(tagSlug: string, limit = 20) {
  * جلب مقالات كاتب محدد
  */
 export async function getAuthorFeed(authorSlug: string, limit = 20) {
+  if (!prisma) return null;
+
   try {
     const author = await prisma.author.findUnique({
       where: { slug: authorSlug },
@@ -1362,6 +1486,8 @@ export async function getAuthorFeed(authorSlug: string, limit = 20) {
  * جلب أحدث المقالات المنشورة لتغذية خلاصة RSS الرئيسية
  */
 export async function getGlobalRssArticles(limit = 50) {
+  if (!prisma) return [];
+
   try {
     const articles = await prisma.article.findMany({
       where: { status: "PUBLISHED" },
@@ -1402,6 +1528,10 @@ export async function getGlobalRssArticles(limit = 50) {
  * جلب تقارير مرصد رادار الحقيقة ومكافحة الشائعات
  */
 export async function getFactChecks(): Promise<FactCheckItem[]> {
+  if (!prisma) {
+    return isMockDataAllowed() ? FACT_CHECKS : [];
+  }
+
   try {
     const records = await prisma.factCheck.findMany({
       orderBy: { publishedAt: "desc" },
@@ -1438,6 +1568,12 @@ export async function getFactChecks(): Promise<FactCheckItem[]> {
  * جلب تفاصيل تقرير تحقق مفرد بالمعرف أو المعرف اللطيف
  */
 export async function getFactCheckBySlug(slug: string): Promise<FactCheckItem | null> {
+  if (!prisma) {
+    return isMockDataAllowed()
+      ? FACT_CHECKS.find((f) => f.id === slug || f.slug === slug) || null
+      : null;
+  }
+
   try {
     const record = await prisma.factCheck.findFirst({
       where: {
@@ -1482,6 +1618,8 @@ export async function getFactCheckBySlug(slug: string): Promise<FactCheckItem | 
  * جلب التغطيات الإخبارية المنشورة المرتبطة بمدينة أو قضاء في أطلس فلسطين
  */
 export async function getArticlesByDistrictOrCity(placeName: string, limit = 6): Promise<ArticleCard[]> {
+  if (!prisma) return [];
+
   try {
     const articles = await prisma.article.findMany({
       where: {
@@ -1567,62 +1705,64 @@ export async function queryAskNewsroom(question: string): Promise<AskNewsroomRes
     .split(/\s+/)
     .filter((w) => w.length > 2 && !stopWords.has(w));
 
-  const searchKeyword = tokens.slice(0, 3).join(" ") || trimmed;
-
   try {
-    // 1. البحث في المقالات المنشورة
-    const matchingArticles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: tokens.length > 0
-          ? tokens.map((token) => ({
-              OR: [
-                { titleAr: { contains: token, mode: "insensitive" } },
-                { summaryAr: { contains: token, mode: "insensitive" } },
-              ],
-            }))
-          : [{ titleAr: { contains: trimmed, mode: "insensitive" } }],
-      },
-      include: {
-        section: true,
-        source: true,
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-    });
-
-    // 2. البحث في تقارير مرصد رادار الحقيقة
-    const matchingFactChecks = await prisma.factCheck.findMany({
-      where: {
-        OR: tokens.length > 0
-          ? tokens.map((token) => ({
-              OR: [
-                { claim: { contains: token, mode: "insensitive" } },
-                { summary: { contains: token, mode: "insensitive" } },
-              ],
-            }))
-          : [{ claim: { contains: trimmed, mode: "insensitive" } }],
-      },
-      take: 2,
-    });
-
     const sources: { title: string; url: string; date: string }[] = [];
+    let matchingArticles: any[] = [];
+    let matchingFactChecks: any[] = [];
 
-    matchingArticles.forEach((a) => {
-      sources.push({
-        title: a.titleAr,
-        url: a.sourceUrl && a.displayPolicy === "TITLE_ONLY" ? a.sourceUrl : `/article/${a.slug}`,
-        date: a.publishedAt ? a.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "منشور",
+    if (prisma) {
+      // 1. البحث في المقالات المنشورة
+      matchingArticles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: tokens.length > 0
+            ? tokens.map((token) => ({
+                OR: [
+                  { titleAr: { contains: token, mode: "insensitive" } },
+                  { summaryAr: { contains: token, mode: "insensitive" } },
+                ],
+              }))
+            : [{ titleAr: { contains: trimmed, mode: "insensitive" } }],
+        },
+        include: {
+          section: true,
+          source: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 3,
       });
-    });
 
-    matchingFactChecks.forEach((fc) => {
-      sources.push({
-        title: `مرصد الحقيقة: ${fc.claim}`,
-        url: `/fact-check/${fc.slug}`,
-        date: fc.publishedAt ? fc.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "تحقيق معتمد",
+      // 2. البحث في تقارير مرصد رادار الحقيقة
+      matchingFactChecks = await prisma.factCheck.findMany({
+        where: {
+          OR: tokens.length > 0
+            ? tokens.map((token) => ({
+                OR: [
+                  { claim: { contains: token, mode: "insensitive" } },
+                  { summary: { contains: token, mode: "insensitive" } },
+                ],
+              }))
+            : [{ claim: { contains: trimmed, mode: "insensitive" } }],
+        },
+        take: 2,
       });
-    });
+
+      matchingArticles.forEach((a) => {
+        sources.push({
+          title: a.titleAr,
+          url: a.sourceUrl && a.displayPolicy === "TITLE_ONLY" ? a.sourceUrl : `/article/${a.slug}`,
+          date: a.publishedAt ? a.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "منشور",
+        });
+      });
+
+      matchingFactChecks.forEach((fc) => {
+        sources.push({
+          title: `مرصد الحقيقة: ${fc.claim}`,
+          url: `/fact-check/${fc.slug}`,
+          date: fc.publishedAt ? fc.publishedAt.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "تحقيق معتمد",
+        });
+      });
+    }
 
     // إذا لم نجد أي مادة في قاعدة البيانات، نتحقق من البيانات التجريبية المصرح بها فقط عند السماح بالـ Mock
     if (sources.length === 0 && isMockDataAllowed()) {
@@ -1683,6 +1823,8 @@ export async function queryAskNewsroom(question: string): Promise<AskNewsroomRes
  * جلب تجمعات القصص الإخبارية المتعددة المصادر (Story Clusters)
  */
 export async function getStoryClusters(limit = 6) {
+  if (!prisma) return [];
+
   try {
     const stories = await prisma.story.findMany({
       include: {
@@ -1723,6 +1865,3 @@ export async function getStoryClusters(limit = 6) {
     return [];
   }
 }
-
-
-

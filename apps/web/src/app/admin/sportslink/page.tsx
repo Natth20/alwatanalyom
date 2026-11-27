@@ -1,21 +1,32 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function SportsLinkAdminPage() {
-  const [entities, links] = await Promise.all([
-    prisma.sportsEntity.findMany({
-      take: 20,
-    }),
-    prisma.sportsLink.findMany({
-      include: {
-        article: true,
-        entity: true,
-      },
-      orderBy: { confidence: "asc" },
-      take: 20,
-    }),
-  ]);
+  let entities: Prisma.SportsEntityGetPayload<{}>[] = [];
+  let links: Prisma.SportsLinkGetPayload<{
+    include: { article: true; entity: true };
+  }>[] = [];
+
+  if (prisma) {
+    try {
+      [entities, links] = await Promise.all([
+        prisma.sportsEntity.findMany({
+          take: 20,
+        }),
+        prisma.sportsLink.findMany({
+          include: {
+            article: true,
+            entity: true,
+          },
+          orderBy: { confidence: "asc" },
+          take: 20,
+        }),
+      ]);
+    } catch (err) {
+      console.warn("Admin sportslink query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

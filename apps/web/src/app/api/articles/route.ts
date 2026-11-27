@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma, ArticleKind, ArticleStatus, DisplayPolicy } from "@awt/db";
 import { generateArabicSlug } from "@awt/shared";
 import { searchClient } from "@awt/search";
@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: "غير مصرح لك بتنفيذ هذه العملية" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
     }
 
     const body = await request.json();

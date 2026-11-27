@@ -40,27 +40,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // أحدث 500 مقال منشور
   let articleRoutes: MetadataRoute.Sitemap = [];
   try {
-    const articles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        displayPolicy: { not: "TITLE_ONLY" }, // استبعاد TITLE_ONLY من الفهرسة لتجنب الصفحات الرقيقة
-      },
-      select: {
-        id: true,
-        slug: true,
-        publishedAt: true,
-        updatedAtPub: true,
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 500,
-    });
+    if (prisma) {
+      const articles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          displayPolicy: { not: "TITLE_ONLY" }, // استبعاد TITLE_ONLY من الفهرسة لتجنب الصفحات الرقيقة
+        },
+        select: {
+          id: true,
+          slug: true,
+          publishedAt: true,
+          updatedAtPub: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 500,
+      });
 
-    articleRoutes = articles.map((art) => ({
-      url: `${baseUrl}/article/${art.id}/${art.slug}`,
-      lastModified: art.updatedAtPub || art.publishedAt || new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    }));
+      articleRoutes = articles.map((art) => ({
+        url: `${baseUrl}/article/${art.id}/${art.slug}`,
+        lastModified: art.updatedAtPub || art.publishedAt || new Date(),
+        changeFrequency: "daily",
+        priority: 0.7,
+      }));
+    }
   } catch {
     // في حال عدم توفر اتصال قاعدة البيانات وقت البناء
   }

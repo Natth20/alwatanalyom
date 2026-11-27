@@ -1,13 +1,21 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 import { AddSourceModal } from "./AddSourceModal";
 import { SourceRowActions } from "./SourceRowActions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSourcesPage() {
-  const sources = await prisma.source.findMany({
-    orderBy: { createdAt: "asc" },
-  });
+  let sources: Prisma.SourceGetPayload<{}>[] = [];
+
+  if (prisma) {
+    try {
+      sources = await prisma.source.findMany({
+        orderBy: { createdAt: "asc" },
+      });
+    } catch (err) {
+      console.warn("Admin sources query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">

@@ -1,11 +1,19 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function UsersAdminPage() {
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "asc" },
-  });
+  let users: Prisma.UserGetPayload<{}>[] = [];
+
+  if (prisma) {
+    try {
+      users = await prisma.user.findMany({
+        orderBy: { createdAt: "asc" },
+      });
+    } catch (err) {
+      console.warn("Admin users query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

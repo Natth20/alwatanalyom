@@ -13,16 +13,18 @@ export default async function UnsubscribeNewsletterPage({ params }: Props) {
   let unsubscribed = false;
 
   try {
-    const subscriber = await prisma.newsletterSubscriber.findUnique({
-      where: { token },
-    });
-
-    if (subscriber) {
-      await prisma.newsletterSubscriber.update({
-        where: { id: subscriber.id },
-        data: { unsubscribedAt: new Date() },
+    if (prisma) {
+      const subscriber = await prisma.newsletterSubscriber.findUnique({
+        where: { token },
       });
-      unsubscribed = true;
+
+      if (subscriber) {
+        await prisma.newsletterSubscriber.update({
+          where: { id: subscriber.id },
+          data: { unsubscribedAt: new Date() },
+        });
+        unsubscribed = true;
+      }
     }
   } catch {
     // fallback

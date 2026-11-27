@@ -7,6 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = SubmitNewsTipSchema.parse(body);
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: { code: "DB_UNAVAILABLE", message: "خدمة استقبال البلاغات غير متاحة مؤقتاً" } },
+        { status: 503 }
+      );
+    }
+
     // تسجيل الخبر المرسل في سجل التدقيق لغرفة التحرير مع حماية خصوصية المصدر
     await prisma.auditLog.create({
       data: {

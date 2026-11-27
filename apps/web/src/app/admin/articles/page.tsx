@@ -1,18 +1,28 @@
-﻿import Link from "next/link";
-import { prisma } from "@awt/db";
+import Link from "next/link";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArticlesAdminPage() {
-  const articles = await prisma.article.findMany({
-    include: {
-      section: true,
-      source: true,
-      corrections: true,
-    },
-    orderBy: { publishedAt: "desc" },
-    take: 50,
-  });
+  let articles: Prisma.ArticleGetPayload<{
+    include: { section: true; source: true; corrections: true };
+  }>[] = [];
+
+  if (prisma) {
+    try {
+      articles = await prisma.article.findMany({
+        include: {
+          section: true,
+          source: true,
+          corrections: true,
+        },
+        orderBy: { publishedAt: "desc" },
+        take: 50,
+      });
+    } catch (err) {
+      console.warn("Admin articles query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

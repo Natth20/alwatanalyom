@@ -77,41 +77,43 @@ export default async function AdminDashboardPage() {
   ];
 
   try {
-    const results = await Promise.all([
-      prisma.source.count({ where: { enabled: true } }),
-      prisma.source.count({ where: { state: "FAILING" } }),
-      prisma.item.count({ where: { status: "REVIEW" } }),
-      prisma.article.count({ where: { status: "PUBLISHED" } }),
-      prisma.adCampaign.count({ where: { enabled: true } }),
-      prisma.adCampaign.aggregate({ _sum: { impressions: true } }),
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: { publishedAt: "desc" },
-        take: 6,
-        include: { source: true, section: true },
-      }),
-    ]);
-
-    if (results[0] > 0) sourcesCount = results[0];
-    if (results[1] !== undefined) failingSourcesCount = results[1];
-    if (results[2] > 0) pendingReviewCount = results[2];
-    if (results[3] > 0) publishedCount = results[3];
-    if (results[4] > 0) activeAdsCount = results[4];
-    if (results[5]?._sum?.impressions) totalAdImpressions = results[5];
-    if (results[6] && results[6].length > 0) {
-      recentArticles = results[6].map((a) => ({
-        id: a.id,
-        slug: a.slug,
-        titleAr: a.titleAr,
-        publishedAtText: new Date(a.publishedAt || Date.now()).toLocaleTimeString("ar-EG", {
-          hour: "numeric",
-          minute: "2-digit",
-          second: "2-digit",
+    if (prisma) {
+      const results = await Promise.all([
+        prisma.source.count({ where: { enabled: true } }),
+        prisma.source.count({ where: { state: "FAILING" } }),
+        prisma.item.count({ where: { status: "REVIEW" } }),
+        prisma.article.count({ where: { status: "PUBLISHED" } }),
+        prisma.adCampaign.count({ where: { enabled: true } }),
+        prisma.adCampaign.aggregate({ _sum: { impressions: true } }),
+        prisma.article.findMany({
+          where: { status: "PUBLISHED" },
+          orderBy: { publishedAt: "desc" },
+          take: 6,
+          include: { source: true, section: true },
         }),
-        isBreaking: a.isBreaking || a.titleAr.includes("عاجل"),
-        section: { nameAr: a.section?.nameAr || "فلسطين" },
-        source: { nameAr: a.source?.nameAr || "وكالة الأنباء (وفا)" },
-      }));
+      ]);
+
+      if (results[0] > 0) sourcesCount = results[0];
+      if (results[1] !== undefined) failingSourcesCount = results[1];
+      if (results[2] > 0) pendingReviewCount = results[2];
+      if (results[3] > 0) publishedCount = results[3];
+      if (results[4] > 0) activeAdsCount = results[4];
+      if (results[5]?._sum?.impressions) totalAdImpressions = results[5];
+      if (results[6] && results[6].length > 0) {
+        recentArticles = results[6].map((a) => ({
+          id: a.id,
+          slug: a.slug,
+          titleAr: a.titleAr,
+          publishedAtText: new Date(a.publishedAt || Date.now()).toLocaleTimeString("ar-EG", {
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+          isBreaking: a.isBreaking || a.titleAr.includes("عاجل"),
+          section: { nameAr: a.section?.nameAr || "فلسطين" },
+          source: { nameAr: a.source?.nameAr || "وكالة الأنباء (وفا)" },
+        }));
+      }
     }
   } catch (err) {
     console.warn("Using resilient high-fidelity fallback data for Admin Dashboard:", err);

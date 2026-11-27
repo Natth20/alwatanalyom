@@ -4,6 +4,9 @@ import { prisma, AdSlotPosition, AdType } from "@awt/db";
 
 export async function GET() {
   try {
+    if (!prisma) {
+      return NextResponse.json({ ok: true, campaigns: [] });
+    }
     const campaigns = await prisma.adCampaign.findMany({
       orderBy: { createdAt: "desc" },
     });
@@ -22,6 +25,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!prisma) {
+      return NextResponse.json(
+        { ok: false, error: "قاعدة البيانات غير متاحة حالياً" },
+        { status: 503 }
+      );
+    }
     const body = await req.json();
 
     const {

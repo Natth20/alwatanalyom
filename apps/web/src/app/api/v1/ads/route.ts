@@ -5,6 +5,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ ok: true, ads: [] });
+    }
+
     const { searchParams } = new URL(req.url);
     const position = searchParams.get("position");
 
@@ -23,8 +27,7 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ ok: true, ads });
-  } catch (error) {
-    return NextResponse.json({ ok: false, error: "فشل استرداد الحملات الإعلانية" }, { status: 500 });
+  } catch {
+    return NextResponse.json({ ok: true, ads: [] });
   }
 }
-

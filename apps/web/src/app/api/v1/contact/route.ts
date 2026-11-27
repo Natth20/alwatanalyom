@@ -7,6 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = ContactFormSchema.parse(body);
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: { code: "DB_UNAVAILABLE", message: "خدمة حفظ الرسائل غير متاحة مؤقتاً" } },
+        { status: 503 }
+      );
+    }
+
     // تسجيل رسالة التواصل في سجل التدقيق وإشعار الإدارة
     await prisma.auditLog.create({
       data: {

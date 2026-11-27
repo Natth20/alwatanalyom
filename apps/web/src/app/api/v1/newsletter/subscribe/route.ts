@@ -10,6 +10,13 @@ export async function POST(request: NextRequest) {
 
     const token = randomBytes(24).toString("hex");
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: { code: "DB_UNAVAILABLE", message: "خدمة الاشتراك غير متاحة مؤقتاً" } },
+        { status: 503 }
+      );
+    }
+
     const subscriber = await prisma.newsletterSubscriber.upsert({
       where: { email: parsed.email },
       update: {

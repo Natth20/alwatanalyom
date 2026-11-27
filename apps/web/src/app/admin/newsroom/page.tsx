@@ -1,5 +1,5 @@
-﻿import Link from "next/link";
-import { prisma } from "@awt/db";
+import Link from "next/link";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
@@ -13,25 +13,36 @@ interface Props {
 export default async function NewsroomPage({ searchParams }: Props) {
   const { status, sourceId } = await searchParams;
 
-  const [items, counts] = await Promise.all([
-    prisma.item.findMany({
-      where: {
-        ...(status ? { status: status as any } : {}),
-        ...(sourceId ? { sourceId } : {}),
-      },
-      include: {
-        source: true,
-        story: true,
-        article: true,
-      },
-      orderBy: { fetchedAt: "desc" },
-      take: 40,
-    }),
-    prisma.item.groupBy({
-      by: ["status"],
-      _count: true,
-    }),
-  ]);
+  let items: Prisma.ItemGetPayload<{
+    include: { source: true; story: true; article: true };
+  }>[] = [];
+  let counts: { status: string; _count: number }[] = [];
+
+  if (prisma) {
+    try {
+      [items, counts] = await Promise.all([
+        prisma.item.findMany({
+          where: {
+            ...(status ? { status: status as any } : {}),
+            ...(sourceId ? { sourceId } : {}),
+          },
+          include: {
+            source: true,
+            story: true,
+            article: true,
+          },
+          orderBy: { fetchedAt: "desc" },
+          take: 40,
+        }),
+        prisma.item.groupBy({
+          by: ["status"],
+          _count: true,
+        }),
+      ]);
+    } catch (err) {
+      console.warn("Admin newsroom query failed:", err);
+    }
+  }
 
   const countByStatus: Record<string, number> = {};
   for (const c of counts) {

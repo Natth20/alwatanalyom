@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
@@ -11,6 +12,16 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client", "prisma"],
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+  outputFileTracingIncludes: {
+    "/*": [
+      "../../node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/**/*",
+      "../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/**/*",
+      "../../node_modules/.prisma/client/**/*",
+      "./node_modules/.prisma/client/**/*",
+      "./.prisma/client/**/*",
+    ],
+  },
   output: process.env.STANDALONE === "true" ? "standalone" : undefined,
   reactStrictMode: true,
   compress: true,

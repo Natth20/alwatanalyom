@@ -1,6 +1,6 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 
 export const dynamic = "force-dynamic";
 
@@ -13,15 +13,30 @@ interface Props {
 export default async function ArticleDetailPage({ params }: Props) {
   const { id } = await params;
 
-  const article = await prisma.article.findUnique({
-    where: { id },
+  let article: Prisma.ArticleGetPayload<{
     include: {
-      section: true,
-      source: true,
-      corrections: { orderBy: { createdAt: "desc" } },
-      story: true,
-    },
-  });
+      section: true;
+      source: true;
+      corrections: true;
+      story: true;
+    };
+  }> | null = null;
+
+  if (prisma) {
+    try {
+      article = await prisma.article.findUnique({
+        where: { id },
+        include: {
+          section: true,
+          source: true,
+          corrections: { orderBy: { createdAt: "desc" } },
+          story: true,
+        },
+      });
+    } catch (err) {
+      console.warn("Admin article detail query failed:", err);
+    }
+  }
 
   if (!article) {
     notFound();

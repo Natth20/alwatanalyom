@@ -1,9 +1,12 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@awt/db";
 import { getSessionUser } from "@/lib/admin/auth";
 
 export async function GET() {
   try {
+    if (!prisma) {
+      return NextResponse.json({ isKilled: false, updatedAt: null });
+    }
     const policy = await prisma.publishPolicy.findFirst({
       where: { name: "MASTER_KILL_SWITCH" },
     });
@@ -26,6 +29,10 @@ export async function POST(request: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: "غير مصرح لك بتشغيل مفتاح الإيقاف الطارئ" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "قاعدة البيانات غير متاحة حالياً" }, { status: 503 });
     }
 
     const body = await request.json();

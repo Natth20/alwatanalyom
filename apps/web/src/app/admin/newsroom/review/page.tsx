@@ -1,15 +1,23 @@
-import { prisma } from "@awt/db";
+import { prisma, Prisma } from "@awt/db";
 import { ReviewItemsList } from "./ReviewItemsList";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewsroomReviewPage() {
-  const reviewItems = await prisma.item.findMany({
-    where: { status: "REVIEW" },
-    include: { source: true },
-    orderBy: { fetchedAt: "desc" },
-    take: 30,
-  });
+  let reviewItems: Prisma.ItemGetPayload<{ include: { source: true } }>[] = [];
+
+  if (prisma) {
+    try {
+      reviewItems = await prisma.item.findMany({
+        where: { status: "REVIEW" },
+        include: { source: true },
+        orderBy: { fetchedAt: "desc" },
+        take: 30,
+      });
+    } catch (err) {
+      console.warn("Admin newsroom review query failed:", err);
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">

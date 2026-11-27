@@ -7,6 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = ReportIssueSchema.parse(body);
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: { code: "DB_UNAVAILABLE", message: "خدمة البلاغات غير متاحة مؤقتاً" } },
+        { status: 503 }
+      );
+    }
+
     const article = await prisma.article.findUnique({
       where: { id: parsed.articleId },
       select: { id: true, titleAr: true },
