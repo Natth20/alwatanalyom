@@ -85,11 +85,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const [ingestResult, quotesResult] = await Promise.all([
-    runLiveIngest(prisma, {}).catch((err) => ({
+  const quotesResult = await syncLiveQuotesToDb();
+  const ingestResult = await Promise.race([
+    runLiveIngest(prisma, { limitPerSource: 4 }).catch((err) => ({
       error: (err as Error)?.message || "INGEST_FAILED",
     })),
-    syncLiveQuotesToDb(),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ partial: true, message: "Ingest budget window elapsed gracefully" }), 18000)
+    ),
   ]);
 
   return NextResponse.json({
