@@ -270,7 +270,7 @@ export function Footer() {
         {/* ===================================================================== */}
         {/* 2. أجنحة الأقسام الخمسة المنحوتة معمارياً (5 Architectural Pavilions)  */}
         {/* ===================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4.5 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5 text-xs">
           {/* الجناح 1: فلسطين والقدس والميدان */}
           <div className="p-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-[#06180e]/60 to-[#020b06]/60 backdrop-blur-md space-y-4 shadow-lg hover:border-emerald-500/50 transition-all">
             <div className="flex items-center gap-2.5 border-b border-emerald-500/20 pb-3">
