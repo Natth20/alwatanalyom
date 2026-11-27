@@ -377,30 +377,32 @@ export function Header() {
           </nav>
 
           {/* الجانب الأيسر: مجمع أدوات التفاعل المتناسقة (Unified Action Cluster) */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* البحث السريع */}
-            <SearchTrigger compact />
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 bg-black/50 border border-[var(--gold)]/25 rounded-full p-1 sm:p-1.5 backdrop-blur-xl shadow-lg shrink-0">
+              {/* البحث السريع */}
+              <SearchTrigger compact />
 
-            {/* جرس الإشعارات */}
-            <NotificationCenter />
+              {/* جرس الإشعارات */}
+              <NotificationCenter />
 
-            {/* عداد المقالات المحفوظة أوفلاين */}
-            <SavedCounterBadge />
+              {/* عداد المقالات المحفوظة أوفلاين */}
+              <SavedCounterBadge />
 
-            {/* محول المظهر الليلي/النهاري */}
-            <div className="hidden sm:block">
-              <ThemeToggle />
+              {/* محول المظهر الليلي/النهاري */}
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
+
+              {/* كبسولة اسأل الوطن AI الفاخرة */}
+              <Link
+                href="/ask"
+                className="inline-flex items-center gap-1.5 h-8 sm:h-8.5 px-3 sm:px-3.5 rounded-full border border-[var(--gold)]/60 bg-gradient-to-r from-[var(--gold)]/20 via-amber-500/20 to-[var(--gold)]/30 hover:from-[var(--gold)] hover:to-[#dca600] text-[var(--gold)] hover:text-[#120004] text-xs font-black transition-all shadow-md shadow-amber-950/30 shrink-0 group"
+                title="اسأل الوطن AI — المساعد الصحفي الذكي"
+              >
+                <Bot className="w-3.5 h-3.5 text-[var(--gold)] group-hover:text-[#120004] transition-colors" />
+                <span className="hidden sm:inline">اسأل الوطن</span>
+              </Link>
             </div>
-
-            {/* كبسولة اسأل الوطن AI الفاخرة */}
-            <Link
-              href="/ask"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-[var(--gold)]/50 bg-gradient-to-r from-[var(--gold)]/15 via-amber-500/10 to-[var(--gold)]/20 hover:from-[var(--gold)] hover:to-[#dca600] text-[var(--gold)] hover:text-[#120004] text-xs font-black transition-all shadow-md shadow-amber-950/20 shrink-0 group"
-              title="اسأل الوطن AI — المساعد الصحفي الذكي"
-            >
-              <Bot className="w-4 h-4 text-[var(--gold)] group-hover:text-[#120004] transition-colors" />
-              <span className="hidden sm:inline">اسأل الوطن</span>
-            </Link>
           </div>
         </div>
 
