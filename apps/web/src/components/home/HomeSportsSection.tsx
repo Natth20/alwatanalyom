@@ -20,11 +20,11 @@ export function HomeSportsSection({ articles }: Props) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight">
-                الملاعب والرياضة · منظومة يلا سبورت
+                الملاعب والرياضة · دوري الأبطال ويلا سبورت
               </h2>
               <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <Trophy className="w-3.5 h-3.5" />
-                <span>تغطية حصرية مشتركة</span>
+                <span>تغطية حصرية مباشرة</span>
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">

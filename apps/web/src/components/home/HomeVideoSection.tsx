@@ -117,6 +117,53 @@ export function HomeVideoSection({ articles }: Props) {
           );
         })}
       </div>
+
+      {/* 3. شريط الريلز واللقطات السريعة العمودية (Vertical Reels Strip) */}
+      {articles.length > 0 && (
+        <div className="pt-6 border-t border-white/10 space-y-4 relative z-10">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span>ريلز الوطن · لقطات سريعة وميدانية</span>
+            </h3>
+            <span className="text-[11px] text-stone-400">عرض عمودي فائق السرعة</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {(articles.length > 3 ? articles.slice(3, 7) : articles.slice(0, 4)).map((reel, rIdx) => {
+              const reelImg = resolveEditorialImage(reel);
+              return (
+                <Link
+                  key={`reel-${reel.id}-${rIdx}`}
+                  href={`/article/${reel.id}/${reel.slug}`}
+                  className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 hover:border-[var(--gold)]/60 transition-all shadow-lg block"
+                >
+                  <img
+                    src={reelImg}
+                    alt={reel.titleAr}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+
+                  <div className="absolute top-3 start-3 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-[var(--gold)]">
+                    <Play className="w-3.5 h-3.5 fill-current ms-0.5" />
+                  </div>
+
+                  <div className="absolute bottom-3.5 inset-x-3.5 space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md bg-[var(--gold)]/20 border border-[var(--gold)]/40 text-[var(--gold)] text-[9px] font-black">
+                      {reel.sectionNameAr}
+                    </span>
+                    <h4 className="text-xs font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--gold)] transition-colors">
+                      {reel.titleAr}
+                    </h4>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
