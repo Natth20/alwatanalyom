@@ -232,10 +232,12 @@ export function Header() {
             <span className="hidden md:inline text-white/15">|</span>
 
             <Link
-              href="/en"
-              className="hidden sm:inline text-[10px] font-bold font-mono text-stone-400 hover:text-[var(--gold)] transition-colors"
+              href={pathname?.startsWith("/en") ? "/" : "/en"}
+              className="inline-flex items-center gap-1.5 h-6.5 px-2.5 rounded-full border border-[var(--gold)]/45 bg-gradient-to-r from-[var(--gold)]/15 to-amber-500/10 hover:from-[var(--gold)] hover:to-[#dca600] text-[var(--gold)] hover:text-[#120004] text-[10px] font-black transition-all shadow-xs shrink-0"
+              title={pathname?.startsWith("/en") ? "النسخة العربية" : "English Edition"}
             >
-              English
+              <Globe className="w-3 h-3" />
+              <span>{pathname?.startsWith("/en") ? "العربية" : "EN"}</span>
             </Link>
           </div>
         </div>
@@ -757,6 +759,13 @@ export function Header() {
               <span>كابينة الإدارة التحريرية</span>
             </Link>
             <div className="flex items-center gap-2">
+              <Link
+                href={pathname?.startsWith("/en") ? "/" : "/en"}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-[var(--gold)]/45 bg-[var(--gold)]/15 text-[var(--gold)] text-xs font-black"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{pathname?.startsWith("/en") ? "العربية" : "English"}</span>
+              </Link>
               <ThemeToggle />
               <LowBandwidthToggle />
             </div>

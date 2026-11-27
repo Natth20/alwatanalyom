@@ -84,8 +84,13 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('awt_theme')||'system';var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=(m==='dark')||(m==='system'&&d);var r=document.documentElement;if(dark){r.classList.add('dark');r.classList.remove('light');r.setAttribute('data-theme','dark');}else{r.classList.add('light');r.classList.remove('dark');r.setAttribute('data-theme','light');}}catch(e){}})();`,
+          }}
+        />
         {/* Google Tag Manager Container */}
         <Script id="google-tag-manager" strategy="afterInteractive">
           {`

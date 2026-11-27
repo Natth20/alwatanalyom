@@ -11,7 +11,7 @@ export function LiveFastStreamWire({ articles }: Props) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <aside className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm space-y-4">
+    <aside className="rounded-3xl border border-[var(--border)] dark:border-rose-500/25 bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#1a050b]/95 dark:to-[#0e0407]/95 p-5 shadow-md space-y-4">
       {/* ترويسة الممر السريع */}
       <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
         <div className="flex items-center gap-2.5">

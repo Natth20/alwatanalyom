@@ -16,6 +16,7 @@ import { PalestineFocusBlock } from "./PalestineFocusBlock";
 import { HomeAidAndJobsBar } from "./HomeAidAndJobsBar";
 import { HomeVideoSection } from "./HomeVideoSection";
 import { HomeSportsSection } from "./HomeSportsSection";
+import { HomeSmartHubsDock } from "./HomeSmartHubsDock";
 import { AdSlot } from "@/components/AdSlot";
 import { TrendingUp, ShieldCheck, ChevronLeft } from "lucide-react";
 
@@ -94,10 +95,11 @@ export function HomeStreamLayout({
           {/* شبكة الأقسام المركزية: العالم العربي ودولياً */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* العالم العربي */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-3">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] dark:border-amber-500/25 bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#1b0b04]/90 dark:to-[#0e0407]/95 p-6 shadow-md relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-80" />
+              <div className="flex items-center justify-between border-b border-[var(--border)] dark:border-white/10 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
-                  <span className="w-2 h-4 bg-[var(--gold)] rounded-sm" />
+                  <span className="w-2.5 h-4 bg-amber-500 rounded-sm" />
                   <span>العالم العربي</span>
                 </h3>
                 <Link href="/arab-world" className="text-xs text-[var(--primary)] font-bold hover:underline flex items-center gap-0.5">
@@ -113,10 +115,11 @@ export function HomeStreamLayout({
             </div>
 
             {/* الشؤون الدولية */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b-2 border-[var(--primary)] pb-3">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] dark:border-sky-500/25 bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#061524]/90 dark:to-[#0e0407]/95 p-6 shadow-md relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-80" />
+              <div className="flex items-center justify-between border-b border-[var(--border)] dark:border-white/10 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
-                  <span className="w-2 h-4 bg-[var(--gold)] rounded-sm" />
+                  <span className="w-2.5 h-4 bg-sky-500 rounded-sm" />
                   <span>الشؤون الدولية</span>
                 </h3>
                 <Link href="/world" className="text-xs text-[var(--primary)] font-bold hover:underline flex items-center gap-0.5">
@@ -140,10 +143,11 @@ export function HomeStreamLayout({
           {/* قطاع الاقتصاد وأسواق المال والتقنية والابتكار */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* الاقتصاد وأسواق المال */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b-2 border-amber-600 pb-3">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] dark:border-[var(--gold)]/25 bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#1a1102]/90 dark:to-[#0e0407]/95 p-6 shadow-md relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+              <div className="flex items-center justify-between border-b border-[var(--border)] dark:border-white/10 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
-                  <span className="w-2 h-4 bg-amber-500 rounded-sm" />
+                  <span className="w-2.5 h-4 bg-[var(--gold)] rounded-sm" />
                   <span>الاقتصاد والأسواق</span>
                 </h3>
                 <Link href="/economy" className="text-xs text-[var(--primary)] font-bold hover:underline flex items-center gap-0.5">
@@ -159,10 +163,11 @@ export function HomeStreamLayout({
             </div>
 
             {/* التقنية والذكاء الاصطناعي */}
-            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b-2 border-sky-600 pb-3">
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] dark:border-indigo-500/25 bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#110824]/90 dark:to-[#0e0407]/95 p-6 shadow-md relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-80" />
+              <div className="flex items-center justify-between border-b border-[var(--border)] dark:border-white/10 pb-3">
                 <h3 className="font-black text-base text-[var(--text)] flex items-center gap-2">
-                  <span className="w-2 h-4 bg-sky-500 rounded-sm" />
+                  <span className="w-2.5 h-4 bg-indigo-500 rounded-sm" />
                   <span>التقنية والذكاء الاصطناعي</span>
                 </h3>
                 <Link href="/tech" className="text-xs text-[var(--primary)] font-bold hover:underline flex items-center gap-0.5">
@@ -223,7 +228,10 @@ export function HomeStreamLayout({
         </div>
       </div>
 
-      {/* 6. صرح التحقق الجنائي ومنزلق كشف التزييف البصري (بالعرض الكامل) */}
+      {/* 6. جناح المراكز التفاعلية الذكية الخمسة في قلب الصفحة الرئيسية */}
+      <HomeSmartHubsDock />
+
+      {/* 7. صرح التحقق الجنائي ومنزلق كشف التزييف البصري (بالعرض الكامل) */}
       <FactCheckSlider />
 
       {/* 7. صحافة البيانات والإنفوجرافيك التفاعلي (بالعرض الكامل) */}

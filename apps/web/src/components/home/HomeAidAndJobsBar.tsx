@@ -5,7 +5,7 @@ export function HomeAidAndJobsBar() {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
       {/* بطاقة المساعدات الإنسانية الموثقة */}
-      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-l from-amber-950/20 via-[var(--surface)] to-[var(--surface)] p-6 space-y-4 hover:shadow-md transition-all flex flex-col justify-between">
+      <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-l from-amber-950/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#211504]/90 dark:via-[#14070B]/95 dark:to-[#0E0407]/95 p-6 sm:p-7 space-y-4 hover:shadow-xl transition-all flex flex-col justify-between">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
@@ -43,7 +43,7 @@ export function HomeAidAndJobsBar() {
       </div>
 
       {/* بطاقة الوظائف والتمكين المهني */}
-      <div className="rounded-2xl border border-sky-500/30 bg-gradient-to-l from-sky-950/20 via-[var(--surface)] to-[var(--surface)] p-6 space-y-4 hover:shadow-md transition-all flex flex-col justify-between">
+      <div className="rounded-3xl border border-sky-500/30 bg-gradient-to-l from-sky-950/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#041724]/90 dark:via-[#14070B]/95 dark:to-[#0E0407]/95 p-6 sm:p-7 space-y-4 hover:shadow-xl transition-all flex flex-col justify-between">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20">

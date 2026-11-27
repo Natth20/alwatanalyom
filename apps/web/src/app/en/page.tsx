@@ -23,23 +23,24 @@ export default async function EnglishHomePage() {
 
   return (
     <div dir="ltr" className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans">
-      {/* Top Bar */}
-      <div className="border-b border-[var(--border)] bg-[var(--surface)] text-xs text-[var(--text-muted)] py-2.5">
-        <div className="container-custom flex items-center justify-between">
+      {/* Luxury Bilingual Edition Bar */}
+      <div className="border-b border-[var(--gold)]/25 bg-gradient-to-r from-[#170005] via-[#2a000e] to-[#170005] text-xs text-stone-200 py-3">
+        <div className="container-custom flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="font-semibold text-rose-600 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
-              AL-WATAN TODAY · ENGLISH EDITION
+            <span className="font-black text-[var(--gold)] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              AL-WATAN TODAY · INTERNATIONAL ENGLISH EDITION
             </span>
-            <span>•</span>
-            <span>Real-time aggregation with direct source provenance</span>
+            <span className="hidden sm:inline text-white/25">•</span>
+            <span className="hidden sm:inline text-stone-300">Real-time aggregation with direct source provenance</span>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="px-2.5 py-0.5 rounded border border-[var(--border)] text-xs font-bold text-[var(--text)] hover:border-rose-600 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-[var(--gold)]/50 bg-[var(--gold)]/15 hover:bg-[var(--gold)] text-[var(--gold)] hover:text-[#120004] text-xs font-black transition-all shadow-sm"
             >
-              العربية (RTL)
+              <Globe className="w-3.5 h-3.5" />
+              <span>النسخة العربية (AR)</span>
             </Link>
           </div>
         </div>

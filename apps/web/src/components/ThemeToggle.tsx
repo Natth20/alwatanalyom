@@ -1,83 +1,120 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Sun, Moon, Laptop } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Sun, Moon, Monitor } from "lucide-react";
+
+type ThemeMode = "system" | "dark" | "light";
+
+function resolveAndApplyTheme(mode: ThemeMode) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  const prefersDark =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  const isDark = mode === "dark" || (mode === "system" && prefersDark);
+
+  if (isDark) {
+    root.classList.add("dark");
+    root.classList.remove("light");
+    root.setAttribute("data-theme", "dark");
+  } else {
+    root.classList.add("light");
+    root.classList.remove("dark");
+    root.setAttribute("data-theme", "light");
+  }
+}
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"system" | "dark" | "light">("system");
+  const [theme, setTheme] = useState<ThemeMode>("system");
   const [mounted, setMounted] = useState(false);
+
+  const applyMode = useCallback((nextMode: ThemeMode) => {
+    setTheme(nextMode);
+    try {
+      localStorage.setItem("awt_theme", nextMode);
+    } catch {
+      // ignore storage errors
+    }
+    resolveAndApplyTheme(nextMode);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("awt_theme") as "system" | "dark" | "light" | null;
-    if (saved) {
-      setTheme(saved);
-      applyTheme(saved);
+    let saved: ThemeMode = "system";
+    try {
+      const raw = localStorage.getItem("awt_theme");
+      if (raw === "dark" || raw === "light" || raw === "system") {
+        saved = raw;
+      }
+    } catch {
+      // ignore
     }
+    setTheme(saved);
+    resolveAndApplyTheme(saved);
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleOsChange = () => {
+      try {
+        const current = (localStorage.getItem("awt_theme") as ThemeMode | null) || "system";
+        if (current === "system") {
+          resolveAndApplyTheme("system");
+        }
+      } catch {
+        resolveAndApplyTheme("system");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleOsChange);
+    return () => mediaQuery.removeEventListener("change", handleOsChange);
   }, []);
 
-  const applyTheme = (target: "system" | "dark" | "light") => {
-    const root = document.documentElement;
-    if (target === "dark") {
-      root.classList.add("dark");
-      root.classList.remove("light");
-      root.setAttribute("data-theme", "dark");
-    } else if (target === "light") {
-      root.classList.add("light");
-      root.classList.remove("dark");
-      root.setAttribute("data-theme", "light");
-    } else {
-      root.classList.remove("dark");
-      root.classList.remove("light");
-      root.removeAttribute("data-theme");
-    }
-  };
-
   const cycleTheme = () => {
-    let next: "system" | "dark" | "light";
-    if (theme === "system") next = "dark";
-    else if (theme === "dark") next = "light";
-    else next = "system";
-
-    setTheme(next);
-    localStorage.setItem("awt_theme", next);
-    applyTheme(next);
+    const next: ThemeMode =
+      theme === "system" ? "dark" : theme === "dark" ? "light" : "system";
+    applyMode(next);
   };
 
   if (!mounted) {
     return (
-      <button
-        type="button"
-        aria-label="تغيير المظهر"
-        className="w-8 h-8 rounded-full border border-white/15 bg-white/[0.05] text-white/70 flex items-center justify-center"
-      >
-        <Sun className="w-3.5 h-3.5" />
-      </button>
+      <div className="h-8 px-2.5 rounded-full border border-white/15 bg-white/[0.05] text-white/70 flex items-center gap-1.5 text-[11px] font-bold">
+        <Monitor className="w-3.5 h-3.5" />
+        <span className="hidden xl:inline">تلقائي</span>
+      </div>
     );
   }
+
+  const label =
+    theme === "dark" ? "داكن" : theme === "light" ? "نهاري" : "تلقائي";
+  const nextTitle =
+    theme === "dark"
+      ? "الوضع الداكن مفعل — انقر للتبديل إلى الوضع النهاري"
+      : theme === "light"
+      ? "الوضع النهاري مفعل — انقر للتبديل إلى الوضع التلقائي (حسب الجهاز)"
+      : "الوضع التلقائي (حسب نظام الجهاز) — انقر للتبديل إلى الوضع الداكن";
 
   return (
     <button
       type="button"
       onClick={cycleTheme}
-      title={
+      title={nextTitle}
+      aria-label={nextTitle}
+      className={`h-8 px-2.5 sm:px-3 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer select-none shrink-0 text-[11px] font-bold shadow-xs ${
         theme === "dark"
-          ? "المظهر: داكن (انقر للتبديل إلى فاتح)"
+          ? "border-sky-400/35 bg-sky-500/15 text-sky-200 hover:border-sky-400/60"
           : theme === "light"
-          ? "المظهر: فاتح (انقر للتبديل إلى تلقائي)"
-          : "المظهر: تلقائي حسب النظام (انقر للتبديل إلى داكن)"
-      }
-      className="w-8 h-8 rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/15 text-white/85 hover:text-[var(--gold)] hover:border-[var(--gold)]/50 transition-all flex items-center justify-center cursor-pointer select-none shrink-0"
-      aria-label="تغيير المظهر"
+          ? "border-amber-400/45 bg-amber-500/20 text-amber-200 hover:border-amber-400/75"
+          : "border-white/20 bg-white/[0.06] text-stone-200 hover:border-[var(--gold)]/50 hover:text-[var(--gold)]"
+      }`}
     >
       {theme === "dark" ? (
         <Moon className="w-3.5 h-3.5 text-sky-300" />
       ) : theme === "light" ? (
-        <Sun className="w-3.5 h-3.5 text-amber-400" />
+        <Sun className="w-3.5 h-3.5 text-amber-300" />
       ) : (
-        <Laptop className="w-3.5 h-3.5 text-white/75" />
+        <Monitor className="w-3.5 h-3.5 text-[var(--gold)]" />
       )}
+      <span className="hidden xl:inline">{label}</span>
     </button>
   );
 }
-
