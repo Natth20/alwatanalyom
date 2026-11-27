@@ -13,9 +13,7 @@ export function SavedCounterBadge() {
         const data = localStorage.getItem("awt_saved_articles");
         if (data) {
           const items = JSON.parse(data);
-          if (Array.isArray(items)) {
-            setCount(items.length);
-          }
+          setCount(Array.isArray(items) ? items.length : 0);
         } else {
           setCount(0);
         }
@@ -30,17 +28,16 @@ export function SavedCounterBadge() {
   return (
     <Link
       href="/saved"
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[var(--gold)]/70 text-xs text-white/90 transition-all cursor-pointer shadow-xs select-none shrink-0"
+      className="relative w-8 h-8 rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/15 hover:border-[var(--gold)]/50 text-white/85 hover:text-[var(--gold)] flex items-center justify-center transition-all shrink-0"
       title="المواد المحفوظة للقراءة لاحقاً"
+      aria-label="المواد المحفوظة"
     >
-      <Bookmark className="w-3.5 h-3.5 text-[var(--gold)]" />
-      <span className="hidden xl:inline text-[11px] font-bold">المحفوظات</span>
+      <Bookmark className="w-3.5 h-3.5" />
       {count > 0 && (
-        <span className="w-4 h-4 rounded-full bg-[var(--gold)] text-black text-[9px] font-black flex items-center justify-center">
+        <span className="absolute -top-1 -end-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[var(--gold)] text-[#140106] text-[9px] font-black flex items-center justify-center">
           {count}
         </span>
       )}
     </Link>
   );
 }
-

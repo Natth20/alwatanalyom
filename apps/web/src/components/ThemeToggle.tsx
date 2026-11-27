@@ -49,9 +49,9 @@ export function ThemeToggle() {
       <button
         type="button"
         aria-label="تغيير المظهر"
-        className="w-8 h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] flex items-center justify-center text-xs"
+        className="w-8 h-8 rounded-full border border-white/15 bg-white/[0.05] text-white/70 flex items-center justify-center"
       >
-        <Sun className="w-4 h-4" />
+        <Sun className="w-3.5 h-3.5" />
       </button>
     );
   }
@@ -67,18 +67,16 @@ export function ThemeToggle() {
           ? "المظهر: فاتح (انقر للتبديل إلى تلقائي)"
           : "المظهر: تلقائي حسب النظام (انقر للتبديل إلى داكن)"
       }
-      className="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white hover:border-[var(--gold)] transition-colors flex items-center gap-1 text-[10px] cursor-pointer select-none whitespace-nowrap"
+      className="w-8 h-8 rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/15 text-white/85 hover:text-[var(--gold)] hover:border-[var(--gold)]/50 transition-all flex items-center justify-center cursor-pointer select-none shrink-0"
+      aria-label="تغيير المظهر"
     >
       {theme === "dark" ? (
-        <Moon className="w-3 h-3 text-sky-300" />
+        <Moon className="w-3.5 h-3.5 text-sky-300" />
       ) : theme === "light" ? (
-        <Sun className="w-3 h-3 text-amber-400" />
+        <Sun className="w-3.5 h-3.5 text-amber-400" />
       ) : (
-        <Laptop className="w-3 h-3 text-white/60" />
+        <Laptop className="w-3.5 h-3.5 text-white/75" />
       )}
-      <span className="hidden sm:inline font-sans text-[10px] font-bold">
-        {theme === "dark" ? "داكن" : theme === "light" ? "فاتح" : "تلقائي"}
-      </span>
     </button>
   );
 }

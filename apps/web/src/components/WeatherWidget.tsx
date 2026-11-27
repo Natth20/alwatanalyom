@@ -29,9 +29,7 @@ export function WeatherWidget() {
     fetch("/api/v1/telemetry")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (active && Array.isArray(data?.weather)) {
-          setCities(data.weather);
-        }
+        if (active && Array.isArray(data?.weather)) setCities(data.weather);
       })
       .catch(() => {});
     return () => {
@@ -39,13 +37,7 @@ export function WeatherWidget() {
     };
   }, []);
 
-  if (cities.length === 0) {
-    return (
-      <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-[10px] text-white/60">
-        <span>القدس · رصد جوي</span>
-      </div>
-    );
-  }
+  if (cities.length === 0) return null;
 
   const activeCity = cities.find((c) => c.id === selectedId) || cities[0]!;
 
@@ -54,31 +46,29 @@ export function WeatherWidget() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-bold text-white transition-all cursor-pointer"
-        title="أحوال الطقس الحية عبر Open-Meteo"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-[var(--gold)] transition-colors cursor-pointer"
+        title="أحوال الطقس الحية"
       >
         <WeatherIcon kind={activeCity.conditionKind} />
         <span className="hidden sm:inline">{activeCity.cityAr}</span>
-        <span className="font-mono text-[var(--gold)] font-black">{activeCity.tempC}°C</span>
-        <ChevronDown className="w-3 h-3 text-white/60" />
+        <span className="font-mono font-bold text-[var(--gold)]">{activeCity.tempC}°C</span>
+        <ChevronDown className="w-3 h-3 opacity-60" />
       </button>
 
       {open && (
-        <div className="absolute top-full mt-2 end-0 w-72 rounded-2xl bg-[#1A0209] border border-[var(--gold)]/30 shadow-2xl p-4 space-y-2.5 z-50 text-white backdrop-blur-xl">
+        <div className="absolute top-full mt-2 end-0 w-72 rounded-2xl bg-[#160208] border border-[var(--gold)]/25 shadow-2xl p-4 space-y-2.5 z-50 text-white backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <span className="text-xs font-black text-[var(--gold)]">
-              النشرة الجوية الحية (Open-Meteo)
-            </span>
+            <span className="text-[11px] font-black text-[var(--gold)]">الطقس الحي</span>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-[10px] text-white/50 hover:text-white"
+              className="text-[10px] text-white/50 hover:text-white cursor-pointer"
             >
               إغلاق
             </button>
           </div>
 
-          <div className="space-y-1.5 max-h-64 overflow-y-auto">
+          <div className="space-y-1.5 max-h-60 overflow-y-auto">
             {cities.map((c) => (
               <button
                 key={c.id}
@@ -89,7 +79,7 @@ export function WeatherWidget() {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
                   c.id === activeCity.id
-                    ? "bg-[var(--gold)]/15 border border-[var(--gold)]/40 text-white"
+                    ? "bg-[var(--gold)]/15 border border-[var(--gold)]/35 text-white"
                     : "bg-white/[0.03] hover:bg-white/[0.08] border border-transparent text-white/80"
                 }`}
               >

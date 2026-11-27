@@ -24,7 +24,6 @@ import {
   HeartHandshake,
   Briefcase,
   Coins,
-  MapPin,
   Landmark,
   Flame,
   Cpu,
@@ -34,9 +33,8 @@ import {
   History,
   Gamepad2,
   Activity,
-  UserCircle2,
-  Clock,
   ChevronLeft,
+  Layers,
 } from "lucide-react";
 import type { ArticleCard, InstrumentQuote } from "@awt/shared";
 import type { LiveMatchItem } from "@/lib/live-data/sports";
@@ -51,15 +49,13 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
-  // Live telemetry state (real quotes + section headlines + sports)
   const [quotes, setQuotes] = useState<InstrumentQuote[]>([]);
   const [megaArticles, setMegaArticles] = useState<Record<string, ArticleCard[]>>({});
   const [megaMatches, setMegaMatches] = useState<LiveMatchItem[]>([]);
 
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
-
-    const handleScroll = () => setScrolled(window.scrollY > 18);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [pathname]);
@@ -79,7 +75,6 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Load real market prices for the telemetry strip
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
     let active = true;
@@ -103,7 +98,6 @@ export function Header() {
     };
   }, [pathname]);
 
-  // Lazy load real headlines / matches when opening a mega menu
   useEffect(() => {
     if (!activeMega || pathname?.startsWith("/admin")) return;
 
@@ -141,7 +135,6 @@ export function Header() {
   const goldQ = getQuote("XAUUSD");
   const usdIlsQ = getQuote("USDILS");
   const brentQ = getQuote("BRENT");
-  const btcQ = getQuote("BTCUSD");
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -151,92 +144,66 @@ export function Header() {
   return (
     <header
       ref={navContainerRef}
-      className={`sticky top-0 z-50 w-full transition-all duration-300 no-print ${
+      className={`sticky top-0 z-50 w-full transition-shadow duration-300 no-print ${
         scrolled
-          ? "shadow-[0_14px_45px_-12px_rgba(38,0,10,0.85)] border-b border-[var(--gold)]/45"
-          : "border-b border-[var(--gold)]/20"
+          ? "shadow-[0_12px_36px_-10px_rgba(15,0,5,0.75)]"
+          : ""
       }`}
     >
-      {/* ========================================================================= */}
-      {/* 1. الشريط العلوي السيادي (Live Sovereign Telemetry Bar)                   */}
-      {/* ========================================================================= */}
-      <div className="bg-[#120005] text-white border-b border-white/10 text-[11px]">
-        <div className="container-custom h-10 flex items-center justify-between gap-3">
-          {/* اليمين: التاريخ الهجري والميلادي ومواقيت الصلاة الحية */}
-          <div className="shrink-0">
+      {/* ===================================================================== */}
+      {/* 1. الشريط العلوي الهادئ (Collapses smoothly on scroll to keep header sleek) */}
+      {/* ===================================================================== */}
+      <div
+        className={`bg-[#0E0105] text-white/80 transition-all duration-300 ${
+          scrolled
+            ? "h-0 opacity-0 pointer-events-none overflow-hidden"
+            : "h-8 border-b border-white/10 opacity-100"
+        }`}
+      >
+        <div className="container-custom h-full flex items-center justify-between gap-4 text-[11px]">
+          <div className="flex items-center gap-3 shrink-0">
             <TopBarInfo />
-          </div>
-
-          {/* الوسط: كبسولة المؤشرات المالية الحية */}
-          <div className="hidden lg:flex items-center justify-center flex-1 min-w-0 px-2">
-            <Link
-              href="/economy"
-              className="inline-flex items-center gap-3 px-4 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[var(--gold)]/50 text-[11px] font-bold transition-all shadow-inner group"
-              title="لوحة الأسواق المالية الحية"
-            >
-              <Coins className="w-3.5 h-3.5 text-[var(--gold)] group-hover:rotate-12 transition-transform shrink-0" />
-              {goldQ?.price ? (
-                <>
-                  <span className="flex items-center gap-1">
-                    <span className="text-stone-400">الذهب:</span>
-                    <strong className="text-[var(--gold)] font-mono">
-                      ${Number(goldQ.price).toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                    </strong>
-                  </span>
-                  <span className="text-white/20">|</span>
-                </>
-              ) : (
-                <span className="text-stone-400">أسعار الأسواق المباشرة</span>
-              )}
-
-              {usdIlsQ?.price && (
-                <>
-                  <span className="flex items-center gap-1">
-                    <span className="text-stone-400">الدولار:</span>
-                    <strong className="text-emerald-400 font-mono">
-                      {Number(usdIlsQ.price).toFixed(2)} ₪
-                    </strong>
-                  </span>
-                  <span className="text-white/20">|</span>
-                </>
-              )}
-
-              {brentQ?.price && (
-                <>
-                  <span className="flex items-center gap-1">
-                    <span className="text-stone-400">برنت:</span>
-                    <strong className="text-sky-300 font-mono">
-                      ${Number(brentQ.price).toFixed(2)}
-                    </strong>
-                  </span>
-                  {btcQ?.price && <span className="text-white/20 hidden xl:inline">|</span>}
-                </>
-              )}
-
-              {btcQ?.price && (
-                <span className="hidden xl:flex items-center gap-1">
-                  <span className="text-stone-400">بيتكوين:</span>
-                  <strong className="text-amber-300 font-mono">
-                    ${Number(btcQ.price).toLocaleString("en-US")}
-                  </strong>
-                </span>
-              )}
-            </Link>
-          </div>
-
-          {/* اليسار: الطقس الحي + البث المباشر + النسخة الإنجليزية */}
-          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden sm:inline text-white/15">|</span>
             <WeatherWidget />
+          </div>
+
+          <div className="hidden lg:flex items-center gap-4 text-[11px] font-medium text-white/75">
+            {goldQ?.price && (
+              <Link href="/economy/instrument/XAUUSD" className="hover:text-[var(--gold)] transition-colors">
+                الذهب <strong className="font-mono text-[var(--gold)]">${Number(goldQ.price).toLocaleString("en-US", { maximumFractionDigits: 2 })}</strong>
+              </Link>
+            )}
+            {usdIlsQ?.price && (
+              <>
+                <span className="text-white/15">·</span>
+                <Link href="/economy/instrument/USDILS" className="hover:text-emerald-300 transition-colors">
+                  الدولار <strong className="font-mono text-emerald-400">{Number(usdIlsQ.price).toFixed(2)} ₪</strong>
+                </Link>
+              </>
+            )}
+            {brentQ?.price && (
+              <>
+                <span className="text-white/15">·</span>
+                <Link href="/economy/instrument/BRENT" className="hover:text-sky-300 transition-colors">
+                  برنت <strong className="font-mono text-sky-300">${Number(brentQ.price).toFixed(2)}</strong>
+                </Link>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <LowBandwidthToggle />
+            <span className="hidden sm:inline text-white/15">|</span>
             <Link
               href="/live"
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600/20 hover:bg-red-600/35 border border-red-500/35 text-red-300 font-black text-[10px] transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-300 hover:text-rose-200 transition-colors"
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               <span>بث مباشر</span>
             </Link>
             <Link
               href="/en"
-              className="hidden xl:inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.05] hover:bg-white/15 border border-white/10 text-stone-200 font-bold text-[10px] transition-colors"
+              className="hidden md:inline text-[10px] font-bold text-white/60 hover:text-[var(--gold)] transition-colors"
             >
               EN
             </Link>
@@ -244,288 +211,201 @@ export function Header() {
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. شريط الهوية والبحث والأدوات السريعة (Identity & Actions)              */}
-      {/* ========================================================================= */}
-      <div className="bg-gradient-to-l from-[#36000F] via-[#590018] to-[#26000A] text-white border-b border-[var(--gold)]/20">
-        <div
-          className={`container-custom flex items-center justify-between gap-4 transition-all duration-300 ${
-            scrolled ? "py-2.5" : "py-3.5"
-          }`}
-        >
-          {/* اليمين: الشعار الملكي */}
+      {/* ===================================================================== */}
+      {/* 2. شريط القيادة والتنقل الموحد (Sleek 64px Sovereign Masthead & Nav)    */}
+      {/* ===================================================================== */}
+      <div className="bg-gradient-to-l from-[#2B000C]/98 via-[#3F0012]/98 to-[#1B0007]/98 backdrop-blur-2xl text-white border-b border-[var(--gold)]/25 relative">
+        <div className="container-custom h-16 flex items-center justify-between gap-4">
+          {/* اليمين: زر القائمة للهاتف + الشعار */}
           <div className="flex items-center gap-3 shrink-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
-              className="lg:hidden w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-white cursor-pointer"
-              aria-label="قائمة الأقسام"
+              className="lg:hidden w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/15 border border-white/15 flex items-center justify-center text-white cursor-pointer"
+              aria-label="القائمة"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
 
-            <BrandLogo variant="header" showTagline={!scrolled} />
+            <BrandLogo variant="header" showTagline={false} />
           </div>
 
-          {/* الوسط: محرك البحث الموثق */}
-          <div className="hidden md:flex flex-1 justify-center px-4 max-w-lg">
-            <SearchTrigger expanded className="w-full" />
-          </div>
-
-          {/* اليسار: أزرار الأدوات المتناسقة (بارتفاع موحد h-9 وتباعد مريح gap-2) */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* الوسط: التنقل التحريري الصافي بدون حشو أو أيقونات زائدة */}
+          <nav
+            aria-label="التنقل الرئيسي"
+            className="hidden lg:flex items-center justify-center gap-5 xl:gap-7 flex-1 min-w-0"
+          >
             <Link
-              href="/fact-check"
-              className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/35 border border-rose-400/35 text-rose-100 text-xs font-bold transition-all"
-              title="وحدة التحقق الجنائي من الأخبار والشائعات"
+              href="/"
+              className={`relative py-1 text-[13px] font-bold transition-colors whitespace-nowrap ${
+                isActive("/")
+                  ? "text-[var(--gold)] after:absolute after:bottom-0 after:inset-x-0 after:h-[2px] after:bg-[var(--gold)]"
+                  : "text-white/85 hover:text-white"
+              }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-rose-300" />
-              <span>رادار الحقيقة</span>
+              الرئيسية
+            </Link>
+
+            <button
+              type="button"
+              onMouseEnter={() => setActiveMega("palestine")}
+              onClick={() => setActiveMega(activeMega === "palestine" ? null : "palestine")}
+              className={`relative py-1 text-[13px] font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                isActive("/palestine") || activeMega === "palestine"
+                  ? "text-emerald-300"
+                  : "text-white/90 hover:text-emerald-300"
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>فلسطين</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+
+            <Link
+              href="/breaking"
+              className={`relative py-1 text-[13px] font-bold transition-colors whitespace-nowrap ${
+                isActive("/breaking")
+                  ? "text-rose-400 after:absolute after:bottom-0 after:inset-x-0 after:h-[2px] after:bg-rose-400"
+                  : "text-rose-200 hover:text-rose-300"
+              }`}
+            >
+              عاجل
             </Link>
 
             <Link
+              href="/arab-world"
+              className={`relative py-1 text-[13px] font-bold transition-colors whitespace-nowrap ${
+                isActive("/arab-world")
+                  ? "text-[var(--gold)] after:absolute after:bottom-0 after:inset-x-0 after:h-[2px] after:bg-[var(--gold)]"
+                  : "text-white/85 hover:text-white"
+              }`}
+            >
+              العالم العربي
+            </Link>
+
+            <Link
+              href="/world"
+              className={`relative py-1 text-[13px] font-bold transition-colors whitespace-nowrap ${
+                isActive("/world")
+                  ? "text-[var(--gold)] after:absolute after:bottom-0 after:inset-x-0 after:h-[2px] after:bg-[var(--gold)]"
+                  : "text-white/85 hover:text-white"
+              }`}
+            >
+              دولياً
+            </Link>
+
+            <button
+              type="button"
+              onMouseEnter={() => setActiveMega("economy")}
+              onClick={() => setActiveMega(activeMega === "economy" ? null : "economy")}
+              className={`relative py-1 text-[13px] font-bold transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                isActive("/economy") || activeMega === "economy"
+                  ? "text-amber-300"
+                  : "text-white/85 hover:text-amber-300"
+              }`}
+            >
+              <span>الاقتصاد</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+
+            <button
+              type="button"
+              onMouseEnter={() => setActiveMega("sports")}
+              onClick={() => setActiveMega(activeMega === "sports" ? null : "sports")}
+              className={`relative py-1 text-[13px] font-bold transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                isActive("/sports") || activeMega === "sports"
+                  ? "text-emerald-300"
+                  : "text-white/85 hover:text-emerald-300"
+              }`}
+            >
+              <span>الرياضة</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+
+            <button
+              type="button"
+              onMouseEnter={() => setActiveMega("services")}
+              onClick={() => setActiveMega(activeMega === "services" ? null : "services")}
+              className={`relative py-1 text-[13px] font-bold transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                activeMega === "services"
+                  ? "text-[var(--gold)]"
+                  : "text-white/85 hover:text-[var(--gold)]"
+              }`}
+            >
+              <span>الخدمات والمنصات</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+          </nav>
+
+          {/* اليسار: أدوات مدمجة موحدة التناسب */}
+          <div className="flex items-center gap-2 shrink-0">
+            <SearchTrigger compact />
+            <NotificationCenter />
+            <SavedCounterBadge />
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
+
+            <Link
               href="/ask"
-              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#e0a800] text-[#140106] text-xs font-black hover:brightness-110 transition-all shadow-md shadow-amber-950/30"
-              title="المساعد الإخباري والبحثي الذكي"
+              className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border border-[var(--gold)]/45 bg-[var(--gold)]/10 hover:bg-[var(--gold)] text-[var(--gold)] hover:text-[#140106] text-xs font-black transition-all shrink-0"
+              title="اسأل الوطن AI"
             >
               <Bot className="w-3.5 h-3.5" />
               <span>اسأل الوطن</span>
             </Link>
-
-            <Link
-              href="/my-watan"
-              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold transition-all"
-              title="مساحتي الشخصية المخصصة"
-            >
-              <UserCircle2 className="w-4 h-4 text-[var(--gold)]" />
-              <span className="hidden xl:inline">وطني</span>
-            </Link>
-
-            <SavedCounterBadge />
-            <NotificationCenter />
-            <div className="hidden sm:flex items-center gap-1.5">
-              <LowBandwidthToggle />
-              <ThemeToggle />
-            </div>
           </div>
         </div>
-      </div>
 
-      {/* ========================================================================= */}
-      {/* 3. شريط التنقل العائم للأقسام (Tier 3 Floating Editorial Nav)             */}
-      {/* ========================================================================= */}
-      <div className="hidden lg:block bg-[#1B0007]/95 backdrop-blur-xl text-white border-b border-white/10 relative">
-        <div className="container-custom">
-          <nav
-            aria-label="التنقل الرئيسي بين الأقسام"
-            className="flex items-center justify-between gap-1 h-12"
-          >
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              <Link
-                href="/"
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  isActive("/")
-                    ? "bg-[var(--gold)] text-[#140106] font-black shadow-md"
-                    : "text-white/85 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                الرئيسية
-              </Link>
-
-              {/* فلسطين أولاً (Mega Menu Trigger) */}
-              <button
-                type="button"
-                onMouseEnter={() => setActiveMega("palestine")}
-                onClick={() => setActiveMega(activeMega === "palestine" ? null : "palestine")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                  isActive("/palestine") || activeMega === "palestine"
-                    ? "bg-emerald-600/25 text-emerald-300 border border-emerald-500/40"
-                    : "text-emerald-300 hover:bg-emerald-500/15"
-                }`}
-              >
-                <span>🇵🇸</span>
-                <span>فلسطين أولاً</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-
-              <Link
-                href="/breaking"
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                  isActive("/breaking")
-                    ? "bg-red-600 text-white shadow-md"
-                    : "text-red-300 hover:bg-red-500/15"
-                }`}
-              >
-                <Flame className="w-3.5 h-3.5" />
-                <span>عاجل</span>
-              </Link>
-
-              <Link
-                href="/arab-world"
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  isActive("/arab-world")
-                    ? "bg-[var(--gold)] text-[#140106] font-black"
-                    : "text-white/85 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                العالم العربي
-              </Link>
-
-              <Link
-                href="/world"
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  isActive("/world")
-                    ? "bg-[var(--gold)] text-[#140106] font-black"
-                    : "text-white/85 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                دولياً
-              </Link>
-
-              {/* الاقتصاد والذهب (Mega Menu Trigger) */}
-              <button
-                type="button"
-                onMouseEnter={() => setActiveMega("economy")}
-                onClick={() => setActiveMega(activeMega === "economy" ? null : "economy")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
-                  isActive("/economy") || activeMega === "economy"
-                    ? "bg-amber-500/25 text-amber-300 border border-amber-500/40"
-                    : "text-white/85 hover:text-amber-300 hover:bg-white/10"
-                }`}
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-                <span>الاقتصاد والذهب</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-
-              {/* يلا سبورت (Mega Menu Trigger) */}
-              <button
-                type="button"
-                onMouseEnter={() => setActiveMega("sports")}
-                onClick={() => setActiveMega(activeMega === "sports" ? null : "sports")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
-                  isActive("/sports") || activeMega === "sports"
-                    ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/40"
-                    : "text-white/85 hover:text-emerald-300 hover:bg-white/10"
-                }`}
-              >
-                <Trophy className="w-3.5 h-3.5 text-emerald-400" />
-                <span>يلا سبورت</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-
-              <Link
-                href="/aid"
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
-                  isActive("/aid")
-                    ? "bg-[var(--gold)] text-[#140106] font-black"
-                    : "text-amber-200 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <HeartHandshake className="w-3.5 h-3.5 text-amber-400" />
-                <span>المساعدات</span>
-              </Link>
-
-              <Link
-                href="/jobs"
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
-                  isActive("/jobs")
-                    ? "bg-[var(--gold)] text-[#140106] font-black"
-                    : "text-sky-200 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-                <span>الوظائف</span>
-              </Link>
-
-              <Link
-                href="/tech"
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
-                  isActive("/tech")
-                    ? "bg-[var(--gold)] text-[#140106] font-black"
-                    : "text-white/85 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <Cpu className="w-3.5 h-3.5 text-indigo-300" />
-                <span>التقنية</span>
-              </Link>
-
-              {/* المنصات والمختبرات (Mega Menu Trigger) */}
-              <button
-                type="button"
-                onMouseEnter={() => setActiveMega("services")}
-                onClick={() => setActiveMega(activeMega === "services" ? null : "services")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
-                  activeMega === "services"
-                    ? "bg-[var(--gold)]/20 text-[var(--gold)] border border-[var(--gold)]/40"
-                    : "text-[var(--gold)] hover:bg-white/10"
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>المختبرات والخدمات</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-            </div>
-
-            <Link
-              href="/submit-news"
-              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/35 border border-red-500/30 text-red-200 text-[11px] font-black shrink-0 transition-colors"
-            >
-              <Radio className="w-3 h-3" />
-              <span>أرسل بلاغاً</span>
-            </Link>
-          </nav>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* لوحة القائمة الكبرى الحية (Live Data Mega Menu Panel)                     */}
-        {/* ========================================================================= */}
+        {/* =================================================================== */}
+        {/* 3. القائمة الكبرى المنبثقة الهادئة (Live Luxury Mega Drawer)       */}
+        {/* =================================================================== */}
         {activeMega && (
           <div
             onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 bg-[#150006]/98 border-b-2 border-[var(--gold)]/50 shadow-2xl py-6 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50"
+            className="absolute top-full inset-x-0 bg-[#140006]/98 border-b border-[var(--gold)]/35 shadow-2xl py-7 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50"
           >
             <div className="container-custom">
               {activeMega === "palestine" && (
-                <div className="grid grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-12 gap-8 items-start">
                   <div className="col-span-5 space-y-3">
                     <h4 className="text-xs font-black text-emerald-400 flex items-center gap-2 border-b border-white/10 pb-2">
                       <Landmark className="w-4 h-4" />
-                      <span>مكاتب الميدان والتغطية المباشرة في فلسطين</span>
+                      <span>غرف التغطية في فلسطين</span>
                     </h4>
                     <div className="grid grid-cols-2 gap-2.5">
                       {[
-                        { href: "/palestine/jerusalem", label: "القدس والمسجد الأقصى", desc: "رصد الاقتحامات والتهويد" },
+                        { href: "/palestine/jerusalem", label: "القدس والأقصى", desc: "التطورات اليومية بالبلدة القديمة" },
                         { href: "/palestine/gaza", label: "قطاع غزة الصامد", desc: "الميدان، الإغاثة والمعابر" },
-                        { href: "/palestine/west-bank", label: "الضفة الغربية والأغوار", desc: "الاقتحامات والاستيطان" },
-                        { href: "/atlas", label: "أطلس فلسطين والقرى", desc: "خرائط الجغرافيا والذاكرة" },
+                        { href: "/palestine/west-bank", label: "الضفة والأغوار", desc: "الأخبار الميدانية والمحافظات" },
+                        { href: "/atlas", label: "أطلس فلسطين", desc: "خرائط المدن والقرى والتوثيق" },
                       ].map((hub) => (
                         <Link
                           key={hub.href}
                           href={hub.href}
-                          className="p-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/40 transition-all"
+                          className="p-3 rounded-2xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/35 transition-all"
                         >
-                          <span className="font-black text-xs text-white block">{hub.label}</span>
+                          <span className="font-bold text-xs text-white block">{hub.label}</span>
                           <span className="text-[10px] text-stone-400 block mt-0.5">{hub.desc}</span>
                         </Link>
                       ))}
                     </div>
-                    <Link href="/palestine" className="inline-flex items-center gap-1 text-xs font-black text-emerald-400 hover:underline pt-1">
-                      <span>الدخول لقسم فلسطين الكامل</span>
+                    <Link href="/palestine" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:underline pt-1">
+                      <span>عرض قسم فلسطين الكامل</span>
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </Link>
                   </div>
 
                   <div className="col-span-7 space-y-3">
                     <h4 className="text-xs font-black text-[var(--gold)] border-b border-white/10 pb-2">
-                      أحدث التقارير المنشورة الآن في فلسطين
+                      أحدث تقارير فلسطين المنشورة
                     </h4>
                     <div className="grid grid-cols-3 gap-4">
                       {(megaArticles["palestine"] || []).slice(0, 3).map((art) => (
                         <Link
                           key={art.id}
                           href={`/article/${art.id}/${art.slug}`}
-                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-[var(--gold)]/50 transition-all"
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-[var(--gold)]/40 transition-all"
                         >
                           <div className="aspect-video overflow-hidden bg-black">
                             <img
@@ -550,37 +430,33 @@ export function Header() {
               )}
 
               {activeMega === "economy" && (
-                <div className="grid grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-12 gap-8 items-start">
                   <div className="col-span-5 space-y-3">
                     <h4 className="text-xs font-black text-amber-400 flex items-center gap-2 border-b border-white/10 pb-2">
                       <Coins className="w-4 h-4" />
-                      <span>الأسواق العالمية وأسعار الذهب والعملات الحية</span>
+                      <span>مؤشرات الأسواق الحية</span>
                     </h4>
                     <div className="grid grid-cols-2 gap-2.5">
                       {[
-                        { href: "/economy/instrument/XAUUSD", label: "الذهب الفوري (أونصة)", q: goldQ, prefix: "$" },
+                        { href: "/economy/instrument/XAUUSD", label: "الذهب (أونصة)", q: goldQ, prefix: "$" },
                         { href: "/economy/instrument/USDILS", label: "الدولار / الشيكل", q: usdIlsQ, suffix: " ₪" },
-                        { href: "/economy/instrument/BRENT", label: "نفط برنت القياسي", q: brentQ, prefix: "$" },
-                        { href: "/economy/instrument/BTCUSD", label: "بيتكوين (BTC)", q: btcQ, prefix: "$" },
+                        { href: "/economy/instrument/BRENT", label: "نفط برنت", q: brentQ, prefix: "$" },
+                        { href: "/economy", label: "حاسبات الذهب والصرف", q: null },
                       ].map((item) => (
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="p-3 rounded-2xl bg-white/[0.04] hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 transition-all"
+                          className="p-3 rounded-2xl bg-white/[0.03] hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/35 transition-all"
                         >
                           <span className="text-[11px] text-stone-300 block">{item.label}</span>
                           <strong className="font-mono text-sm font-black text-[var(--gold)] block mt-1">
                             {item.q?.price
                               ? `${item.prefix || ""}${Number(item.q.price).toLocaleString("en-US")}${item.suffix || ""}`
-                              : "بث السوق"}
+                              : "فتح الأدوات ←"}
                           </strong>
                         </Link>
                       ))}
                     </div>
-                    <Link href="/economy" className="inline-flex items-center gap-1 text-xs font-black text-amber-400 hover:underline pt-1">
-                      <span>لوحة الاقتصاد وحاسبة الذهب والعملات الكاملة</span>
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </Link>
                   </div>
 
                   <div className="col-span-7 space-y-3">
@@ -592,7 +468,7 @@ export function Header() {
                         <Link
                           key={art.id}
                           href={`/article/${art.id}/${art.slug}`}
-                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-amber-500/50 transition-all"
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-amber-500/40 transition-all"
                         >
                           <div className="aspect-video overflow-hidden bg-black">
                             <img
@@ -617,11 +493,11 @@ export function Header() {
               )}
 
               {activeMega === "sports" && (
-                <div className="grid grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-12 gap-8 items-start">
                   <div className="col-span-6 space-y-3">
                     <h4 className="text-xs font-black text-emerald-400 flex items-center gap-2 border-b border-white/10 pb-2">
                       <Trophy className="w-4 h-4" />
-                      <span>أبرز مواجهات الملاعب المباشرة والمجدولة (ESPN Live)</span>
+                      <span>أبرز مباريات الملاعب العالمية</span>
                     </h4>
                     <div className="grid grid-cols-2 gap-2.5">
                       {megaMatches.length > 0 ? (
@@ -629,7 +505,7 @@ export function Header() {
                           <Link
                             key={m.id}
                             href="/sports"
-                            className="p-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/15 border border-white/10 transition-all space-y-1"
+                            className="p-3 rounded-2xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/10 transition-all space-y-1"
                           >
                             <div className="flex items-center justify-between text-[10px]">
                               <span className="text-stone-400 truncate max-w-[130px]">{m.leagueNameAr}</span>
@@ -637,7 +513,7 @@ export function Header() {
                                 {m.statusDetail}
                               </span>
                             </div>
-                            <div className="text-xs font-black text-white flex items-center justify-between">
+                            <div className="text-xs font-bold text-white flex items-center justify-between">
                               <span className="truncate">{m.homeTeam}</span>
                               <span className="font-mono text-[var(--gold)] px-1.5">
                                 {m.homeScore !== null ? `${m.homeScore} - ${m.awayScore}` : "vs"}
@@ -648,12 +524,12 @@ export function Header() {
                         ))
                       ) : (
                         <div className="col-span-2 p-4 rounded-2xl bg-white/[0.03] text-xs text-stone-400">
-                          استعرض جداول الترتيب والمباريات الحية في استوديو يلا سبورت ←
+                          استعرض النتائج وجداول الترتيب في استوديو يلا سبورت ←
                         </div>
                       )}
                     </div>
-                    <Link href="/sports" className="inline-flex items-center gap-1 text-xs font-black text-emerald-400 hover:underline">
-                      <span>فتح استوديو يلا سبورت الكامل</span>
+                    <Link href="/sports" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:underline">
+                      <span>دخول استوديو يلا سبورت</span>
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -667,7 +543,7 @@ export function Header() {
                         <Link
                           key={art.id}
                           href={`/article/${art.id}/${art.slug}`}
-                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-emerald-500/50 transition-all"
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-emerald-500/40 transition-all"
                         >
                           <div className="aspect-video overflow-hidden bg-black">
                             <img
@@ -693,39 +569,55 @@ export function Header() {
 
               {activeMega === "services" && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
                     <h4 className="text-xs font-black text-[var(--gold)] flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      <span>منصات الاستقصاء والبيانات والخدمات الذكية</span>
+                      <span>الأقسام الخدمية والمنصات الرقمية</span>
                     </h4>
-                    <Link href="/admin" className="text-[11px] font-bold text-[var(--gold)] hover:underline">
-                      كابينة الإدارة التحريرية ←
-                    </Link>
+                    <div className="flex items-center gap-4 text-xs font-bold">
+                      <Link href="/aid" className="text-amber-300 hover:underline flex items-center gap-1">
+                        <HeartHandshake className="w-3.5 h-3.5" />
+                        <span>المساعدات</span>
+                      </Link>
+                      <Link href="/jobs" className="text-sky-300 hover:underline flex items-center gap-1">
+                        <Briefcase className="w-3.5 h-3.5" />
+                        <span>الوظائف</span>
+                      </Link>
+                      <Link href="/tech" className="text-indigo-300 hover:underline flex items-center gap-1">
+                        <Cpu className="w-3.5 h-3.5" />
+                        <span>التقنية</span>
+                      </Link>
+                      <Link href="/submit-news" className="text-rose-300 hover:underline flex items-center gap-1">
+                        <Radio className="w-3.5 h-3.5" />
+                        <span>أرسل بلاغاً</span>
+                      </Link>
+                    </div>
                   </div>
+
                   <div className="grid grid-cols-4 gap-3">
                     {[
-                      { href: "/pulse", label: "رادار المزاج والبيانات", desc: "تحليل حي لتوزيع الأخبار والكلمات", icon: Activity },
-                      { href: "/live-360", label: "تغطية 360° الميدانية", desc: "زاوية ميدانية، سياسية وإنسانية", icon: Globe },
-                      { href: "/atlas", label: "أطلس فلسطين الرقمي", desc: "دليل المدن والقرى والتغطيات", icon: Compass },
-                      { href: "/history", label: "في مثل هذا اليوم", desc: "أحداث التاريخ اليوم عبر ويكيبيديا", icon: History },
-                      { href: "/podcast", label: "صوت الوطن (بودكاست)", desc: "نشرة إخبارية صوتية آلية حية", icon: Headphones },
-                      { href: "/games", label: "تحديات الذاكرة اليومية", desc: "اختبر معرفتك بتاريخ وجغرافيا فلسطين", icon: Gamepad2 },
-                      { href: "/fact-check", label: "رادار الحقيقة (OSINT)", desc: "فحص الروابط وكشف الشائعات", icon: ShieldCheck },
-                      { href: "/stories", label: "القصص المجمعة (Clusters)", desc: "مقارنة تغطية الوكالات للحدث نفسه", icon: Sparkles },
+                      { href: "/fact-check", label: "رادار الحقيقة (OSINT)", desc: "فحص الروابط والشائعات", icon: ShieldCheck },
+                      { href: "/pulse", label: "نبض البيانات", desc: "إحصاءات الأرشيف الحي", icon: Activity },
+                      { href: "/live-360", label: "تغطية 360°", desc: "متابعة ميدانية وسياسية", icon: Globe },
+                      { href: "/atlas", label: "أطلس فلسطين", desc: "المدن والقرى والتغطيات", icon: Compass },
+                      { href: "/history", label: "في مثل هذا اليوم", desc: "ذاكرة التاريخ اليومية", icon: History },
+                      { href: "/podcast", label: "صوت الوطن", desc: "النشرة الصوتية الحية", icon: Headphones },
+                      { href: "/stories", label: "القصص المجمعة", desc: "مقارنة تغطية الوكالات", icon: Layers },
+                      { href: "/games", label: "تحديات الذاكرة", desc: "اختبار المعرفة اليومي", icon: Gamepad2 },
                     ].map((srv) => {
                       const Icon = srv.icon;
                       return (
                         <Link
                           key={srv.href}
                           href={srv.href}
-                          className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 hover:border-[var(--gold)]/50 transition-all flex items-start gap-3"
+                          className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-[var(--gold)]/40 transition-all flex items-center gap-3"
                         >
-                          <div className="w-8 h-8 rounded-xl bg-[var(--gold)]/15 text-[var(--gold)] flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-xl bg-[var(--gold)]/10 text-[var(--gold)] flex items-center justify-center shrink-0">
                             <Icon className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="text-xs font-black text-white block">{srv.label}</span>
-                            <span className="text-[10px] text-stone-400 block mt-0.5 leading-snug">{srv.desc}</span>
+                            <span className="text-xs font-bold text-white block">{srv.label}</span>
+                            <span className="text-[10px] text-stone-400 block">{srv.desc}</span>
                           </div>
                         </Link>
                       );
@@ -738,57 +630,46 @@ export function Header() {
         )}
       </div>
 
-      {/* ========================================================================= */}
-      {/* 4. قائمة الهواتف المنزلقة (Mobile Drawer)                                */}
-      {/* ========================================================================= */}
+      {/* ===================================================================== */}
+      {/* 4. قائمة الهواتف الهادئة (Mobile Drawer)                              */}
+      {/* ===================================================================== */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[var(--gold)]/20 bg-[#160006]/98 p-5 space-y-5 animate-in slide-in-from-top-4 duration-200 shadow-2xl backdrop-blur-3xl text-white">
-          <SearchTrigger expanded className="w-full" />
-
-          <div className="grid grid-cols-2 gap-2.5 text-xs font-bold">
-            <Link href="/palestine" className="p-3 rounded-2xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-              <span>🇵🇸</span>
-              <span>فلسطين والميدان</span>
-            </Link>
-            <Link href="/breaking" className="p-3 rounded-2xl bg-red-950/50 text-red-300 border border-red-500/30 flex items-center gap-2">
-              <Flame className="w-4 h-4" />
-              <span>الأخبار العاجلة</span>
-            </Link>
-            <Link href="/economy" className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              <span>الاقتصاد والذهب</span>
-            </Link>
-            <Link href="/sports" className="p-3 rounded-2xl bg-emerald-800/30 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              <span>يلا سبورت</span>
-            </Link>
-            <Link href="/aid" className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-stone-200">
-              <HeartHandshake className="w-4 h-4 text-amber-400" />
-              <span>المساعدات</span>
-            </Link>
-            <Link href="/jobs" className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-stone-200">
-              <Briefcase className="w-4 h-4 text-sky-400" />
-              <span>الوظائف</span>
-            </Link>
-            <Link href="/fact-check" className="p-3 rounded-2xl bg-rose-600/20 text-rose-300 border border-rose-500/30 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              <span>رادار الحقيقة</span>
-            </Link>
-            <Link href="/ask" className="p-3 rounded-2xl bg-[var(--gold)]/20 text-[var(--gold)] border border-[var(--gold)]/40 flex items-center gap-2">
-              <Bot className="w-4 h-4" />
-              <span>اسأل الوطن AI</span>
-            </Link>
+        <div className="lg:hidden border-b border-[var(--gold)]/20 bg-[#140006]/98 p-5 space-y-4 animate-in slide-in-from-top-3 duration-200 shadow-2xl backdrop-blur-2xl text-white">
+          <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/10">
+            <SearchTrigger expanded className="flex-1" />
+            <ThemeToggle />
           </div>
 
-          <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-stone-300">
-            <Link href="/admin" className="font-bold text-[var(--gold)] hover:underline flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" />
-              <span>كابينة الإدارة التحريرية</span>
+          <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+            {[
+              { href: "/palestine", label: "فلسطين" },
+              { href: "/breaking", label: "عاجل" },
+              { href: "/arab-world", label: "العالم العربي" },
+              { href: "/world", label: "دولياً" },
+              { href: "/economy", label: "الاقتصاد والذهب" },
+              { href: "/sports", label: "يلا سبورت" },
+              { href: "/aid", label: "المساعدات" },
+              { href: "/jobs", label: "الوظائف" },
+              { href: "/fact-check", label: "رادار الحقيقة" },
+              { href: "/ask", label: "اسأل الوطن AI" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="px-3.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-stone-100"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-stone-400">
+            <Link href="/submit-news" className="text-rose-300 font-bold hover:underline">
+              تقديم بلاغ سري
             </Link>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <LowBandwidthToggle />
-            </div>
+            <Link href="/admin" className="text-[var(--gold)] font-bold hover:underline">
+              غرفة التحرير
+            </Link>
           </div>
         </div>
       )}

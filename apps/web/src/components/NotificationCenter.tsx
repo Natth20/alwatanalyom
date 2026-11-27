@@ -119,17 +119,17 @@ export function NotificationCenter() {
           setOpen((prev) => !prev);
           setUnreadCount(0);
         }}
-        className="relative w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 hover:border-[var(--gold)]/50 text-white flex items-center justify-center transition-all cursor-pointer"
+        className="relative w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/15 border border-white/15 hover:border-[var(--gold)]/50 text-white/85 hover:text-[var(--gold)] flex items-center justify-center transition-all cursor-pointer"
         aria-label="مركز التنبيهات الإخبارية"
         title="التنبيهات الإخبارية المباشرة"
       >
         {unreadCount > 0 ? (
-          <BellRing className="w-4 h-4 text-[var(--gold)]" />
+          <BellRing className="w-3.5 h-3.5 text-[var(--gold)]" />
         ) : (
-          <Bell className="w-4 h-4" />
+          <Bell className="w-3.5 h-3.5" />
         )}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -end-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center shadow-md">
+          <span className="absolute -top-1 -end-1 min-w-[15px] h-[15px] px-1 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

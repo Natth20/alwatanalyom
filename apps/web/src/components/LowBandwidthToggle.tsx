@@ -35,29 +35,29 @@ export function LowBandwidthToggle() {
   if (!mounted) return null;
 
   return (
-    <button
+      <button
       type="button"
       onClick={toggleMode}
-      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border select-none whitespace-nowrap ${
+      className={`text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer select-none whitespace-nowrap ${
         isLowBandwidth
-          ? "bg-amber-400 text-black border-amber-300 shadow-xs animate-pulse"
-          : "bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/15 hover:border-[var(--gold)]"
+          ? "px-2 py-0.5 rounded-full bg-amber-400 text-black"
+          : "text-white/65 hover:text-[var(--gold)]"
       }`}
       title={
         isLowBandwidth
-          ? "وضع الطوارئ وتوفير البيانات مفعّل (إيقاف الصور والفيديوهات الثقيلة)"
-          : "تفعيل وضع الطوارئ لغزة والميدان (توفير 95% من استهلاك الإنترنت الضعيف)"
+          ? "وضع الطوارئ وتوفير البيانات مفعّل"
+          : "وضع توفير البيانات للإنترنت الضعيف"
       }
     >
       {isLowBandwidth ? (
         <>
           <Zap className="w-3 h-3 fill-current" />
-          <span>وضع الطوارئ (مفعّل)</span>
+          <span>توفير البيانات: نشط</span>
         </>
       ) : (
         <>
-          <WifiOff className="w-3 h-3 text-amber-500" />
-          <span className="hidden sm:inline">نت ضعيف</span>
+          <WifiOff className="w-3 h-3 text-amber-400/80" />
+          <span className="hidden sm:inline">توفير البيانات</span>
         </>
       )}
     </button>

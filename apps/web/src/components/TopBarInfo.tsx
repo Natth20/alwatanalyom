@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Clock, MapPin, ChevronDown } from "lucide-react";
+import { MapPin, ChevronDown } from "lucide-react";
 import type { CityPrayerTimings } from "@/lib/live-data/telemetry";
 
 interface PrayerRow {
@@ -34,9 +34,7 @@ export function TopBarInfo() {
     fetch("/api/v1/telemetry")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (active && data?.prayers) {
-          setPrayersMap(data.prayers);
-        }
+        if (active && data?.prayers) setPrayersMap(data.prayers);
       })
       .catch(() => {});
     return () => {
@@ -46,13 +44,12 @@ export function TopBarInfo() {
 
   const currentCity = prayersMap[cityId] || prayersMap["jerusalem"];
 
-  const gregorianStr = now
+  const dateStr = now
     ? now.toLocaleDateString("ar-EG", {
         timeZone: currentCity?.timezone || "Asia/Jerusalem",
-        weekday: "long",
+        weekday: "short",
         day: "numeric",
-        month: "long",
-        year: "numeric",
+        month: "short",
       })
     : "";
 
@@ -64,7 +61,6 @@ export function TopBarInfo() {
       })
     : "";
 
-  // Compute real next prayer from Aladhan city timings
   let nextPrayer: { name: string; time: string } | null = null;
   if (currentCity && now) {
     const nowParts = new Intl.DateTimeFormat("en-GB", {
@@ -84,56 +80,49 @@ export function TopBarInfo() {
         break;
       }
     }
-    if (!nextPrayer) {
-      nextPrayer = { name: "الفجر", time: currentCity.fajr };
-    }
+    if (!nextPrayer) nextPrayer = { name: "الفجر", time: currentCity.fajr };
   }
 
   return (
-    <div className="flex items-center gap-3 text-[11px] text-white/85 relative z-40">
-      <div className="hidden md:flex items-center gap-1.5 font-medium">
-        <Calendar className="w-3.5 h-3.5 text-[var(--gold)] shrink-0" />
-        <span>{gregorianStr || "..."}</span>
-        {currentCity?.hijriDateAr && (
-          <>
-            <span className="text-white/25 px-0.5">|</span>
-            <span className="text-[var(--gold)]/95 font-bold">{currentCity.hijriDateAr}</span>
-          </>
-        )}
-      </div>
+    <div className="flex items-center gap-2.5 text-[11px] text-white/75 relative z-40">
+      <span className="hidden md:inline font-medium text-white/80">
+        {dateStr || "..."}
+      </span>
+      {currentCity?.hijriDateAr && (
+        <span className="hidden xl:inline text-[var(--gold)]/85 font-medium">
+          · {currentCity.hijriDateAr}
+        </span>
+      )}
 
-      <span className="hidden md:inline text-white/20">•</span>
+      <span className="hidden md:inline text-white/20">|</span>
 
       <div className="relative">
         <button
           type="button"
           onClick={() => setShowDropdown((prev) => !prev)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-white/85 hover:text-[var(--gold)] transition-colors cursor-pointer"
+          title="التوقيت ومواقيت الصلاة الحية"
         >
-          <Clock className="w-3 h-3 text-[var(--gold)]" />
           <span className="font-mono font-bold">{timeStr || "--:--"}</span>
           {currentCity && nextPrayer && (
-            <>
-              <span className="text-white/25 hidden sm:inline">|</span>
-              <span className="hidden sm:inline text-emerald-300 font-bold">
-                {nextPrayer.name} {nextPrayer.time}
-              </span>
-            </>
+            <span className="hidden sm:inline text-emerald-300/90 font-semibold">
+              · {nextPrayer.name} {nextPrayer.time}
+            </span>
           )}
-          <ChevronDown className="w-3 h-3 text-white/60" />
+          <ChevronDown className="w-3 h-3 opacity-60" />
         </button>
 
         {showDropdown && Object.keys(prayersMap).length > 0 && (
-          <div className="absolute top-full mt-2 start-0 w-72 rounded-2xl bg-[#1A0209] border border-[var(--gold)]/30 shadow-2xl p-4 space-y-3 z-50 text-white backdrop-blur-xl">
+          <div className="absolute top-full mt-2 start-0 w-72 rounded-2xl bg-[#160208] border border-[var(--gold)]/25 shadow-2xl p-4 space-y-3 z-50 text-white backdrop-blur-xl">
             <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="text-xs font-black text-[var(--gold)] flex items-center gap-1.5">
+              <span className="text-[11px] font-black text-[var(--gold)] flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
-                <span>مواقيت الصلاة الحية (Aladhan)</span>
+                <span>مواقيت الصلاة الحية</span>
               </span>
               <button
                 type="button"
                 onClick={() => setShowDropdown(false)}
-                className="text-[10px] text-white/50 hover:text-white"
+                className="text-[10px] text-white/50 hover:text-white cursor-pointer"
               >
                 إغلاق
               </button>
@@ -145,7 +134,7 @@ export function TopBarInfo() {
                   key={c.cityId}
                   type="button"
                   onClick={() => setCityId(c.cityId)}
-                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors cursor-pointer ${
+                  className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-colors ${
                     cityId === c.cityId
                       ? "bg-[var(--gold)] text-[#140106]"
                       : "bg-white/5 text-white/75 hover:bg-white/10"
