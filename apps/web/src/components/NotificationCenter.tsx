@@ -2,297 +2,208 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  Bell,
-  Flame,
-  ShieldCheck,
-  Volume2,
-  VolumeX,
-  CheckCircle2,
-  ChevronLeft,
-  Radio,
-  Sparkles,
-  Send,
-  Zap,
-} from "lucide-react";
+import { Bell, BellRing, Clock, Flame, CheckCheck, Sparkles } from "lucide-react";
 
-interface NotificationItem {
+interface AlertItem {
   id: string;
-  title: string;
-  time: string;
-  isBreaking?: boolean;
-  section: string;
   slug: string;
+  titleAr: string;
+  sectionNameAr: string;
+  publishedAt: string;
+  isBreaking?: boolean;
 }
 
-// دالة توليد نغمة تنبيه صحفية فاخرة عبر Web Audio API بدون أي ملفات خارجية
-function playNewsChime() {
-  if (typeof window === "undefined") return;
-  try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    osc1.type = "sine";
-    osc2.type = "triangle";
-
-    // نغمات كلاسيكية متناغمة (F5 ثم A5)
-    osc1.frequency.setValueAtTime(698.46, ctx.currentTime);
-    osc2.frequency.setValueAtTime(880.0, ctx.currentTime + 0.1);
-
-    gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
-
-    osc1.connect(gainNode);
-    osc2.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    osc1.start(ctx.currentTime);
-    osc2.start(ctx.currentTime + 0.08);
-
-    osc1.stop(ctx.currentTime + 0.6);
-    osc2.stop(ctx.currentTime + 0.6);
-  } catch {}
+function formatArabicRelative(iso: string): string {
+  const diffMin = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  if (diffMin < 1) return "الآن";
+  if (diffMin < 60) return `منذ ${diffMin} دقيقة`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `منذ ${diffHr} ساعة`;
+  return new Date(iso).toLocaleDateString("ar-EG", { month: "short", day: "numeric" });
 }
 
 export function NotificationCenter() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(2);
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [testSent, setTestSent] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: "art-breaking-gaza-aid",
-      title: "عاجل: وصول أولى قوافل الإمدادات الطبية والوقود إلى مجمع الشفاء ومستشفيات شمال القطاع برعاية أممية",
-      time: "منذ 5 دقائق",
-      isBreaking: true,
-      section: "فلسطين والميدان",
-      slug: "urgent-convoy-enters-northern-gaza",
-    },
-    {
-      id: "art-breaking-gold-record",
-      title: "عاجل: الذهب يقفز لمستوى قياسي جديد متجاوزاً 2,850 دولاراً للأونصة وسط طلب استثماري هائل",
-      time: "منذ 15 دقيقة",
-      isBreaking: true,
-      section: "الاقتصاد والأسواق",
-      slug: "gold-breaks-historical-threshold-2026",
-    },
-    {
-      id: "art-hero-jerusalem-wafa",
-      title: "القدس وغزة تتصدران الأولويات: تحركات دبلوماسية مكثفة واجتماع طارئ لدعم صمود الهوية الفلسطينية",
-      time: "منذ 40 دقيقة",
-      isBreaking: false,
-      section: "تغطيات خاصة",
-      slug: "palestine-national-summit-and-resilience",
-    },
-  ]);
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState<AlertItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pushStatus, setPushStatus] = useState<"default" | "granted" | "denied">("default");
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // التحقق من حالة إذن المتصفح للإشعارات عند التحميل
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "granted") {
-        setPushEnabled(true);
-      }
+      setPushStatus(Notification.permission);
     }
-  }, []);
 
-  // جلب الأخبار العاجلة الحقيقية من API
-  useEffect(() => {
-    fetch("/api/v1/breaking")
-      .then((res) => res.json())
-      .then((data) => {
-        const rawList = Array.isArray(data?.items) ? data.items : Array.isArray(data?.articles) ? data.articles : [];
-        if (rawList.length > 0) {
-          const fetched: NotificationItem[] = rawList.map((a: any) => ({
-            id: a.id,
-            title: a.titleAr,
-            time: "مباشر الآن",
-            isBreaking: true,
-            section: a.sectionNameAr || "عاجل",
-            slug: a.slug,
-          }));
-          setNotifications(fetched);
-          setUnreadCount(fetched.length);
+    const fetchAlerts = async () => {
+      try {
+        const [brkRes, pulseRes] = await Promise.all([
+          fetch("/api/v1/breaking").catch(() => null),
+          fetch("/api/v1/pulse").catch(() => null),
+        ]);
+
+        const combined: AlertItem[] = [];
+        const seen = new Set<string>();
+
+        if (brkRes?.ok) {
+          const brkData = await brkRes.json();
+          const list = Array.isArray(brkData?.items) ? brkData.items : [];
+          for (const it of list) {
+            if (it?.id && !seen.has(it.id)) {
+              seen.add(it.id);
+              combined.push({
+                id: it.id,
+                slug: it.slug,
+                titleAr: it.titleAr,
+                sectionNameAr: it.sectionNameAr || "عاجل",
+                publishedAt: it.publishedAt || new Date().toISOString(),
+                isBreaking: true,
+              });
+            }
+          }
         }
-      })
-      .catch(() => {});
+
+        if (pulseRes?.ok && combined.length < 6) {
+          const pulseData = await pulseRes.json();
+          const topics = Array.isArray(pulseData?.latestTopics) ? pulseData.latestTopics : [];
+          for (const t of topics) {
+            if (t?.id && !seen.has(t.id) && combined.length < 8) {
+              seen.add(t.id);
+              combined.push({
+                id: t.id,
+                slug: t.slug,
+                titleAr: t.titleAr,
+                sectionNameAr: t.sectionNameAr || "أخبار",
+                publishedAt: t.publishedAt || new Date().toISOString(),
+                isBreaking: Boolean(t.isBreaking),
+              });
+            }
+          }
+        }
+
+        setItems(combined);
+        setUnreadCount(combined.length);
+      } catch {}
+    };
+
+    fetchAlerts();
+    const timer = setInterval(fetchAlerts, 60000);
+    return () => clearInterval(timer);
   }, []);
 
-  // إغلاق النافذة عند النقر خارجها
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+    const handleOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setUnreadCount(0);
-    }
-  };
+    if (open) document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [open]);
 
   const handleEnablePush = async () => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          setPushEnabled(true);
-          if (soundEnabled) playNewsChime();
-          new Notification("الوطن اليوم | تم تفعيل الإشعارات", {
-            body: "ستتلقى الآن أهم الأخبار العاجلة لحظة بلحظة على جهازك.",
-            icon: "/favicon.ico",
-          });
-        }
-      } catch {}
-    }
-  };
-
-  // إرسال تنبيه تجريبي حي للمتصفح والنغمة الصوتية
-  const handleSendTestNotification = () => {
-    if (soundEnabled) {
-      playNewsChime();
-    }
-
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      new Notification("الوطن اليوم | عاجل فوري", {
-        body: "وصول أولى قوافل الإمدادات الطبية والوقود إلى مجمع الشفاء ومشافي الشمال.",
-        icon: "/favicon.ico",
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    const res = await Notification.requestPermission();
+    setPushStatus(res);
+    if (res === "granted" && items[0]) {
+      new Notification("الوطن اليوم · أحدث التنبيهات", {
+        body: items[0].titleAr,
       });
     }
-
-    setTestSent(true);
-    setTimeout(() => setTestSent(false), 3000);
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
-      {/* زر جرس الإشعارات الملكي */}
+    <div className="relative" ref={panelRef}>
       <button
-        onClick={handleToggle}
-        className="relative p-2 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[var(--gold)]/70 text-white/90 transition-all duration-200 shadow-xs cursor-pointer group shrink-0 select-none"
-        title="مركز الإشعارات والتنبيهات المباشرة"
-        aria-label="مركز الإشعارات"
+        type="button"
+        onClick={() => {
+          setOpen((prev) => !prev);
+          setUnreadCount(0);
+        }}
+        className="relative w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 hover:border-[var(--gold)]/50 text-white flex items-center justify-center transition-all cursor-pointer"
+        aria-label="مركز التنبيهات الإخبارية"
+        title="التنبيهات الإخبارية المباشرة"
       >
-        <Bell className="w-4 h-4 group-hover:text-[var(--gold)] transition-colors" />
-
-        {/* شارة عدد الإشعارات غير المقروءة النابضة */}
+        {unreadCount > 0 ? (
+          <BellRing className="w-4 h-4 text-[var(--gold)]" />
+        ) : (
+          <Bell className="w-4 h-4" />
+        )}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white text-[9px] font-black shadow-md border border-[#160006] animate-pulse">
-            {unreadCount}
+          <span className="absolute -top-1 -end-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center shadow-md">
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
-      {/* لوحة مركز الإشعارات المنسدلة الزجاجية الفاخرة */}
-      {isOpen && (
-        <div className="absolute top-full end-0 mt-2.5 w-80 sm:w-96 rounded-3xl glass-hud p-4 text-white z-50 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-250 border border-[var(--gold)]/30">
-          {/* ترويسة اللوحة */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+      {open && (
+        <div className="absolute top-full mt-2.5 end-0 w-80 sm:w-96 rounded-3xl bg-[#1A0209] border border-[var(--gold)]/30 shadow-2xl p-4 space-y-3 z-50 text-white backdrop-blur-2xl">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-              <h4 className="font-black text-sm text-[var(--gold)] tracking-wide">
-                التنبيهات المباشرة وغرفة الأخبار
-              </h4>
+              <Sparkles className="w-4 h-4 text-[var(--gold)]" />
+              <span className="text-xs font-black">غرفة التنبيهات المباشرة</span>
             </div>
-
-            <div className="flex items-center gap-2">
+            {pushStatus !== "granted" && (
               <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-                title={soundEnabled ? "كتم التنبيهات الصوتية" : "تفعيل التنبيهات الصوتية"}
-              >
-                {soundEnabled ? (
-                  <Volume2 className="w-3.5 h-3.5 text-[var(--gold)]" />
-                ) : (
-                  <VolumeX className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* قائمة الإشعارات الحية */}
-          <div className="space-y-2.5 max-h-72 overflow-y-auto scrollbar-none">
-            {notifications.map((item) => (
-              <Link
-                key={item.id}
-                href={`/article/${item.id}/${item.slug}`}
-                onClick={() => setIsOpen(false)}
-                className="p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 hover:border-[var(--gold)]/40 transition-all flex items-start gap-3 group block"
-              >
-                <div className="mt-0.5 shrink-0">
-                  {item.isBreaking ? (
-                    <span className="w-7 h-7 rounded-xl bg-red-600/30 border border-red-500/40 text-red-400 flex items-center justify-center shadow-xs">
-                      <Flame className="w-3.5 h-3.5 fill-current" />
-                    </span>
-                  ) : (
-                    <span className="w-7 h-7 rounded-xl bg-[var(--gold)]/20 border border-[var(--gold)]/40 text-[var(--gold)] flex items-center justify-center shadow-xs">
-                      <Sparkles className="w-3.5 h-3.5" />
-                    </span>
-                  )}
-                </div>
-
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center justify-between text-[10px] text-white/50">
-                    <span className="text-[var(--gold)] font-bold">{item.section}</span>
-                    <span className="font-mono">{item.time}</span>
-                  </div>
-                  <p className="text-xs font-bold text-stone-100 group-hover:text-[var(--gold)] transition-colors line-clamp-2 leading-relaxed">
-                    {item.title}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* أزرار التفاعل والإشعارات الحية */}
-          <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
-            {!pushEnabled ? (
-              <button
+                type="button"
                 onClick={handleEnablePush}
-                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#590018] to-[#730020] text-[var(--gold)] border border-[var(--gold)]/40 text-xs font-black hover:shadow-lg hover:shadow-[var(--gold-glow)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30 hover:bg-[var(--gold)]/25 transition-colors cursor-pointer"
               >
-                <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span>تفعيل إشعارات المتصفح العاجلة</span>
+                تفعيل إشعارات المتصفح
               </button>
-            ) : (
-              <div className="flex items-center justify-between text-xs text-emerald-400 font-bold py-1 px-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>إشعارات المتصفح مفعلة بنجاح</span>
-                </div>
-                <button
-                  onClick={handleSendTestNotification}
-                  disabled={testSent}
-                  className="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+            )}
+            {pushStatus === "granted" && (
+              <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                <CheckCheck className="w-3.5 h-3.5" />
+                <span>مفعّل</span>
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2 max-h-80 overflow-y-auto pe-1">
+            {items.length > 0 ? (
+              items.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/article/${item.id}/${item.slug}`}
+                  onClick={() => setOpen(false)}
+                  className="block p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 transition-colors space-y-1.5"
                 >
-                  {testSent ? "تم البث!" : "اختبار إشعار"}
-                </button>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span
+                      className={`font-black px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                        item.isBreaking
+                          ? "bg-red-500/20 text-red-400"
+                          : "bg-[var(--gold)]/15 text-[var(--gold)]"
+                      }`}
+                    >
+                      {item.isBreaking && <Flame className="w-3 h-3" />}
+                      <span>{item.sectionNameAr}</span>
+                    </span>
+                    <span className="text-white/50 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatArabicRelative(item.publishedAt)}</span>
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-white leading-snug line-clamp-2">
+                    {item.titleAr}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <div className="py-8 text-center text-xs text-white/60">
+                لا توجد تنبيهات جديدة في هذه اللحظة — كافة البرقيات محدثة.
               </div>
             )}
+          </div>
 
-            {/* زر تجربة فوري إذا لم تكن مفعلة */}
-            {!pushEnabled && (
-              <button
-                onClick={handleSendTestNotification}
-                className="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-stone-300 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
-              >
-                <Zap className="w-3 h-3 text-[var(--gold)]" />
-                <span>{testSent ? "تم إصدار التنبيه الصوتي!" : "تجربة نغمة التنبيه العاجل"}</span>
-              </button>
-            )}
+          <div className="pt-2 border-t border-white/10 text-center">
+            <Link
+              href="/breaking"
+              onClick={() => setOpen(false)}
+              className="text-[11px] font-black text-[var(--gold)] hover:underline"
+            >
+              فتح مركز العواجل والبث اللحظي ←
+            </Link>
           </div>
         </div>
       )}

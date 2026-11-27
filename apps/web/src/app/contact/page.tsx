@@ -94,16 +94,39 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [ticketCode, setTicketCode] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) return;
     setSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
-      const code = `AWT-CASE-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      setTicketCode(code);
+    try {
+      const res = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone: phone || undefined,
+          department: selectedDept,
+          subject: subject || undefined,
+          message,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setTicketCode(`AWT-MSG-${Date.now().toString().slice(-6)}`);
+        setMessage("");
+      } else {
+        setSubmitError(json?.error?.message || "تعذر إرسال الرسالة، يرجى مراجعة الحقول.");
+      }
+    } catch {
+      setSubmitError("تعذر الاتصال بالخادم حالياً.");
+    } finally {
       setSubmitting(false);
-    }, 1100);
+    }
   };
 
   return (

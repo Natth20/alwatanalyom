@@ -8,9 +8,32 @@ const globalForPrisma = globalThis as unknown as {
  * إنشاء PrismaClient بشكل آمن — في بيئة Serverless قد يفشل التهيئة
  * إن غاب المحرك، فنلتقط الخطأ دون تعطل استيراد الوحدات.
  */
+function buildSafeDatasourceUrl(): string | undefined {
+  const raw = process.env["DATABASE_URL"];
+  if (!raw) return undefined;
+  try {
+    const parsed = new URL(raw);
+    const isProd = process.env["NODE_ENV"] === "production" || Boolean(process.env["VERCEL"]);
+    if (isProd && !parsed.searchParams.has("connection_limit")) {
+      parsed.searchParams.set("connection_limit", "5");
+    }
+    if (parsed.port === "6543" && !parsed.searchParams.has("pgbouncer")) {
+      parsed.searchParams.set("pgbouncer", "true");
+    }
+    if (!parsed.searchParams.has("pool_timeout")) {
+      parsed.searchParams.set("pool_timeout", "20");
+    }
+    return parsed.toString();
+  } catch {
+    return raw;
+  }
+}
+
 function createSafePrismaClient(): PrismaClient | null {
   try {
+    const safeUrl = buildSafeDatasourceUrl();
     return new PrismaClient({
+      ...(safeUrl ? { datasources: { db: { url: safeUrl } } } : {}),
       log: process.env["NODE_ENV"] === "development" ? ["query", "error", "warn"] : ["error"],
     });
   } catch (err) {

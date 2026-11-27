@@ -39,8 +39,8 @@ const PLACEMENTS: AdPlacement[] = [
     name: "البانر الرئاسي الفاخر (Hero Leaderboard)",
     dimensions: "970 × 90 أو 728 × 90",
     placement: "أعلى الصفحة الرئيسية وتحت الهيدر مباشرة",
-    views: "+150,000 ظهور يومي",
-    description: "المساحة الأكثر هيبة وظهوراً على الإطلاق، تحظى بانتباه 100% من الزوار فور فتح الموقع.",
+    views: "الواجهة الافتتاحية الكاملة",
+    description: "المساحة الأكثر هيبة وظهوراً على الإطلاق في مدخل المنصة، مع قياس حقيقي للظهور والنقرات.",
     badge: "المساحة الماسية",
     icon: Layout,
   },
@@ -49,28 +49,28 @@ const PLACEMENTS: AdPlacement[] = [
     name: "راعي شريط العاجل الميداني 24/7",
     dimensions: "شعار تفاعلي + وسم رعاية",
     placement: "مرافق لشريط الأخبار العاجلة على مدار الساعة",
-    views: "+300,000 ظهور يومي",
-    description: "يقترن اسم علامتك التجارية بمصدر الحقيقة الموثوق، مع نقرة مباشرة إلى منصتك.",
-    badge: "الأعلى تفاعلاً",
+    views: "ظهور دائم بالواجهة العاجلة",
+    description: "يقترن اسم علامتك التجارية بمصدر الحقيقة الموثوق مع تتبع فوري للنقرات في كابينة الإدارة.",
+    badge: "الأعلى بروزاً",
     icon: Sparkles,
   },
   {
     id: "morning-brief",
     name: "رعاية إيجاز الفجر الملكي (Newsletter)",
     dimensions: "بطاقة رعاية بريدية كاملة",
-    placement: "في صلب البريد اليومي الواصل لآلاف المشتركين فجراً",
-    views: "وصول مباشر لبريد صناع القرار",
-    description: "تصل رسالتك التسويقية إلى بريد النخب، الصحفيين، والمهنيين مع معدل فتح يتجاوز 42%.",
+    placement: "في صلب البريد اليومي الواصل للمشتركين فجراً",
+    views: "نشرة إيجاز الفجر المباشرة",
+    description: "تصل رسالتك التسويقية مباشرة لقائمة المشتركين الفعليين في النشرة البريدية اليومية.",
     badge: "جمهور نوعي",
     icon: Mail,
   },
   {
     id: "sports-sponsor",
     name: "رعاية مباريات واستوديو «يلا سبورت»",
-    dimensions: "بانر رادار المباريات + فيديو",
-    placement: "صفحة يلا سبورت ومباريات دوري أبطال أوروبا",
-    views: "+200,000 متابع رياضي",
-    description: "استهدف الجمهور الرياضي الشغوف بمباريات اليوم ونتائج الملاعب الأوروبية والعربية.",
+    dimensions: "بانر رادار المباريات + جدول البطولات",
+    placement: "صفحة يلا سبورت ومباريات الدوريات العالمية",
+    views: "المدرج الرياضي المباشر",
+    description: "استهدف الجمهور الرياضي الشغوف بمباريات اليوم وجداول الدوريات العالمية.",
     badge: "شريك كروي",
     icon: Trophy,
   },
@@ -90,19 +90,43 @@ export default function AdvertisePage() {
   const [submitting, setSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState<string | null>(null);
 
-  // حسابات التأثير اللحظية
-  const impressions = Math.round(budget * 14200);
-  const clicks = Math.round(impressions * 0.034);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  // حساب تقديري إرشادي (ليس قياساً حقيقياً لمشاهدات سابقة)
+  const impressions = Math.round(budget * 1000);
+  const clicks = Math.round(impressions * 0.02);
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName || !clientEmail) return;
     setSubmitting(true);
-    setTimeout(() => {
-      const code = `AWT-ADS-${Math.floor(1000 + Math.random() * 9000)}`;
-      setBookingConfirmed(code);
+    setBookingError(null);
+    try {
+      const res = await fetch("/api/v1/ad-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName,
+          clientCompany,
+          clientEmail,
+          clientPhone,
+          selectedPlacement,
+          selectedAudience,
+          budget,
+          bookingNotes,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ticketCode) {
+        setBookingConfirmed(json.ticketCode);
+      } else {
+        setBookingError(json?.error?.message || "تعذر إرسال طلب الحجز.");
+      }
+    } catch {
+      setBookingError("تعذر الاتصال بالخادم حالياً.");
+    } finally {
       setSubmitting(false);
-    }, 1200);
+    }
   };
 
   return (

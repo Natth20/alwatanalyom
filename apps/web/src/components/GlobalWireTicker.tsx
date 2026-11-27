@@ -1,148 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Radio, Clock, ChevronLeft } from "lucide-react";
+import { Radio, Clock } from "lucide-react";
 
-
-interface WireItem {
+interface WireTopic {
   id: string;
-  agency: string;
-  agencyColor: string;
-  time: string;
-  text: string;
-  category: string;
-  urgent: boolean;
-  url: string;
+  slug: string;
+  titleAr: string;
+  sectionNameAr: string;
+  sourceNameAr: string;
+  publishedAt: string;
+  isBreaking: boolean;
 }
 
-const LIVE_WIRES: WireItem[] = [
-  {
-    id: "w-1",
-    agency: "وفا",
-    agencyColor: "bg-emerald-600 text-white",
-    time: "منذ دقيقة",
-    text: "وزارة الصحة الفلسطينية: طواقم الإسعاف تتمكن من إجلاء 14 مصاباً بعد قصف محيط مدرسة إيواء في جباليا.",
-    category: "فلسطين",
-    urgent: true,
-    url: "/breaking",
-  },
-  {
-    id: "w-2",
-    agency: "Reuters",
-    agencyColor: "bg-amber-600 text-white",
-    time: "منذ دقيقتين",
-    text: "أسعار النفط تقفز بنسبة 2.1% إثر مخاوف تعطل الإمدادات في ممرات الملاحة الدولية في البحر الأحمر.",
-    category: "اقتصاد",
-    urgent: false,
-    url: "/economy",
-  },
-  {
-    id: "w-3",
-    agency: "AP",
-    agencyColor: "bg-indigo-600 text-white",
-    time: "منذ 4 دقائق",
-    text: "مجلس الأمن يعقد جلسة إحاطة طارئة بطلب جزائري لمناقشة تدهور الأوضاع الإنسانية في شمال غزة.",
-    category: "دولي",
-    urgent: true,
-    url: "/world",
-  },
-  {
-    id: "w-4",
-    agency: "الجزيرة",
-    agencyColor: "bg-sky-600 text-white",
-    time: "منذ 6 دقائق",
-    text: "صفارات الإنذار تدوي في نهاريا ومحيطها بالقطاع الغربي للحدود بعد رصد إطلاق مقذوفات.",
-    category: "عاجل",
-    urgent: true,
-    url: "/breaking",
-  },
-  {
-    id: "w-5",
-    agency: "الأناضول",
-    agencyColor: "bg-teal-600 text-white",
-    time: "منذ 8 دقائق",
-    text: "الرئاسة التركية: استمرار الاتصالات مع الوسطاء لضمان مسار إغاثي إنساني مستدام ودائم للقطاع.",
-    category: "سياسة",
-    urgent: false,
-    url: "/arab-world",
-  },
-];
-
 export function GlobalWireTicker() {
+  const [wires, setWires] = useState<WireTopic[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
-  const filtered = LIVE_WIRES.filter((wire) => {
-    if (activeFilter === "all") return true;
-    return wire.agency.toLowerCase() === activeFilter.toLowerCase();
-  });
+  useEffect(() => {
+    fetch("/api/v1/pulse")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.latestTopics)) {
+          setWires(data.latestTopics);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  if (wires.length === 0) return null;
+
+  const sources = Array.from(new Set(wires.map((w) => w.sourceNameAr))).slice(0, 5);
+  const filtered =
+    activeFilter === "all"
+      ? wires
+      : wires.filter((w) => w.sourceNameAr === activeFilter);
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-6 shadow-sm space-y-4">
-      {/* الترويسة وأدوات الفلترة */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="w-3 h-3 rounded-full bg-rose-600 animate-ping" />
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping" />
           <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-1.5">
             <Radio className="w-4 h-4 text-rose-600" />
-            <span>برقيات الوكالات المباشرة (Global Wire)</span>
+            <span>برقيات الوكالات المباشرة من قاعدة البيانات</span>
           </h3>
-          <span className="text-[10px] bg-rose-500/10 text-rose-600 px-2 py-0.5 rounded-full font-bold">
-            بث لحظي
-          </span>
         </div>
 
-        {/* فلاتر الوكالات */}
         <div className="flex items-center gap-1.5 text-xs font-bold overflow-x-auto">
-          {["all", "وفا", "Reuters", "AP", "الجزيرة", "الأناضول"].map((ag) => (
+          <button
+            type="button"
+            onClick={() => setActiveFilter("all")}
+            className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+              activeFilter === "all" ? "bg-[var(--primary)] text-white" : "bg-[var(--bg)] text-[var(--text-muted)]"
+            }`}
+          >
+            الكل
+          </button>
+          {sources.map((src) => (
             <button
-              key={ag}
-              onClick={() => setActiveFilter(ag)}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer text-[11px] ${
-                activeFilter === ag
-                  ? "bg-[var(--primary)] text-white shadow-xs"
-                  : "bg-[var(--surface-card)] text-[var(--text-muted)] hover:text-[var(--text)]"
+              key={src}
+              type="button"
+              onClick={() => setActiveFilter(src)}
+              className={`px-2.5 py-1 rounded-lg cursor-pointer whitespace-nowrap ${
+                activeFilter === src ? "bg-[var(--primary)] text-white" : "bg-[var(--bg)] text-[var(--text-muted)]"
               }`}
             >
-              {ag === "all" ? "جميع الوكالات" : ag}
+              {src}
             </button>
           ))}
         </div>
       </div>
 
-      {/* شريط تدفق البرقيات اللحظي */}
-      <div className="space-y-2.5">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="p-3.5 rounded-2xl border border-[var(--border)] bg-[var(--surface-card)] hover:border-[var(--primary)] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-          >
-            <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black shrink-0 ${item.agencyColor}`}>
-                {item.agency}
-              </span>
-              <span className="text-[11px] font-mono text-[var(--text-muted)] shrink-0 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>{item.time}</span>
-              </span>
-              <p className="text-xs font-semibold text-[var(--text)] group-hover:text-[var(--primary)] transition-colors line-clamp-1 flex-1">
-                {item.text}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+      <div className="divide-y divide-[var(--border)]">
+        {filtered.map((w) => (
+          <div key={w.id} className="py-3 flex items-start justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 text-[10px]">
+                <span className="font-black px-2 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)]">
+                  {w.sourceNameAr}
+                </span>
+                <span className="text-[var(--text-muted)]">{w.sectionNameAr}</span>
+              </div>
               <Link
-                href={item.url}
-                className="text-[11px] font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+                href={`/article/${w.id}/${w.slug}`}
+                className="block text-xs sm:text-sm font-bold text-[var(--text)] hover:text-[var(--primary)] leading-snug"
               >
-                <span>المتابعة الكاملة</span>
-                <ChevronLeft className="w-3 h-3" />
+                {w.titleAr}
               </Link>
             </div>
+            <span className="text-[10px] text-[var(--text-muted)] font-mono shrink-0 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {new Date(w.publishedAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+            </span>
           </div>
         ))}
       </div>
     </div>
   );
 }
-

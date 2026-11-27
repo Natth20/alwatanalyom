@@ -47,12 +47,51 @@ export default async function SectionPage({ params }: Props) {
   const sideArticles = articles.slice(1, 4);
   const remainingArticles = articles.slice(4);
 
+  const SECTION_HERO_THEMES: Record<string, { border: string; bg: string; accent: string; badge: string }> = {
+    palestine: {
+      border: "border-emerald-500/35",
+      bg: "bg-gradient-to-br from-[#062415]/40 via-[var(--surface)] to-[var(--surface)]",
+      accent: "from-transparent via-emerald-400 to-transparent",
+      badge: "text-emerald-500",
+    },
+    "arab-world": {
+      border: "border-amber-500/35",
+      bg: "bg-gradient-to-br from-[#2B1603]/30 via-[var(--surface)] to-[var(--surface)]",
+      accent: "from-transparent via-amber-400 to-transparent",
+      badge: "text-amber-500",
+    },
+    world: {
+      border: "border-sky-500/35",
+      bg: "bg-gradient-to-br from-[#06182B]/35 via-[var(--surface)] to-[var(--surface)]",
+      accent: "from-transparent via-sky-400 to-transparent",
+      badge: "text-sky-500",
+    },
+    tech: {
+      border: "border-indigo-500/35",
+      bg: "bg-gradient-to-br from-[#120A2E]/35 via-[var(--surface)] to-[var(--surface)]",
+      accent: "from-transparent via-indigo-400 to-transparent",
+      badge: "text-indigo-500",
+    },
+    opinion: {
+      border: "border-[var(--gold)]/40",
+      bg: "bg-gradient-to-br from-[#241305]/30 via-[var(--surface)] to-[var(--surface)]",
+      accent: "from-transparent via-[var(--gold)] to-transparent",
+      badge: "text-[var(--gold)]",
+    },
+  };
+  const theme = SECTION_HERO_THEMES[sectionSlug] || {
+    border: "border-[var(--gold)]/30",
+    bg: "bg-gradient-to-b from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)]",
+    accent: "from-transparent via-[var(--gold)] to-transparent",
+    badge: "text-[var(--gold)]",
+  };
+
   return (
-    <div className="container-custom py-8 space-y-10">
-      {/* 1. ترويسة القسم الملكية الفخمة */}
-      <div className="card-imperial bg-gradient-to-b from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] p-6 sm:p-8 space-y-4 shadow-imperial relative overflow-hidden">
-        {/* شريط ذهبي علوي إمبراطوري */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-90" />
+    <div className="container-custom py-10 space-y-12">
+      {/* 1. ترويسة القسم المصممة بهوية مميزة لكل قطاع */}
+      <div className={`card-imperial border ${theme.border} ${theme.bg} p-6 sm:p-9 space-y-5 shadow-imperial relative overflow-hidden`}>
+        {/* شريط علوي إمبراطوري */}
+        <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${theme.accent} opacity-90`} />
 
         {/* مسار التنقل الإمبراطوري */}
         <nav aria-label="فتات الخبز" className="flex items-center gap-2 text-xs text-[var(--text-muted)]">

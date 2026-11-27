@@ -12,46 +12,63 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { LowBandwidthToggle } from "@/components/LowBandwidthToggle";
 import { SavedCounterBadge } from "@/components/SavedCounterBadge";
 import {
+  ChevronDown,
   Menu,
   X,
-  ChevronDown,
-  TrendingUp,
-  Coins,
+  Radio,
   ShieldCheck,
+  TrendingUp,
   Trophy,
-  HeartHandshake,
-  Film,
   Sparkles,
-  Map,
-  Layers,
-  Gamepad2,
+  Bot,
+  HeartHandshake,
+  Briefcase,
+  Coins,
+  MapPin,
+  Landmark,
+  Flame,
+  Cpu,
+  Globe,
+  Compass,
   Headphones,
+  History,
+  Gamepad2,
+  Activity,
+  UserCircle2,
+  Clock,
+  ChevronLeft,
 } from "lucide-react";
+import type { ArticleCard, InstrumentQuote } from "@awt/shared";
+import type { LiveMatchItem } from "@/lib/live-data/sports";
+import { resolveEditorialImage } from "@/lib/editorial-images";
 
-type ActiveMegaMenu = "palestine" | "world" | "sports" | "economy" | "digital" | null;
+type ActiveMegaMenu = "palestine" | "economy" | "sports" | "services" | null;
 
 export function Header() {
   const pathname = usePathname();
-
-  // عدم عرض هيدر الموقع العام في كابينة الإدارة
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
-
   const [activeMega, setActiveMega] = useState<ActiveMegaMenu>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
+  // Live telemetry state (real quotes + section headlines + sports)
+  const [quotes, setQuotes] = useState<InstrumentQuote[]>([]);
+  const [megaArticles, setMegaArticles] = useState<Record<string, ArticleCard[]>>({});
+  const [megaMatches, setMegaMatches] = useState<LiveMatchItem[]>([]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
+    if (pathname?.startsWith("/admin")) return;
+
+    const handleScroll = () => setScrolled(window.scrollY > 18);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
-  // إغلاق الميجا منيو عند النقر خارجها
+  useEffect(() => {
+    setActiveMega(null);
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
@@ -62,811 +79,703 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Load real market prices for the telemetry strip
   useEffect(() => {
-    setActiveMega(null);
-    setMobileMenuOpen(false);
+    if (pathname?.startsWith("/admin")) return;
+    let active = true;
+
+    const loadQuotes = () => {
+      fetch("/api/v1/quotes")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (active && Array.isArray(data?.quotes)) {
+            setQuotes(data.quotes);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadQuotes();
+    const interval = setInterval(loadQuotes, 90000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [pathname]);
 
-  const toggleMega = (menu: ActiveMegaMenu) => {
-    setActiveMega((curr) => (curr === menu ? null : menu));
+  // Lazy load real headlines / matches when opening a mega menu
+  useEffect(() => {
+    if (!activeMega || pathname?.startsWith("/admin")) return;
+
+    if (
+      (activeMega === "palestine" || activeMega === "economy" || activeMega === "sports") &&
+      !megaArticles[activeMega]
+    ) {
+      fetch(`/api/v1/search?section=${activeMega}&limit=3`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (Array.isArray(data?.results)) {
+            setMegaArticles((prev) => ({ ...prev, [activeMega]: data.results }));
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (activeMega === "sports" && megaMatches.length === 0) {
+      fetch("/api/v1/sports")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (Array.isArray(data?.matches)) {
+            setMegaMatches(data.matches.slice(0, 4));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activeMega, megaArticles, megaMatches.length, pathname]);
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
+  const getQuote = (sym: string) => quotes.find((q) => q.symbol === sym);
+  const goldQ = getQuote("XAUUSD");
+  const usdIlsQ = getQuote("USDILS");
+  const brentQ = getQuote("BRENT");
+  const btcQ = getQuote("BTCUSD");
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname?.startsWith(href);
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 select-none shadow-2xl">
-      {/* 0. زر التخطي للمحتوى الرئيسي لتعزيز إمكانية الوصول */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--gold)] focus:text-[#140005] focus:font-black focus:text-xs focus:rounded-xl focus:shadow-xl focus:outline-hidden"
-      >
-        تخطي إلى المحتوى الرئيسي
-      </a>
-
+    <header
+      ref={navContainerRef}
+      className={`sticky top-0 z-50 w-full transition-all duration-300 no-print ${
+        scrolled
+          ? "shadow-[0_14px_45px_-12px_rgba(38,0,10,0.85)] border-b border-[var(--gold)]/45"
+          : "border-b border-[var(--gold)]/20"
+      }`}
+    >
       {/* ========================================================================= */}
-      {/* 1. الشريط الرئاسي الميداني (Tier 1: The Presidential Micro-Ribbon - 36px) */}
+      {/* 1. الشريط العلوي السيادي (Live Sovereign Telemetry Bar)                   */}
       {/* ========================================================================= */}
-      <div
-        className={`bg-gradient-to-r from-[#0d0003] via-[#1d0007] to-[#0d0003] border-b border-[var(--gold)]/20 text-white text-[11px] transition-all duration-300 ease-in-out ${
-          scrolled ? "h-0 opacity-0 overflow-hidden py-0 border-none" : "h-9 opacity-100 py-1"
-        }`}
-      >
-        <div className="container-custom max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 sm:px-6 h-full overflow-hidden">
-          {/* اليمين: معلومات التاريخ وكبسولة الصلوات المنبثقة */}
-          <div className="flex items-center gap-2.5 shrink-0">
+      <div className="bg-[#120005] text-white border-b border-white/10 text-[11px]">
+        <div className="container-custom h-10 flex items-center justify-between gap-3">
+          {/* اليمين: التاريخ الهجري والميلادي ومواقيت الصلاة الحية */}
+          <div className="shrink-0">
             <TopBarInfo />
           </div>
 
-          {/* الوسط: رادار الأسواق والذهب اللحظي (مؤشرات البورصة الحية) */}
-          <div className="hidden lg:flex items-center gap-2 text-white/80 shrink-0 mx-auto">
+          {/* الوسط: كبسولة المؤشرات المالية الحية */}
+          <div className="hidden lg:flex items-center justify-center flex-1 min-w-0 px-2">
             <Link
               href="/economy"
-              className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[var(--gold)]/50 text-[10px] font-bold text-white transition-all shadow-2xs group"
-              title="رادار أسعار الذهب والعملات والنفط المباشر"
+              className="inline-flex items-center gap-3 px-4 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[var(--gold)]/50 text-[11px] font-bold transition-all shadow-inner group"
+              title="لوحة الأسواق المالية الحية"
             >
-              <Coins className="w-3 h-3 text-[var(--gold)] group-hover:rotate-12 transition-transform" />
-              <span>الذهب: <strong className="text-[var(--gold)] font-mono">$3,515</strong></span>
-              <span className="text-white/20">·</span>
-              <span>الدولار: <strong className="text-emerald-400 font-mono">3.35 ₪</strong></span>
-              <span className="text-white/20">·</span>
-              <span>برنت: <strong className="text-sky-300 font-mono">$83.98</strong></span>
+              <Coins className="w-3.5 h-3.5 text-[var(--gold)] group-hover:rotate-12 transition-transform shrink-0" />
+              {goldQ?.price ? (
+                <>
+                  <span className="flex items-center gap-1">
+                    <span className="text-stone-400">الذهب:</span>
+                    <strong className="text-[var(--gold)] font-mono">
+                      ${Number(goldQ.price).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    </strong>
+                  </span>
+                  <span className="text-white/20">|</span>
+                </>
+              ) : (
+                <span className="text-stone-400">أسعار الأسواق المباشرة</span>
+              )}
+
+              {usdIlsQ?.price && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <span className="text-stone-400">الدولار:</span>
+                    <strong className="text-emerald-400 font-mono">
+                      {Number(usdIlsQ.price).toFixed(2)} ₪
+                    </strong>
+                  </span>
+                  <span className="text-white/20">|</span>
+                </>
+              )}
+
+              {brentQ?.price && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <span className="text-stone-400">برنت:</span>
+                    <strong className="text-sky-300 font-mono">
+                      ${Number(brentQ.price).toFixed(2)}
+                    </strong>
+                  </span>
+                  {btcQ?.price && <span className="text-white/20 hidden xl:inline">|</span>}
+                </>
+              )}
+
+              {btcQ?.price && (
+                <span className="hidden xl:flex items-center gap-1">
+                  <span className="text-stone-400">بيتكوين:</span>
+                  <strong className="text-amber-300 font-mono">
+                    ${Number(btcQ.price).toLocaleString("en-US")}
+                  </strong>
+                </span>
+              )}
             </Link>
           </div>
 
-          {/* اليسار: أدوات الطقس، القراءة، المظهر، والولوج الإداري */}
-          <div className="flex items-center gap-2 ms-auto shrink-0">
-            <div className="hidden sm:inline-block">
-              <WeatherWidget />
-            </div>
-            <LowBandwidthToggle />
-            <ThemeToggle />
-
-            {/* بوابة النسخة الإنجليزية */}
+          {/* اليسار: الطقس الحي + البث المباشر + النسخة الإنجليزية */}
+          <div className="flex items-center gap-2 shrink-0">
+            <WeatherWidget />
+            <Link
+              href="/live"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600/20 hover:bg-red-600/35 border border-red-500/35 text-red-300 font-black text-[10px] transition-colors"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              <span>بث مباشر</span>
+            </Link>
             <Link
               href="/en"
-              className="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-[10px] font-bold text-stone-200 transition-colors"
-              title="English Edition"
+              className="hidden xl:inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.05] hover:bg-white/15 border border-white/10 text-stone-200 font-bold text-[10px] transition-colors"
             >
               EN
             </Link>
-
-            {/* بوابة غرفة الأخبار والإدارة للمحررين */}
-            <Link
-              href="/admin"
-              className="px-2.5 py-0.5 rounded-full bg-[var(--gold)]/15 hover:bg-[var(--gold)]/25 text-[10px] font-black text-[var(--gold)] border border-[var(--gold)]/40 transition-all flex items-center gap-1 shadow-xs"
-              title="غرفة العمليات التحريرية والإدارة"
-            >
-              <ShieldCheck className="w-3 h-3" />
-              <span>لوحة الإدارة</span>
-            </Link>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. ترويسة الصرح الملكية والبحث الموثق (Tier 2: The Royal Media Masthead - 72px) */}
+      {/* 2. شريط الهوية والبحث والأدوات السريعة (Identity & Actions)              */}
       {/* ========================================================================= */}
-      <div className="border-b border-[var(--gold)]/25 bg-[#140005]/98 dark:bg-[#100004]/98 backdrop-blur-2xl transition-all relative w-full h-[70px] sm:h-[72px] flex items-center">
-        <div className="container-custom max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 w-full">
-          {/* الجناح الأيمن: الشعار الملكي الرسمي المعتمد */}
-          <div className="shrink-0 flex items-center">
-            <BrandLogo variant="header" />
-          </div>
-
-          {/* الجناح الأوسط: كبسولة البحث والاستقصاء الموثق الذكية الموسعة */}
-          <div className="hidden md:flex flex-1 items-center justify-center max-w-xl mx-4">
-            <SearchTrigger expanded className="w-full" />
-          </div>
-
-          {/* الجناح الأيسر: زر البث المباشر المضيء، التنبيهات، المحفوظات، وزر القائمة للموبايل */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* في الشاشات الصغيرة: زر بحث مضغوط */}
-            <div className="md:hidden">
-              <SearchTrigger compact />
-            </div>
-
-            {/* زر البث المباشر المتوهج */}
-            <Link
-              href="/live"
-              className="px-3 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white text-[11px] sm:text-xs font-black flex items-center gap-2 shadow-lg shadow-red-900/40 transition-all active:scale-95 shrink-0 border border-red-500/40"
-              title="غرفة المتابعة والبث الحي المستمر 24/7"
-            >
-              <span className="w-2 h-2 rounded-full bg-white inline-block animate-ping shrink-0" />
-              <span>البث الحي</span>
-            </Link>
-
-            <NotificationCenter />
-            <SavedCounterBadge />
-
-            {/* زر القائمة للشاشات الصغيرة */}
+      <div className="bg-gradient-to-l from-[#36000F] via-[#590018] to-[#26000A] text-white border-b border-[var(--gold)]/20">
+        <div
+          className={`container-custom flex items-center justify-between gap-4 transition-all duration-300 ${
+            scrolled ? "py-2.5" : "py-3.5"
+          }`}
+        >
+          {/* اليمين: الشعار الملكي */}
+          <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl border border-white/15 bg-white/5 text-white hover:border-[var(--gold)] transition-colors cursor-pointer"
-              aria-label="تبديل القائمة"
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="lg:hidden w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-white cursor-pointer"
+              aria-label="قائمة الأقسام"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+
+            <BrandLogo variant="header" showTagline={!scrolled} />
           </div>
-        </div>
-      </div>
 
-      {/* ========================================================================= */}
-      {/* 3. ممشى الأقسام التحريرية الفسيح (Tier 3: The Editorial Nave - 46px)       */}
-      {/* ========================================================================= */}
-      <div
-        ref={navContainerRef}
-        className="hidden lg:block border-b border-white/10 bg-[#1a0006]/95 dark:bg-[#0e0003]/95 backdrop-blur-2xl relative w-full h-[46px]"
-      >
-        <div className="container-custom max-w-7xl mx-auto flex items-center justify-center gap-2 xl:gap-3 px-4 sm:px-6 h-full">
-          <nav className="flex items-center gap-1 xl:gap-2 text-xs font-bold text-white whitespace-nowrap">
-            {/* الرئيسية */}
-            <Link
-              href="/"
-              className={`px-3 py-1.5 rounded-xl transition-all font-black text-xs ${
-                pathname === "/"
-                  ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
-                  : "hover:bg-white/10 text-stone-300 hover:text-white"
-              }`}
-            >
-              الرئيسية
-            </Link>
-
-            {/* 1. قائمة فلسطين والميدان المنسدلة العملاقة */}
-            <button
-              type="button"
-              onClick={() => toggleMega("palestine")}
-              onMouseEnter={() => setActiveMega("palestine")}
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-black cursor-pointer text-xs ${
-                pathname.startsWith("/palestine") || activeMega === "palestine"
-                  ? "bg-[#0E472A] text-white border border-emerald-400/50 shadow-xs"
-                  : "hover:bg-emerald-500/15 text-emerald-400"
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-              <span>فلسطين والميدان</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "palestine" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* 2. قائمة العالم العربي ودولياً المنسدلة */}
-            <button
-              type="button"
-              onClick={() => toggleMega("world")}
-              onMouseEnter={() => setActiveMega("world")}
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold cursor-pointer text-xs ${
-                pathname === "/arab-world" || pathname === "/world" || activeMega === "world"
-                  ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
-                  : "hover:bg-white/10 text-stone-300 hover:text-white"
-              }`}
-            >
-              <span>عربياً ودولياً</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "world" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* 3. قائمة يلا سبورت والملاعب المنسدلة العملاقة */}
-            <button
-              type="button"
-              onClick={() => toggleMega("sports")}
-              onMouseEnter={() => setActiveMega("sports")}
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-black cursor-pointer text-xs ${
-                pathname === "/sports" || activeMega === "sports"
-                  ? "bg-emerald-800 text-white border border-emerald-400/50 shadow-xs"
-                  : "hover:bg-emerald-500/15 text-emerald-300"
-              }`}
-            >
-              <Trophy className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>يلا سبورت</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "sports" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* 4. قائمة الاقتصاد والأسواق المنسدلة العملاقة */}
-            <button
-              type="button"
-              onClick={() => toggleMega("economy")}
-              onMouseEnter={() => setActiveMega("economy")}
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold cursor-pointer text-xs ${
-                pathname === "/economy" || activeMega === "economy"
-                  ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
-                  : "hover:bg-amber-500/15 text-amber-300"
-              }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-[var(--gold)] shrink-0" />
-              <span>المال والأعمال</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "economy" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* 5. المساعدات */}
-            <Link
-              href="/aid"
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs ${
-                pathname === "/aid"
-                  ? "bg-gradient-to-r from-[var(--maroon)] to-[#590018] text-[var(--gold)] shadow-xs border border-[var(--gold)]/30"
-                  : "hover:bg-amber-500/15 text-amber-300"
-              }`}
-            >
-              <HeartHandshake className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>المساعدات</span>
-            </Link>
-
-            {/* 6. قائمة الصحافة الرقمية المنسدلة */}
-            <button
-              type="button"
-              onClick={() => toggleMega("digital")}
-              onMouseEnter={() => setActiveMega("digital")}
-              className={`px-3 py-1.5 rounded-xl border border-[var(--gold)]/40 bg-gradient-to-r from-[#2c000c] to-[#420013] text-[var(--gold)] text-xs font-black flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
-                activeMega === "digital" ? "ring-2 ring-[var(--gold)]" : "hover:border-[var(--gold)]"
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>الصحافة الرقمية</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${activeMega === "digital" ? "rotate-180" : ""}`}
-              />
-            </button>
-          </nav>
-        </div>
-
-        {/* ----------------- لوحات الميجا منيو المنسدلة الخمس المتقنة ----------------- */}
-
-        {/* 1. لوحة فلسطين والميدان المنسدلة */}
-        {activeMega === "palestine" && (
-          <div
-            onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 mx-auto max-w-5xl z-50 mt-1 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-[#062013]/98 via-[#09150F]/96 to-[#040C08]/98 backdrop-blur-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
-          >
-            <div className="grid grid-cols-12 gap-6 items-start text-white">
-              <div className="col-span-3 space-y-3 border-e border-white/10 pe-4">
-                <span className="text-[11px] font-black text-emerald-400 uppercase tracking-wider block">
-                  غرف الميدان 24/7
-                </span>
-                <ul className="space-y-1.5 text-xs font-semibold">
-                  <li>
-                    <Link
-                      href="/palestine/gaza"
-                      className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-between group"
-                    >
-                      <span className="group-hover:text-emerald-300">قطاع غزة العزة</span>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/palestine/jerusalem" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-emerald-300">
-                      القدس الشريف والأقصى
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/palestine/west-bank" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-emerald-300">
-                      الضفة الغربية والمخيمات
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/atlas"
-                      className="p-2 rounded-xl hover:bg-white/10 text-emerald-300 font-bold flex items-center gap-1.5"
-                    >
-                      <Map className="w-3.5 h-3.5" />
-                      <span>أطلس فلسطين التاريخي</span>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="col-span-9 grid grid-cols-3 gap-4">
-                <Link
-                  href="/palestine/gaza"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=400&auto=format&fit=crop&q=80"
-                      alt="غزة"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-red-600 text-[10px] font-bold text-white shadow-xs">
-                      عاجل
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    المستشفيات الميدانية تواصل العمل بتنسيق مستمر لدخول المساعدات والوقود
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/palestine/jerusalem"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1565552645632-d725f8bfc19a?w=400&auto=format&fit=crop&q=80"
-                      alt="القدس"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white shadow-xs">
-                      القدس
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    رباط أهالي القدس وتوافد المصلين إلى رحاب المسجد الأقصى المبارك
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/atlas"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=400&auto=format&fit=crop&q=80"
-                      alt="أطلس"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-[var(--gold)] text-[10px] font-bold text-black shadow-xs">
-                      أطلس تفاعلي
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    خريطة صمود القرى المهجرة وتوثيق المعالم التاريخية الفلسطينية
-                  </h4>
-                </Link>
-              </div>
-            </div>
+          {/* الوسط: محرك البحث الموثق */}
+          <div className="hidden md:flex flex-1 justify-center px-4 max-w-lg">
+            <SearchTrigger expanded className="w-full" />
           </div>
-        )}
 
-        {/* 2. لوحة العالم العربي ودولياً المنسدلة */}
-        {activeMega === "world" && (
-          <div
-            onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 mx-auto max-w-5xl z-50 mt-1 rounded-3xl border border-[var(--gold)]/35 bg-gradient-to-b from-[#180006]/98 via-[#20020B]/96 to-[#0F0005]/98 backdrop-blur-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
-          >
-            <div className="grid grid-cols-12 gap-6 items-start text-white">
-              <div className="col-span-3 space-y-3 border-e border-white/10 pe-4">
-                <span className="text-[11px] font-black text-[var(--gold)] uppercase tracking-wider block">
-                  الأقاليم والملفات الكبرى
-                </span>
-                <ul className="space-y-1.5 text-xs font-semibold">
-                  <li>
-                    <Link href="/arab-world" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-[var(--gold)]">
-                      الشرق الأوسط والعالم العربي
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/world" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-[var(--gold)]">
-                      عواصم القرار الدولي (واشنطن، لندن، بكين)
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/stories" className="block p-2 rounded-xl hover:bg-white/10 text-[var(--gold)] font-bold flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5" />
-                      <span>تجمعات القصص والخطوط الزمنية</span>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="col-span-9 grid grid-cols-3 gap-4">
-                <Link
-                  href="/arab-world"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-[var(--gold)]/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-stone-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=400&auto=format&fit=crop&q=80"
-                      alt="العالم العربي"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-[var(--gold)] text-[10px] font-bold text-black shadow-xs">
-                      قمة إقليمية
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-[var(--gold)]">
-                    تحركات دبلوماسية مكثفة واجتماعات تشاورية في الرياض والقاهرة وعمان
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/world"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-[var(--gold)]/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-stone-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=400&auto=format&fit=crop&q=80"
-                      alt="مجلس الأمن"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-blue-600 text-[10px] font-bold text-white shadow-xs">
-                      الأمم المتحدة
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-[var(--gold)]">
-                    جلسة طارئة لمجلس الأمن الدولي لبحث التدابير المؤقتة وحماية المدنيين
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/stories"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-[var(--gold)]/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-stone-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&auto=format&fit=crop&q=80"
-                      alt="تحقيقات"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-purple-600 text-[10px] font-bold text-white shadow-xs">
-                      ملف خاص
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-[var(--gold)]">
-                    المسار الجنائي للعدالة الدولية: متابعة الدعاوى أمام محكمة العدل
-                  </h4>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 3. لوحة يلا سبورت والملاعب المنسدلة العملاقة */}
-        {activeMega === "sports" && (
-          <div
-            onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 mx-auto max-w-5xl z-50 mt-1 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-[#052012]/98 via-[#08180E]/96 to-[#030E08]/98 backdrop-blur-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
-          >
-            <div className="grid grid-cols-12 gap-6 items-start text-white">
-              <div className="col-span-3 space-y-3 border-e border-white/10 pe-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[11px] font-black text-emerald-400 uppercase tracking-wider">
-                    ملاعب يلا سبورت 24/7
-                  </span>
-                </div>
-                <ul className="space-y-1.5 text-xs font-semibold">
-                  <li>
-                    <Link href="/sports" className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-between group">
-                      <span className="group-hover:text-emerald-300">مباريات اليوم الحية</span>
-                      <span className="px-2 py-0.5 rounded-full bg-red-600 text-[10px] font-bold text-white shadow-xs">مباشر</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/sports" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-emerald-300">
-                      دوري أبطال أوروبا
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/sports" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-emerald-300">
-                      الدوري الإنجليزي والإسباني
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/sports" className="block p-2 rounded-xl hover:bg-white/10 text-emerald-300 font-bold">
-                      الفدائي والكرة العربية ↗
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="col-span-9 grid grid-cols-3 gap-4">
-                <Link
-                  href="/sports"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&auto=format&fit=crop&q=80"
-                      alt="دوري الأبطال"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white shadow-xs">
-                      قمة الأسبوع
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    صراع العمالقة نحو الأدوار الإقصائية.. التشكيل الرسمي والغيابات
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/sports"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&auto=format&fit=crop&q=80"
-                      alt="الكلاسيكو"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-red-600 text-[10px] font-bold text-white shadow-xs">
-                      الليغا
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    كلاسيكو الأرض يقترب.. حسابات اللقب في الجولات الحاسمة
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/sports"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-emerald-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-emerald-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=400&auto=format&fit=crop&q=80"
-                      alt="المنتخب"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-[var(--gold)] text-[10px] font-bold text-black shadow-xs">
-                      الفدائي
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-emerald-300">
-                    الفدائي يواصل كتابة التاريخ في التصفيات المونديالية بروح الصمود
-                  </h4>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. لوحة الاقتصاد والأسواق المنسدلة العملاقة */}
-        {activeMega === "economy" && (
-          <div
-            onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 mx-auto max-w-5xl z-50 mt-1 rounded-3xl border border-amber-500/40 bg-gradient-to-b from-[#1a1004]/98 via-[#130b02]/96 to-[#0a0601]/98 backdrop-blur-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
-          >
-            <div className="grid grid-cols-12 gap-6 items-start text-white">
-              <div className="col-span-3 space-y-3 border-e border-white/10 pe-4">
-                <span className="text-[11px] font-black text-amber-400 uppercase tracking-wider block">
-                  أسواق فلسطين والعالم
-                </span>
-                <ul className="space-y-1.5 text-xs font-semibold">
-                  <li>
-                    <Link href="/economy" className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-between group">
-                      <span className="group-hover:text-amber-300">حاسبة الذهب والأعيرة</span>
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/economy" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-amber-300">
-                      أسعار صرف العملات اللحظية
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/economy" className="block p-2 rounded-xl hover:bg-white/10 transition-colors hover:text-amber-300">
-                      بورصة القدس وتداول الشركات
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/economy/instrument/BRENT" className="block p-2 rounded-xl hover:bg-white/10 text-amber-300 font-bold">
-                      مؤشرات النفط وبرنت عالمياً ↗
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="col-span-9 grid grid-cols-3 gap-4">
-                <Link
-                  href="/economy"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-amber-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-amber-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1610375461246-83df859d849d?w=400&auto=format&fit=crop&q=80"
-                      alt="الذهب"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black shadow-xs">
-                      قمة قياسية
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-amber-300">
-                    أونصة الذهب تكسر حاجز 3,515$ عالمياً وسط تدفقات الصناديق السيادية
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/economy"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-amber-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-amber-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&auto=format&fit=crop&q=80"
-                      alt="العملات"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white shadow-xs">
-                      الصرف
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-amber-300">
-                    استقرار الدولار والدينار أمام الشيكل في تعاملات السوق الفلسطيني
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/economy/instrument/BRENT"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-amber-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-amber-950">
-                    <img
-                      src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop&q=80"
-                      alt="النفط"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-blue-600 text-[10px] font-bold text-white shadow-xs">
-                      الطاقة
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-amber-300">
-                    برنت يستقر عند مستويات 83.98 دولار للبرميل مع ترقب إمدادات الطاقة
-                  </h4>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 5. لوحة الصحافة الرقمية المنسدلة العملاقة */}
-        {activeMega === "digital" && (
-          <div
-            onMouseLeave={() => setActiveMega(null)}
-            className="absolute top-full inset-x-0 mx-auto max-w-5xl z-50 mt-1 rounded-3xl border border-[var(--gold)]/40 bg-gradient-to-b from-[#180006]/98 via-[#130005]/96 to-[#090003]/98 backdrop-blur-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
-          >
-            <div className="grid grid-cols-12 gap-6 items-start text-white">
-              <div className="col-span-4 space-y-3 border-e border-white/10 pe-4">
-                <span className="text-[11px] font-black text-[var(--gold)] uppercase tracking-wider block">
-                  مختبرات الابتكار الرقمي 2026
-                </span>
-                <ul className="space-y-2 text-xs font-bold">
-                  <li>
-                    <Link
-                      href="/fact-check"
-                      className="p-2.5 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2.5 text-rose-300 hover:text-white"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span>رادار الحقيقة ومكافحة التضليل</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ask"
-                      className="p-2.5 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2.5 text-amber-300 hover:text-white"
-                    >
-                      <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span>اسأل الوطن (الأرشيف الذكي AI)</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/videos"
-                      className="p-2.5 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2.5 text-blue-300 hover:text-white"
-                    >
-                      <Film className="w-4 h-4 text-blue-400 shrink-0" />
-                      <span>استوديو فيديو 4K السينمائي</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/podcast"
-                      className="p-2.5 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2.5 text-emerald-300 hover:text-white"
-                    >
-                      <Headphones className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>استوديو البودكاست والموجز</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/games"
-                      className="p-2.5 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2.5 text-purple-300 hover:text-white"
-                    >
-                      <Gamepad2 className="w-4 h-4 text-purple-400 shrink-0" />
-                      <span>تحدي الذاكرة الوطنية والتراث</span>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="col-span-8 grid grid-cols-2 gap-4">
-                <Link
-                  href="/fact-check"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-rose-400/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-stone-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&auto=format&fit=crop&q=80"
-                      alt="فحص الحقائق"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-rose-600 text-[10px] font-bold text-white shadow-xs">
-                      فحص جنائي
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-rose-300">
-                    سلايدر مقارنة الصور الجنائي ومختبر OSINT للتحقق من الشائعات الميدانية
-                  </h4>
-                </Link>
-
-                <Link
-                  href="/ask"
-                  className="group rounded-2xl bg-white/5 border border-white/10 p-3 hover:border-[var(--gold)]/60 transition-all"
-                >
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 bg-stone-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80"
-                      alt="ذكاء اصطناعي"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <span className="absolute top-2 start-2 px-2 py-0.5 rounded bg-[var(--gold)] text-[10px] font-bold text-black shadow-xs">
-                      AI Newsroom
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-bold leading-snug line-clamp-2 text-white group-hover:text-[var(--gold)]">
-                    محطة الاستقصاء الذكية والبحث في ملايين الوثائق الصحفية المؤرشفة
-                  </h4>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. قائمة الهواتف الذكية المنزلقة (Mobile Navigation Drawer)               */}
-      {/* ========================================================================= */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[var(--gold)]/20 bg-[#160006]/98 p-5 space-y-5 animate-in slide-in-from-top-4 duration-300 shadow-2xl backdrop-blur-3xl text-white">
-          <SearchTrigger expanded className="w-full" />
-
-          <div className="grid grid-cols-2 gap-2.5 text-xs font-bold">
-            <Link
-              href="/palestine"
-              className="p-3 rounded-2xl bg-[#0E472A]/30 text-emerald-300 border border-emerald-500/30 flex items-center gap-2"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span>فلسطين والميدان</span>
-            </Link>
-
-            <Link
-              href="/sports"
-              className="p-3 rounded-2xl bg-emerald-800/30 text-emerald-300 border border-emerald-500/30 flex items-center gap-2"
-            >
-              <Trophy className="w-4 h-4 text-emerald-400" />
-              <span>يلا سبورت</span>
-            </Link>
-
-            <Link
-              href="/economy"
-              className="p-3 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-2"
-            >
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span>المال والأعمال</span>
-            </Link>
-
-            <Link
-              href="/aid"
-              className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-stone-200"
-            >
-              <HeartHandshake className="w-4 h-4 text-amber-400" />
-              <span>المساعدات</span>
-            </Link>
-
+          {/* اليسار: أزرار الأدوات المتناسقة (بارتفاع موحد h-9 وتباعد مريح gap-2) */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/fact-check"
-              className="p-3 rounded-2xl bg-rose-600/20 text-rose-300 border border-rose-500/30 flex items-center gap-2"
+              className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/35 border border-rose-400/35 text-rose-100 text-xs font-bold transition-all"
+              title="وحدة التحقق الجنائي من الأخبار والشائعات"
             >
-              <ShieldCheck className="w-4 h-4 text-rose-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-rose-300" />
               <span>رادار الحقيقة</span>
             </Link>
 
             <Link
               href="/ask"
-              className="p-3 rounded-2xl bg-[var(--gold)]/20 text-[var(--gold)] border border-[var(--gold)]/40 flex items-center gap-2"
+              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#e0a800] text-[#140106] text-xs font-black hover:brightness-110 transition-all shadow-md shadow-amber-950/30"
+              title="المساعد الإخباري والبحثي الذكي"
             >
-              <Sparkles className="w-4 h-4" />
+              <Bot className="w-3.5 h-3.5" />
+              <span>اسأل الوطن</span>
+            </Link>
+
+            <Link
+              href="/my-watan"
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold transition-all"
+              title="مساحتي الشخصية المخصصة"
+            >
+              <UserCircle2 className="w-4 h-4 text-[var(--gold)]" />
+              <span className="hidden xl:inline">وطني</span>
+            </Link>
+
+            <SavedCounterBadge />
+            <NotificationCenter />
+            <div className="hidden sm:flex items-center gap-1.5">
+              <LowBandwidthToggle />
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. شريط التنقل العائم للأقسام (Tier 3 Floating Editorial Nav)             */}
+      {/* ========================================================================= */}
+      <div className="hidden lg:block bg-[#1B0007]/95 backdrop-blur-xl text-white border-b border-white/10 relative">
+        <div className="container-custom">
+          <nav
+            aria-label="التنقل الرئيسي بين الأقسام"
+            className="flex items-center justify-between gap-1 h-12"
+          >
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <Link
+                href="/"
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  isActive("/")
+                    ? "bg-[var(--gold)] text-[#140106] font-black shadow-md"
+                    : "text-white/85 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                الرئيسية
+              </Link>
+
+              {/* فلسطين أولاً (Mega Menu Trigger) */}
+              <button
+                type="button"
+                onMouseEnter={() => setActiveMega("palestine")}
+                onClick={() => setActiveMega(activeMega === "palestine" ? null : "palestine")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  isActive("/palestine") || activeMega === "palestine"
+                    ? "bg-emerald-600/25 text-emerald-300 border border-emerald-500/40"
+                    : "text-emerald-300 hover:bg-emerald-500/15"
+                }`}
+              >
+                <span>🇵🇸</span>
+                <span>فلسطين أولاً</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+
+              <Link
+                href="/breaking"
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  isActive("/breaking")
+                    ? "bg-red-600 text-white shadow-md"
+                    : "text-red-300 hover:bg-red-500/15"
+                }`}
+              >
+                <Flame className="w-3.5 h-3.5" />
+                <span>عاجل</span>
+              </Link>
+
+              <Link
+                href="/arab-world"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  isActive("/arab-world")
+                    ? "bg-[var(--gold)] text-[#140106] font-black"
+                    : "text-white/85 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                العالم العربي
+              </Link>
+
+              <Link
+                href="/world"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  isActive("/world")
+                    ? "bg-[var(--gold)] text-[#140106] font-black"
+                    : "text-white/85 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                دولياً
+              </Link>
+
+              {/* الاقتصاد والذهب (Mega Menu Trigger) */}
+              <button
+                type="button"
+                onMouseEnter={() => setActiveMega("economy")}
+                onClick={() => setActiveMega(activeMega === "economy" ? null : "economy")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                  isActive("/economy") || activeMega === "economy"
+                    ? "bg-amber-500/25 text-amber-300 border border-amber-500/40"
+                    : "text-white/85 hover:text-amber-300 hover:bg-white/10"
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+                <span>الاقتصاد والذهب</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+
+              {/* يلا سبورت (Mega Menu Trigger) */}
+              <button
+                type="button"
+                onMouseEnter={() => setActiveMega("sports")}
+                onClick={() => setActiveMega(activeMega === "sports" ? null : "sports")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                  isActive("/sports") || activeMega === "sports"
+                    ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/40"
+                    : "text-white/85 hover:text-emerald-300 hover:bg-white/10"
+                }`}
+              >
+                <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+                <span>يلا سبورت</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+
+              <Link
+                href="/aid"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  isActive("/aid")
+                    ? "bg-[var(--gold)] text-[#140106] font-black"
+                    : "text-amber-200 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <HeartHandshake className="w-3.5 h-3.5 text-amber-400" />
+                <span>المساعدات</span>
+              </Link>
+
+              <Link
+                href="/jobs"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  isActive("/jobs")
+                    ? "bg-[var(--gold)] text-[#140106] font-black"
+                    : "text-sky-200 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+                <span>الوظائف</span>
+              </Link>
+
+              <Link
+                href="/tech"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  isActive("/tech")
+                    ? "bg-[var(--gold)] text-[#140106] font-black"
+                    : "text-white/85 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Cpu className="w-3.5 h-3.5 text-indigo-300" />
+                <span>التقنية</span>
+              </Link>
+
+              {/* المنصات والمختبرات (Mega Menu Trigger) */}
+              <button
+                type="button"
+                onMouseEnter={() => setActiveMega("services")}
+                onClick={() => setActiveMega(activeMega === "services" ? null : "services")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                  activeMega === "services"
+                    ? "bg-[var(--gold)]/20 text-[var(--gold)] border border-[var(--gold)]/40"
+                    : "text-[var(--gold)] hover:bg-white/10"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>المختبرات والخدمات</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+            </div>
+
+            <Link
+              href="/submit-news"
+              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/35 border border-red-500/30 text-red-200 text-[11px] font-black shrink-0 transition-colors"
+            >
+              <Radio className="w-3 h-3" />
+              <span>أرسل بلاغاً</span>
+            </Link>
+          </nav>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* لوحة القائمة الكبرى الحية (Live Data Mega Menu Panel)                     */}
+        {/* ========================================================================= */}
+        {activeMega && (
+          <div
+            onMouseLeave={() => setActiveMega(null)}
+            className="absolute top-full inset-x-0 bg-[#150006]/98 border-b-2 border-[var(--gold)]/50 shadow-2xl py-6 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50"
+          >
+            <div className="container-custom">
+              {activeMega === "palestine" && (
+                <div className="grid grid-cols-12 gap-6 items-start">
+                  <div className="col-span-5 space-y-3">
+                    <h4 className="text-xs font-black text-emerald-400 flex items-center gap-2 border-b border-white/10 pb-2">
+                      <Landmark className="w-4 h-4" />
+                      <span>مكاتب الميدان والتغطية المباشرة في فلسطين</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { href: "/palestine/jerusalem", label: "القدس والمسجد الأقصى", desc: "رصد الاقتحامات والتهويد" },
+                        { href: "/palestine/gaza", label: "قطاع غزة الصامد", desc: "الميدان، الإغاثة والمعابر" },
+                        { href: "/palestine/west-bank", label: "الضفة الغربية والأغوار", desc: "الاقتحامات والاستيطان" },
+                        { href: "/atlas", label: "أطلس فلسطين والقرى", desc: "خرائط الجغرافيا والذاكرة" },
+                      ].map((hub) => (
+                        <Link
+                          key={hub.href}
+                          href={hub.href}
+                          className="p-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/40 transition-all"
+                        >
+                          <span className="font-black text-xs text-white block">{hub.label}</span>
+                          <span className="text-[10px] text-stone-400 block mt-0.5">{hub.desc}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <Link href="/palestine" className="inline-flex items-center gap-1 text-xs font-black text-emerald-400 hover:underline pt-1">
+                      <span>الدخول لقسم فلسطين الكامل</span>
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+
+                  <div className="col-span-7 space-y-3">
+                    <h4 className="text-xs font-black text-[var(--gold)] border-b border-white/10 pb-2">
+                      أحدث التقارير المنشورة الآن في فلسطين
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      {(megaArticles["palestine"] || []).slice(0, 3).map((art) => (
+                        <Link
+                          key={art.id}
+                          href={`/article/${art.id}/${art.slug}`}
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-[var(--gold)]/50 transition-all"
+                        >
+                          <div className="aspect-video overflow-hidden bg-black">
+                            <img
+                              src={resolveEditorialImage(art)}
+                              alt={art.titleAr}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="p-3 space-y-1">
+                            <span className="text-[10px] text-emerald-400 font-bold block">
+                              {art.source?.nameAr || "الوطن اليوم"}
+                            </span>
+                            <h5 className="text-xs font-bold text-white line-clamp-2 group-hover:text-[var(--gold)] leading-snug">
+                              {art.titleAr}
+                            </h5>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeMega === "economy" && (
+                <div className="grid grid-cols-12 gap-6 items-start">
+                  <div className="col-span-5 space-y-3">
+                    <h4 className="text-xs font-black text-amber-400 flex items-center gap-2 border-b border-white/10 pb-2">
+                      <Coins className="w-4 h-4" />
+                      <span>الأسواق العالمية وأسعار الذهب والعملات الحية</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { href: "/economy/instrument/XAUUSD", label: "الذهب الفوري (أونصة)", q: goldQ, prefix: "$" },
+                        { href: "/economy/instrument/USDILS", label: "الدولار / الشيكل", q: usdIlsQ, suffix: " ₪" },
+                        { href: "/economy/instrument/BRENT", label: "نفط برنت القياسي", q: brentQ, prefix: "$" },
+                        { href: "/economy/instrument/BTCUSD", label: "بيتكوين (BTC)", q: btcQ, prefix: "$" },
+                      ].map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="p-3 rounded-2xl bg-white/[0.04] hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 transition-all"
+                        >
+                          <span className="text-[11px] text-stone-300 block">{item.label}</span>
+                          <strong className="font-mono text-sm font-black text-[var(--gold)] block mt-1">
+                            {item.q?.price
+                              ? `${item.prefix || ""}${Number(item.q.price).toLocaleString("en-US")}${item.suffix || ""}`
+                              : "بث السوق"}
+                          </strong>
+                        </Link>
+                      ))}
+                    </div>
+                    <Link href="/economy" className="inline-flex items-center gap-1 text-xs font-black text-amber-400 hover:underline pt-1">
+                      <span>لوحة الاقتصاد وحاسبة الذهب والعملات الكاملة</span>
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+
+                  <div className="col-span-7 space-y-3">
+                    <h4 className="text-xs font-black text-[var(--gold)] border-b border-white/10 pb-2">
+                      أحدث تقارير المال والأعمال
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      {(megaArticles["economy"] || []).slice(0, 3).map((art) => (
+                        <Link
+                          key={art.id}
+                          href={`/article/${art.id}/${art.slug}`}
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-amber-500/50 transition-all"
+                        >
+                          <div className="aspect-video overflow-hidden bg-black">
+                            <img
+                              src={resolveEditorialImage(art)}
+                              alt={art.titleAr}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="p-3 space-y-1">
+                            <span className="text-[10px] text-amber-400 font-bold block">
+                              {art.source?.nameAr || "الوطن الاقتصادي"}
+                            </span>
+                            <h5 className="text-xs font-bold text-white line-clamp-2 group-hover:text-amber-300 leading-snug">
+                              {art.titleAr}
+                            </h5>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeMega === "sports" && (
+                <div className="grid grid-cols-12 gap-6 items-start">
+                  <div className="col-span-6 space-y-3">
+                    <h4 className="text-xs font-black text-emerald-400 flex items-center gap-2 border-b border-white/10 pb-2">
+                      <Trophy className="w-4 h-4" />
+                      <span>أبرز مواجهات الملاعب المباشرة والمجدولة (ESPN Live)</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {megaMatches.length > 0 ? (
+                        megaMatches.map((m) => (
+                          <Link
+                            key={m.id}
+                            href="/sports"
+                            className="p-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/15 border border-white/10 transition-all space-y-1"
+                          >
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="text-stone-400 truncate max-w-[130px]">{m.leagueNameAr}</span>
+                              <span className={m.status === "LIVE" ? "text-red-400 font-black" : "text-emerald-400 font-bold"}>
+                                {m.statusDetail}
+                              </span>
+                            </div>
+                            <div className="text-xs font-black text-white flex items-center justify-between">
+                              <span className="truncate">{m.homeTeam}</span>
+                              <span className="font-mono text-[var(--gold)] px-1.5">
+                                {m.homeScore !== null ? `${m.homeScore} - ${m.awayScore}` : "vs"}
+                              </span>
+                              <span className="truncate">{m.awayTeam}</span>
+                            </div>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="col-span-2 p-4 rounded-2xl bg-white/[0.03] text-xs text-stone-400">
+                          استعرض جداول الترتيب والمباريات الحية في استوديو يلا سبورت ←
+                        </div>
+                      )}
+                    </div>
+                    <Link href="/sports" className="inline-flex items-center gap-1 text-xs font-black text-emerald-400 hover:underline">
+                      <span>فتح استوديو يلا سبورت الكامل</span>
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+
+                  <div className="col-span-6 space-y-3">
+                    <h4 className="text-xs font-black text-[var(--gold)] border-b border-white/10 pb-2">
+                      آخر الأخبار الرياضية
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {(megaArticles["sports"] || []).slice(0, 2).map((art) => (
+                        <Link
+                          key={art.id}
+                          href={`/article/${art.id}/${art.slug}`}
+                          className="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden hover:border-emerald-500/50 transition-all"
+                        >
+                          <div className="aspect-video overflow-hidden bg-black">
+                            <img
+                              src={resolveEditorialImage(art)}
+                              alt={art.titleAr}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="p-3 space-y-1">
+                            <span className="text-[10px] text-emerald-400 font-bold block">
+                              {art.source?.nameAr || "يلا سبورت"}
+                            </span>
+                            <h5 className="text-xs font-bold text-white line-clamp-2 group-hover:text-emerald-300 leading-snug">
+                              {art.titleAr}
+                            </h5>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeMega === "services" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <h4 className="text-xs font-black text-[var(--gold)] flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span>منصات الاستقصاء والبيانات والخدمات الذكية</span>
+                    </h4>
+                    <Link href="/admin" className="text-[11px] font-bold text-[var(--gold)] hover:underline">
+                      كابينة الإدارة التحريرية ←
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { href: "/pulse", label: "رادار المزاج والبيانات", desc: "تحليل حي لتوزيع الأخبار والكلمات", icon: Activity },
+                      { href: "/live-360", label: "تغطية 360° الميدانية", desc: "زاوية ميدانية، سياسية وإنسانية", icon: Globe },
+                      { href: "/atlas", label: "أطلس فلسطين الرقمي", desc: "دليل المدن والقرى والتغطيات", icon: Compass },
+                      { href: "/history", label: "في مثل هذا اليوم", desc: "أحداث التاريخ اليوم عبر ويكيبيديا", icon: History },
+                      { href: "/podcast", label: "صوت الوطن (بودكاست)", desc: "نشرة إخبارية صوتية آلية حية", icon: Headphones },
+                      { href: "/games", label: "تحديات الذاكرة اليومية", desc: "اختبر معرفتك بتاريخ وجغرافيا فلسطين", icon: Gamepad2 },
+                      { href: "/fact-check", label: "رادار الحقيقة (OSINT)", desc: "فحص الروابط وكشف الشائعات", icon: ShieldCheck },
+                      { href: "/stories", label: "القصص المجمعة (Clusters)", desc: "مقارنة تغطية الوكالات للحدث نفسه", icon: Sparkles },
+                    ].map((srv) => {
+                      const Icon = srv.icon;
+                      return (
+                        <Link
+                          key={srv.href}
+                          href={srv.href}
+                          className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 hover:border-[var(--gold)]/50 transition-all flex items-start gap-3"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-[var(--gold)]/15 text-[var(--gold)] flex items-center justify-center shrink-0">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-black text-white block">{srv.label}</span>
+                            <span className="text-[10px] text-stone-400 block mt-0.5 leading-snug">{srv.desc}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. قائمة الهواتف المنزلقة (Mobile Drawer)                                */}
+      {/* ========================================================================= */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-[var(--gold)]/20 bg-[#160006]/98 p-5 space-y-5 animate-in slide-in-from-top-4 duration-200 shadow-2xl backdrop-blur-3xl text-white">
+          <SearchTrigger expanded className="w-full" />
+
+          <div className="grid grid-cols-2 gap-2.5 text-xs font-bold">
+            <Link href="/palestine" className="p-3 rounded-2xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+              <span>🇵🇸</span>
+              <span>فلسطين والميدان</span>
+            </Link>
+            <Link href="/breaking" className="p-3 rounded-2xl bg-red-950/50 text-red-300 border border-red-500/30 flex items-center gap-2">
+              <Flame className="w-4 h-4" />
+              <span>الأخبار العاجلة</span>
+            </Link>
+            <Link href="/economy" className="p-3 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              <span>الاقتصاد والذهب</span>
+            </Link>
+            <Link href="/sports" className="p-3 rounded-2xl bg-emerald-800/30 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              <span>يلا سبورت</span>
+            </Link>
+            <Link href="/aid" className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-stone-200">
+              <HeartHandshake className="w-4 h-4 text-amber-400" />
+              <span>المساعدات</span>
+            </Link>
+            <Link href="/jobs" className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 text-stone-200">
+              <Briefcase className="w-4 h-4 text-sky-400" />
+              <span>الوظائف</span>
+            </Link>
+            <Link href="/fact-check" className="p-3 rounded-2xl bg-rose-600/20 text-rose-300 border border-rose-500/30 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              <span>رادار الحقيقة</span>
+            </Link>
+            <Link href="/ask" className="p-3 rounded-2xl bg-[var(--gold)]/20 text-[var(--gold)] border border-[var(--gold)]/40 flex items-center gap-2">
+              <Bot className="w-4 h-4" />
               <span>اسأل الوطن AI</span>
             </Link>
           </div>

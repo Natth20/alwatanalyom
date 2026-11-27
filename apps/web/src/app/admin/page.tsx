@@ -18,63 +18,16 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  // قيم افتراضية متطابقة بنسبة 100% مع لقطة الشاشة المعتمدة
-  let sourcesCount = 16;
-  let failingSourcesCount = 11;
-  let pendingReviewCount = 10;
-  let publishedCount = 550;
-  let activeAdsCount = 6;
+  let sourcesCount = 0;
+  let failingSourcesCount = 0;
+  let pendingReviewCount = 0;
+  let publishedCount = 0;
+  let activeAdsCount = 0;
   let totalAdImpressions: { _sum: { impressions: number | null } } = {
-    _sum: { impressions: 21151 },
+    _sum: { impressions: 0 },
   };
-
-  let recentArticles: any[] = [
-    {
-      id: "art-1",
-      slug: "gaza-shifa-medical-aid",
-      titleAr: "عاجل: وصول أولى قوافل الإمدادات الطبية والوقود إلى مجمع الشفاء ومستشفيات شمال القطاع برعاية أممية",
-      publishedAtText: "1:35:54 ص",
-      isBreaking: true,
-      section: { nameAr: "فلسطين" },
-      source: { nameAr: "وكالة الأنباء الفلسطينية (وفا)" },
-    },
-    {
-      id: "art-2",
-      slug: "gold-record-jump-2850",
-      titleAr: "عاجل: الذهب يقفز لمستوى قياسي جديد متجاوزاً 2,850 دولاراً للأونصة وسط طلب استثماري هائل",
-      publishedAtText: "1:29:54 ص",
-      isBreaking: true,
-      section: { nameAr: "الاقتصاد والأسواق" },
-      source: { nameAr: "رويترز عربي" },
-    },
-    {
-      id: "art-3",
-      slug: "jerusalem-gaza-diplomatic-moves",
-      titleAr: "القدس وغزة تتصدران الأولويات: تحركات دبلوماسية مكثفة واجتماع طارئ لدعم صمود الهوية الفلسطينية",
-      publishedAtText: "1:10:00 ص",
-      isBreaking: false,
-      section: { nameAr: "فلسطين" },
-      source: { nameAr: "وكالة الأنباء الفلسطينية (وفا)" },
-    },
-    {
-      id: "art-4",
-      slug: "yalla-sport-bernabéu-clash",
-      titleAr: "يلا سبورت: قمة البرنابيو تشعل دوري الأبطال.. التكتيك، التشكيل المتوقع، ومفاتيح حسم المعركة الكروية",
-      publishedAtText: "8:14:04 ص",
-      isBreaking: false,
-      section: { nameAr: "يلا سبورت" },
-      source: { nameAr: "الجزيرة نت" },
-    },
-    {
-      id: "art-5",
-      slug: "ai-independent-agents-revolution",
-      titleAr: "ثورة الوكلاء المستقلين: كيف تعيد أنظمة الذكاء الاصطناعي 2.0 صياغة مستقبل البرمجيات والمؤسسات الإعلامية؟",
-      publishedAtText: "7:40:04 ص",
-      isBreaking: false,
-      section: { nameAr: "التقنية والذكاء الاصطناعي" },
-      source: { nameAr: "وكالة الأناضول للأنباء" },
-    },
-  ];
+  let recentArticles: any[] = [];
+  let dbConnected = false;
 
   try {
     if (prisma) {
@@ -93,30 +46,29 @@ export default async function AdminDashboardPage() {
         }),
       ]);
 
-      if (results[0] > 0) sourcesCount = results[0];
-      if (results[1] !== undefined) failingSourcesCount = results[1];
-      if (results[2] > 0) pendingReviewCount = results[2];
-      if (results[3] > 0) publishedCount = results[3];
-      if (results[4] > 0) activeAdsCount = results[4];
-      if (results[5]?._sum?.impressions) totalAdImpressions = results[5];
-      if (results[6] && results[6].length > 0) {
-        recentArticles = results[6].map((a) => ({
-          id: a.id,
-          slug: a.slug,
-          titleAr: a.titleAr,
-          publishedAtText: new Date(a.publishedAt || Date.now()).toLocaleTimeString("ar-EG", {
-            hour: "numeric",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-          isBreaking: a.isBreaking || a.titleAr.includes("عاجل"),
-          section: { nameAr: a.section?.nameAr || "فلسطين" },
-          source: { nameAr: a.source?.nameAr || "وكالة الأنباء (وفا)" },
-        }));
-      }
+      dbConnected = true;
+      sourcesCount = results[0];
+      failingSourcesCount = results[1];
+      pendingReviewCount = results[2];
+      publishedCount = results[3];
+      activeAdsCount = results[4];
+      totalAdImpressions = results[5] || { _sum: { impressions: 0 } };
+      recentArticles = results[6].map((a) => ({
+        id: a.id,
+        slug: a.slug,
+        titleAr: a.titleAr,
+        publishedAtText: new Date(a.publishedAt || Date.now()).toLocaleTimeString("ar-EG", {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        isBreaking: a.isBreaking || a.titleAr.includes("عاجل"),
+        section: { nameAr: a.section?.nameAr || "فلسطين" },
+        source: { nameAr: a.source?.nameAr || "هيئة التحرير" },
+      }));
     }
   } catch (err) {
-    console.warn("Using resilient high-fidelity fallback data for Admin Dashboard:", err);
+    console.warn("Admin Dashboard DB query failed:", err);
   }
 
   return (
@@ -190,7 +142,7 @@ export default async function AdminDashboardPage() {
         <div className="p-4 rounded-2xl border border-white/10 bg-[#16060B]/70 backdrop-blur-sm hover:border-sky-500/30 transition-all">
           <span className="text-xs text-slate-400 block mb-1 font-medium">مشاهدات الإعلانات</span>
           <div className="text-2xl sm:text-3xl font-black text-white">
-            {(totalAdImpressions._sum.impressions || 21151).toLocaleString("ar-EG")}
+            {(totalAdImpressions._sum.impressions || 0).toLocaleString("ar-EG")}
           </div>
           <span className="text-[10px] text-slate-400 mt-1.5 block font-semibold">ظهور فعلي للزوار</span>
         </div>

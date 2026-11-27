@@ -32,6 +32,7 @@ interface Props {
   techArticles: ArticleCardType[];
   sportsArticles: ArticleCardType[];
   quotes: InstrumentQuote[];
+  mostReadArticles?: (ArticleCardType & { readCount?: number })[];
 }
 
 export function HomeStreamLayout({
@@ -47,6 +48,7 @@ export function HomeStreamLayout({
   techArticles,
   sportsArticles,
   quotes,
+  mostReadArticles = [],
 }: Props) {
   const headlines = [
     heroArticle?.titleAr,
@@ -57,13 +59,14 @@ export function HomeStreamLayout({
   return (
     <div className="space-y-16 sm:space-y-20 lg:space-y-24">
       {/* 0. شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
-      <NewsStoriesBar />
+      <NewsStoriesBar stories={palestineStories} articles={fastStreamArticles} />
 
       {/* 1. المركز الرئاسي والبطل الإخباري ثلاثي الأعمدة (Tri-Pillar Hero Wall) */}
       <HomeHeroSection
         heroStory={heroStory}
         heroArticle={heroArticle}
         secondaryArticles={secondaryArticles}
+        quotes={quotes}
       />
 
       {/* 1.1 الموجز الصوتي الذكي في صدارة الصفحة الرئيسية */}
@@ -187,10 +190,14 @@ export function HomeStreamLayout({
           {/* الأكثر قراءة وتفاعلاً */}
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
             <MostReadWidget
-              articles={palestineStories
-                .flatMap((s) => s.articles)
-                .concat(worldArticles)
-                .concat(arabWorldArticles)}
+              articles={
+                mostReadArticles.length > 0
+                  ? mostReadArticles
+                  : palestineStories
+                      .flatMap((s) => s.articles)
+                      .concat(worldArticles)
+                      .concat(arabWorldArticles)
+              }
             />
           </div>
 

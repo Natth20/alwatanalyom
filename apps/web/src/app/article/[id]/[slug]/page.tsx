@@ -6,6 +6,7 @@ import { SportsLinkCard } from "@/components/SportsLinkCard";
 import { ArticleActions } from "@/components/ArticleActions";
 import { ReadingToolbar } from "@/components/ReadingToolbar";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { ArticleViewTracker } from "@/components/ArticleViewTracker";
 import { AudioReader } from "@/components/AudioReader";
 import { KeyTakeaways } from "@/components/KeyTakeaways";
 import { ArticleReactions } from "@/components/ArticleReactions";
@@ -165,8 +166,9 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <article className="container-custom py-8 max-w-4xl mx-auto space-y-8">
-      {/* 0. شريط تقدم قراءة المقال الدقيق في أعلى الشاشة */}
+      {/* 0. شريط تقدم قراءة المقال الدقيق وعداد القراءات الحقيقي */}
       <ReadingProgressBar />
+      <ArticleViewTracker articleId={article.id} />
 
       <script
         type="application/ld+json"

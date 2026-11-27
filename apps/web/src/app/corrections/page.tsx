@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InstitutionalNav from "@/components/InstitutionalNav";
 import {
   Scale,
@@ -80,22 +80,60 @@ export default function CorrectionsPage() {
   const [reqSourceUrl, setReqSourceUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
+  const [dbLogs, setDbLogs] = useState<CorrectionEntry[]>([]);
 
-  const handleSubmitCorrection = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetch("/api/v1/corrections")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.corrections)) {
+          setDbLogs(
+            data.corrections.map((c: any) => ({
+              id: c.id,
+              articleTitle: c.articleTitle,
+              articleUrl: c.articleUrl,
+              date: new Date(c.createdAt).toLocaleDateString("ar-EG", { day: "numeric", month: "long", year: "numeric" }),
+              time: new Date(c.createdAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }),
+              category: c.category || "تصحيح تحريري",
+              originalText: "تنويه تحريري مسجل في سجل المادة",
+              correctedText: c.note,
+              reason: "تصويب تحريري موثق في قاعدة البيانات",
+              handledBy: "غرفة التحرير — الوطن اليوم",
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmitCorrection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reqArticleUrl || !reqDetail) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      const ticketId = `AWT-CORR-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmittedTicket(ticketId);
+    try {
+      const res = await fetch("/api/v1/corrections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          articleUrl: reqArticleUrl,
+          detail: reqDetail,
+          sourceUrl: reqSourceUrl,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ticketCode) {
+        setSubmittedTicket(json.ticketCode);
+        setReqArticleUrl("");
+        setReqDetail("");
+        setReqSourceUrl("");
+      }
+    } catch {} finally {
       setIsSubmitting(false);
-      setReqArticleUrl("");
-      setReqDetail("");
-      setReqSourceUrl("");
-    }, 1000);
+    }
   };
 
-  const filteredLogs = CORRECTION_LOGS.filter((entry) => {
+  const combinedLogs = dbLogs.length > 0 ? dbLogs : CORRECTION_LOGS;
+  const filteredLogs = combinedLogs.filter((entry) => {
     const matchesCat = selectedCategory === "all" || entry.category === selectedCategory;
     const matchesQuery =
       entry.articleTitle.includes(searchQuery) ||

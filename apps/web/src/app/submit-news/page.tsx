@@ -33,18 +33,43 @@ export default function SubmitNewsPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [trackingId, setTrackingId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !details) return;
     setSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
-      const generatedId = `AWT-LEAK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      setTrackingId(generatedId);
+    try {
+      const res = await fetch("/api/v1/submit-news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          details,
+          location: location || undefined,
+          sourceType,
+          attachmentUrl: attachmentUrl.trim() || undefined,
+          isAnonymous,
+          senderName: !isAnonymous && senderName ? senderName : undefined,
+          senderContact: !isAnonymous && senderContact ? senderContact : undefined,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setTrackingId(`AWT-TIP-${Date.now().toString().slice(-6)}`);
+        setTitle("");
+        setDetails("");
+      } else {
+        setSubmitError(json?.error?.message || "تعذر إرسال البلاغ، يرجى التأكد من استيفاء الحد الأدنى للحروف.");
+      }
+    } catch {
+      setSubmitError("تعذر الاتصال بغرفة التحقيقات حالياً.");
+    } finally {
       setSubmitting(false);
-    }, 1200);
+    }
   };
 
   const handleCopyCode = () => {

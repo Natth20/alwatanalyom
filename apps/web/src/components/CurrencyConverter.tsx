@@ -1,165 +1,161 @@
 "use client";
 
-import { useState } from "react";
-import { Calculator, ArrowRightLeft, Sparkles } from "lucide-react";
-import { InstrumentQuote } from "@awt/shared";
+import { useState, useEffect } from "react";
+import type { InstrumentQuote } from "@awt/shared";
+import { ArrowLeftRight, RefreshCw } from "lucide-react";
 
 interface Props {
   quotes: InstrumentQuote[];
 }
 
-export function CurrencyConverter({ quotes }: Props) {
-  const [amount, setAmount] = useState<number>(100);
-  const [fromCurrency, setFromCurrency] = useState<string>("USD");
-  const [toCurrency, setToCurrency] = useState<string>("ILS");
+const CURRENCY_LABELS: Record<string, string> = {
+  USD: "دولار أمريكي (USD)",
+  ILS: "شيكل (ILS)",
+  JOD: "دينار أردني (JOD)",
+  EUR: "يورو أوروبي (EUR)",
+  GBP: "جنيه إسترليني (GBP)",
+  SAR: "ريال سعودي (SAR)",
+  EGP: "جنيه مصري (EGP)",
+  AED: "درهم إماراتي (AED)",
+  KWD: "دينار كويتي (KWD)",
+};
 
-  // استخراج أسعار الصرف الحية وتحويلها لأرقام حسابية
-  const usdIlsRaw = quotes.find((q) => q.symbol === "USDILS")?.price;
-  const usdIls = usdIlsRaw ? parseFloat(usdIlsRaw) || 3.75 : 3.75;
+export function CurrencyConverter({ quotes: initialQuotes }: Props) {
+  const [quotes, setQuotes] = useState<InstrumentQuote[]>(initialQuotes || []);
+  const [amount, setAmount] = useState<string>("100");
+  const [fromCurr, setFromCurr] = useState<string>("USD");
+  const [toCurr, setToCurr] = useState<string>("ILS");
 
-  const eurUsdRaw = quotes.find((q) => q.symbol === "EURUSD")?.price;
-  const eurUsd = eurUsdRaw ? parseFloat(eurUsdRaw) || 1.08 : 1.08;
+  useEffect(() => {
+    const hasFx = quotes.some((q) => q.symbol === "USDILS" && q.price);
+    if (hasFx) return;
 
-  const goldOunceRaw = quotes.find((q) => q.symbol === "XAUUSD")?.price;
-  const goldOunce = goldOunceRaw ? parseFloat(goldOunceRaw) || 2700 : 2700;
+    fetch("/api/v1/quotes")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.quotes)) {
+          setQuotes(data.quotes);
+        }
+      })
+      .catch(() => {});
+  }, [quotes]);
 
-  // أسعار التحويل التقريبية بالنسبة للدولار
-  const ratesToUsd: Record<string, number> = {
-    USD: 1,
-    ILS: 1 / usdIls,
-    JOD: 1 / 0.709, // الدينار الأردني مربوط بالدولار تقريباً 0.709
-    EUR: eurUsd,
+  // Build USD-per-unit table strictly from real live quotes
+  const findRate = (sym: string): number | null => {
+    const val = quotes.find((q) => q.symbol === sym)?.price;
+    return val ? parseFloat(val) : null;
   };
 
-  const calculateConversion = () => {
-    const fromRate = ratesToUsd[fromCurrency] || 1;
-    const toRate = ratesToUsd[toCurrency] || 1;
-    const amountInUsd = amount * fromRate;
-    const result = amountInUsd / toRate;
-    return result.toFixed(2);
-  };
+  const unitsPerUsd: Record<string, number> = { USD: 1 };
+  const ils = findRate("USDILS");
+  const jod = findRate("USDJOD");
+  const eurUsd = findRate("EURUSD");
+  const gbpUsd = findRate("GBPUSD");
+  const sar = findRate("USDSAR");
+  const egp = findRate("USDEGP");
+  const aed = findRate("USDAED");
+  const kwd = findRate("USDKWD");
 
-  // حساب أسعار غرام الذهب
-  const goldGram24 = goldOunce / 31.1035;
-  const goldGram21 = goldGram24 * (21 / 24);
-  const goldGram18 = goldGram24 * (18 / 24);
+  if (ils) unitsPerUsd["ILS"] = ils;
+  if (jod) unitsPerUsd["JOD"] = jod;
+  if (eurUsd) unitsPerUsd["EUR"] = 1 / eurUsd;
+  if (gbpUsd) unitsPerUsd["GBP"] = 1 / gbpUsd;
+  if (sar) unitsPerUsd["SAR"] = sar;
+  if (egp) unitsPerUsd["EGP"] = egp;
+  if (aed) unitsPerUsd["AED"] = aed;
+  if (kwd) unitsPerUsd["KWD"] = kwd;
+
+  const availableCodes = Object.keys(CURRENCY_LABELS).filter((c) => unitsPerUsd[c]);
+  const amtNum = Math.max(0, parseFloat(amount) || 0);
+  const fromUnit = unitsPerUsd[fromCurr];
+  const toUnit = unitsPerUsd[toCurr];
+  const converted =
+    fromUnit && toUnit ? (amtNum / fromUnit) * toUnit : null;
 
   return (
-    <div className="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] space-y-6 my-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border)] pb-4">
-        <div className="flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-[var(--primary)]" />
-          <h3 className="font-bold text-base text-[var(--text)]">
-            حاسبة تحويل العملات والذهب في فلسطين
-          </h3>
+    <div className="rounded-3xl border border-emerald-500/30 bg-[var(--surface)] p-6 shadow-md space-y-5">
+      <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+            <ArrowLeftRight className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-black text-base text-[var(--text)]">محوّل العملات بالأسعار الحية</h3>
+            <span className="text-[10px] text-[var(--text-muted)]">
+              أسعار فورية مباشرة بدون هوامش صرافة وهمية
+            </span>
+          </div>
         </div>
-        <span className="text-xs text-[var(--text-muted)] flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>محدثة وفق مؤشرات الصرف الحالية</span>
-        </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* محول العملات */}
-        <div className="space-y-4">
-          <label className="text-xs font-bold text-[var(--text-muted)] block">
-            تحويل العملات النقدية (شيكل، دولار، دينار، يورو)
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-1">
-              <label className="text-[10px] text-[var(--text-muted)] block mb-1">المبلغ</label>
+      {availableCodes.length < 2 ? (
+        <div className="py-6 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>جاري استيراد أسعار الصرف المباشرة...</span>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <div className="sm:col-span-4 space-y-1.5">
+              <label className="text-xs font-bold text-[var(--text-muted)] block">المبلغ</label>
               <input
                 type="number"
-                min="1"
+                min="0"
                 value={amount}
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm font-bold text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm font-mono font-bold text-[var(--text)]"
               />
             </div>
 
-            <div>
-              <label className="text-[10px] text-[var(--text-muted)] block mb-1">من</label>
+            <div className="sm:col-span-3 space-y-1.5">
+              <label className="text-xs font-bold text-[var(--text-muted)] block">من</label>
               <select
-                value={fromCurrency}
-                onChange={(e) => setFromCurrency(e.target.value)}
-                className="w-full px-2 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-xs font-bold text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+                value={fromCurr}
+                onChange={(e) => setFromCurr(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-xs font-bold text-[var(--text)]"
               >
-                <option value="USD">دولار أمريكي ($)</option>
-                <option value="JOD">دينار أردني (JOD)</option>
-                <option value="EUR">يورو أوروبي (€)</option>
-                <option value="ILS">شيكل إسرائيلي (₪)</option>
+                {availableCodes.map((c) => (
+                  <option key={c} value={c}>{CURRENCY_LABELS[c]}</option>
+                ))}
               </select>
             </div>
 
-            <div>
-              <label className="text-[10px] text-[var(--text-muted)] block mb-1">إلى</label>
-              <select
-                value={toCurrency}
-                onChange={(e) => setToCurrency(e.target.value)}
-                className="w-full px-2 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-xs font-bold text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+            <div className="sm:col-span-2 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setFromCurr(toCurr);
+                  setToCurr(fromCurr);
+                }}
+                className="w-10 h-10 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-500 flex items-center justify-center cursor-pointer"
+                aria-label="تبديل العملتين"
               >
-                <option value="ILS">شيكل إسرائيلي (₪)</option>
-                <option value="JOD">دينار أردني (JOD)</option>
-                <option value="USD">دولار أمريكي ($)</option>
-                <option value="EUR">يورو أوروبي (€)</option>
+                <ArrowLeftRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="sm:col-span-3 space-y-1.5">
+              <label className="text-xs font-bold text-[var(--text-muted)] block">إلى</label>
+              <select
+                value={toCurr}
+                onChange={(e) => setToCurr(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-xs font-bold text-[var(--text)]"
+              >
+                {availableCodes.map((c) => (
+                  <option key={c} value={c}>{CURRENCY_LABELS[c]}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-              <span>{amount} {fromCurrency}</span>
-              <ArrowRightLeft className="w-3.5 h-3.5 text-[var(--primary)]" />
-              <span className="font-bold text-[var(--text)]">{toCurrency}</span>
-            </div>
-            <div className="text-xl font-black text-emerald-500">
-              {calculateConversion()} {toCurrency}
-            </div>
+          <div className="rounded-2xl bg-[var(--bg)] border border-[var(--border)] p-4 flex items-center justify-between">
+            <span className="text-xs text-[var(--text-muted)]">النتيجة الفورية:</span>
+            <strong className="font-mono text-2xl font-black text-emerald-500">
+              {converted !== null ? `${converted.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${toCurr}` : "—"}
+            </strong>
           </div>
-        </div>
-
-        {/* حاسبة أسعار الذهب الفوري بالغرام */}
-        <div className="space-y-4">
-          <label className="text-xs font-bold text-[var(--text-muted)] block">
-            أسعار غرام الذهب الفوري اليوم (خام عالمي)
-          </label>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
-              <span className="block text-[11px] font-bold text-[var(--text-muted)]">عيار 24 (الخام)</span>
-              <span className="block text-base font-black text-[var(--text)] mt-1">
-                ${goldGram24.toFixed(1)}
-              </span>
-              <span className="block text-[10px] text-emerald-500 font-semibold mt-0.5">
-                {(goldGram24 * usdIls).toFixed(1)} ₪
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
-              <span className="block text-[11px] font-bold text-amber-500">عيار 21 (الأكثر طلباً)</span>
-              <span className="block text-base font-black text-amber-500 mt-1">
-                ${goldGram21.toFixed(1)}
-              </span>
-              <span className="block text-[10px] text-amber-400 font-semibold mt-0.5">
-                {(goldGram21 * usdIls).toFixed(1)} ₪
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
-              <span className="block text-[11px] font-bold text-[var(--text-muted)]">عيار 18</span>
-              <span className="block text-base font-black text-[var(--text)] mt-1">
-                ${goldGram18.toFixed(1)}
-              </span>
-              <span className="block text-[10px] text-emerald-500 font-semibold mt-0.5">
-                {(goldGram18 * usdIls).toFixed(1)} ₪
-              </span>
-            </div>
-          </div>
-
-          <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
-            * الأسعار مبنية على سعر الأونصة العالمية (${goldOunce.toFixed(0)}) ولا تشمل عمولة المصنعية أو ضريبة القيمة المضافة لدى محلات الصاغة.
-          </p>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

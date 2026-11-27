@@ -1,213 +1,132 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { getSectionFeed } from "@/lib/dal";
+import { fetchLiveSports } from "@/lib/live-data/sports";
 import { ArticleCard } from "@/components/ArticleCard";
 import { TodayMatchesWidget } from "@/components/sports/TodayMatchesWidget";
 import { YallaSportBanner } from "@/components/sports/YallaSportBanner";
-import {
-  Trophy,
-  Flame,
-  ChevronLeft,
-  Tv,
-  Calendar,
-  ExternalLink,
-  Medal,
-  Award,
-  Radio,
-  PlayCircle,
-  ShieldCheck,
-} from "lucide-react";
+import { Trophy, ShieldCheck, Radio, Medal } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "يلا سبورت — نتائج المباريات، ترتيب الدوريات، وأخبار الرياضة المباشرة",
-  description: "المدرج الرياضي الأول في فلسطين والعالم العربي: نتائج حية، ترتيب الدوريات الأوروبية والعربية، أهداف المباريات وتغطيات الفدائي الفلسطيني بالشراكة مع يلا سبورت.",
-  alternates: {
-    canonical: "/sports",
-  },
+  description: "المدرج الرياضي الأول: نتائج حية، ترتيب الدوريات الأوروبية والعربية المباشر عبر ESPN Global Soccer وأحدث الأخبار الرياضية.",
+  alternates: { canonical: "/sports" },
 };
 
-// جداول ترتيب الدوريات الحية المعتمدة
-const LEAGUE_STANDINGS = [
-  {
-    league: "الدوري الإنجليزي الممتاز (Premier League)",
-    flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    teams: [
-      { rank: 1, name: "ليفربول", played: 12, won: 10, drawn: 1, lost: 1, points: 31, form: "W-W-W-D-W" },
-      { rank: 2, name: "مانشستر سيتي", played: 12, won: 7, drawn: 2, lost: 3, points: 23, form: "L-L-L-W-W" },
-      { rank: 3, name: "تشيلسي", played: 12, won: 6, drawn: 4, lost: 2, points: 22, form: "W-D-D-W-W" },
-      { rank: 4, name: "أرسنال", played: 12, won: 6, drawn: 4, lost: 2, points: 22, form: "W-D-L-D-W" },
-      { rank: 5, name: "برايتون", played: 12, won: 6, drawn: 4, lost: 2, points: 22, form: "D-W-W-D-L" },
-    ],
-  },
-  {
-    league: "دوري روشن السعودي للمحترفين",
-    flag: "🇸🇦",
-    teams: [
-      { rank: 1, name: "الهلال", played: 11, won: 9, drawn: 1, lost: 1, points: 28, form: "L-W-W-W-D" },
-      { rank: 2, name: "الاتحاد", played: 11, won: 10, drawn: 0, lost: 1, points: 30, form: "W-W-W-W-W" },
-      { rank: 3, name: "النصر", played: 11, won: 6, drawn: 4, lost: 1, points: 22, form: "L-W-D-W-D" },
-      { rank: 4, name: "القادسية", played: 11, won: 7, drawn: 1, lost: 3, points: 22, form: "W-W-W-W-L" },
-      { rank: 5, name: "الشباب", played: 11, won: 7, drawn: 1, lost: 3, points: 22, form: "L-W-W-W-L" },
-    ],
-  },
-  {
-    league: "الدوري الإسباني (La Liga)",
-    flag: "🇪🇸",
-    teams: [
-      { rank: 1, name: "برشلونة", played: 14, won: 11, drawn: 1, lost: 2, points: 34, form: "D-L-W-W-W" },
-      { rank: 2, name: "ريال مدريد", played: 13, won: 9, drawn: 3, lost: 1, points: 30, form: "W-W-L-W-W" },
-      { rank: 3, name: "أتلتيكو مدريد", played: 14, won: 8, drawn: 5, lost: 1, points: 29, form: "W-W-W-W-D" },
-      { rank: 4, name: "فياريال", played: 12, won: 7, drawn: 3, lost: 2, points: 24, form: "D-W-W-D-W" },
-    ],
-  },
-];
-
-// هدافو الدوريات الكبرى
-const TOP_SCORERS = [
-  { name: "إيرلينغ هالاند", team: "مانشستر سيتي", goals: 12, assists: 0, flag: "🇳🇴" },
-  { name: "روبرت ليفاندوفسكي", team: "برشلونة", goals: 15, assists: 2, flag: "🇵🇱" },
-  { name: "محمد صلاح", team: "ليفربول", goals: 10, assists: 6, flag: "🇪🇬" },
-  { name: "ألكسندر ميتروفيتش", team: "الهلال", goals: 11, assists: 1, flag: "🇷🇸" },
-  { name: "كريستيانو رونالدو", team: "النصر", goals: 7, assists: 2, flag: "🇵🇹" },
-  { name: "فينيسيوس جونيور", team: "ريال مدريد", goals: 8, assists: 4, flag: "🇧🇷" },
-];
-
 export default async function SportsPage() {
-  const feed = await getSectionFeed("sports");
-  const articles = feed?.articles || [];
-  const heroArticle = articles[0];
-  const remainingArticles = articles.slice(1);
+  const [sportsFeed, liveSports] = await Promise.all([
+    getSectionFeed("sports"),
+    fetchLiveSports(),
+  ]);
+
+  const sportsArticles = sportsFeed?.articles || [];
+  const leadArticle = sportsArticles[0];
+  const restArticles = sportsArticles.slice(1);
+  const liveCount = liveSports.matches.filter((m) => m.status === "LIVE").length;
 
   return (
-    <div className="container-custom py-8 space-y-10">
-      {/* 1. ترويسة مدرج يلا سبورت الملكي */}
-      <div className="card-imperial bg-gradient-to-r from-[#041a0e] via-[#092a18] to-[#041a0e] p-6 sm:p-8 space-y-4 shadow-2xl relative overflow-hidden border border-emerald-500/40">
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
-
-        <nav aria-label="فتات الخبز" className="flex items-center gap-2 text-xs text-slate-400">
-          <Link href="/" className="hover:text-emerald-400 transition-colors">الرئيسية</Link>
-          <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-0 text-emerald-400" />
-          <span className="text-emerald-400 font-black">يلا سبورت والملاعب</span>
-        </nav>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-5">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="w-4 h-4 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)] animate-pulse" />
-              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight flex items-center gap-2">
-                <span>يلا سبورت</span>
-                <span className="text-emerald-400 font-mono text-xl sm:text-2xl font-normal">| YALLA SPORT</span>
-              </h1>
+    <div className="container-custom py-10 space-y-12">
+      {/* 1. ترويسة المدرج الرياضي */}
+      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#042318] via-[#0B3B28] to-[#04140E] p-7 md:p-10 text-white border border-emerald-500/30 shadow-2xl">
+        <div className="absolute -bottom-16 end-0 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/35 text-emerald-300 text-xs font-black">
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span>بث النتائج والترتيب الحقيقي ({liveSports.provider})</span>
             </div>
-            <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-              المدرج الرياضي التفاعلي الشامل: مواعيد ونتائج المباريات الحية، أهداف دوري أبطال أوروبا، ترتيب الدوريات العربية والعالمية، وتغطية استثنائية لمشاركات منتخب فلسطين (الفدائي).
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+              استوديو <span className="text-[var(--gold)]">يلا سبورت</span> الرياضي
+            </h1>
+            <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed">
+              تغطية حية لحظة بلحظة لأقوى البطولات العالمية والعربية، جداول المباريات الرسمية، وترتيب الأندية المحدث مباشرة من الملاعب دون أي نتائج تقديرية.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
-            <a
-              href="https://yallasport.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all flex items-center gap-2 shadow-lg hover:scale-105"
-            >
-              <Trophy className="w-4 h-4" />
-              <span>زيارة شبكة يلا سبورت الرسمية</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+          <div className="flex flex-wrap gap-3 shrink-0">
+            <div className="px-4 py-3 rounded-2xl bg-black/40 border border-white/10 text-center min-w-[110px]">
+              <strong className="font-mono text-2xl font-black text-[var(--gold)] block">
+                {liveSports.matches.length}
+              </strong>
+              <span className="text-[11px] text-emerald-200">مباراة مرصودة</span>
+            </div>
+            <div className="px-4 py-3 rounded-2xl bg-black/40 border border-white/10 text-center min-w-[110px]">
+              <strong className="font-mono text-2xl font-black text-red-400 block">
+                {liveCount}
+              </strong>
+              <span className="text-[11px] text-emerald-200">مباشر الآن</span>
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* كبسولات سريعة للبطولات */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pt-2 scrollbar-none text-xs">
-          <span className="text-slate-400 font-bold shrink-0">البطولات الكبرى:</span>
-          {[
-            "تصفيات كأس العالم 2026",
-            "دوري أبطال أوروبا",
-            "دوري روشن السعودي",
-            "الدوري الإنجليزي الممتاز",
-            "الدوري الإسباني (لا ليغا)",
-            "دوري أبطال إفريقيا",
-          ].map((b) => (
-            <span
-              key={b}
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold whitespace-nowrap"
-            >
-              {b}
-            </span>
-          ))}
-        </div>
-      </div>
+      <YallaSportBanner />
 
-      {/* 2. ويدجت مباريات اليوم الحية الشامل */}
-      <TodayMatchesWidget />
+      {/* 2. ويدجت المباريات الحية */}
+      <TodayMatchesWidget matches={liveSports.matches} />
 
-      {/* 3. بانر يلا سبورت العريض للبث المباشر */}
-      <YallaSportBanner variant="leaderboard" />
-
-      {/* 4. جداول ترتيب الدوريات العالمية وهدافو القارة */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* جداول ترتيب الفرق (8 أعمدة) */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* 3. جداول الترتيب الحقيقية للدوريات */}
+      {liveSports.standings.length > 0 && (
+        <section className="space-y-6">
           <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-            <h2 className="text-xl font-black text-[var(--text)] flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-amber-400" />
-              <span>جداول ترتيب الدوريات الكبرى</span>
+            <h2 className="text-2xl font-black text-[var(--text)] flex items-center gap-2">
+              <Medal className="w-6 h-6 text-emerald-500" />
+              <span>جداول الترتيب الحية للدوريات الكبرى</span>
             </h2>
-            <span className="text-xs text-[var(--text-muted)]">محدث مع نهاية كل جولة</span>
+            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" />
+              <span>محدثة مباشرة</span>
+            </span>
           </div>
 
-          <div className="space-y-6">
-            {LEAGUE_STANDINGS.map((lg) => (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {liveSports.standings.map((table) => (
               <div
-                key={lg.league}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3 shadow-md"
+                key={table.leagueSlug}
+                className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-md overflow-hidden space-y-4"
               >
-                <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{lg.flag}</span>
-                    <h3 className="font-bold text-sm text-[var(--text)]">{lg.league}</h3>
-                  </div>
-                  <span className="text-[11px] text-emerald-500 font-bold">المراكز الأولى</span>
+                <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                  <h3 className="font-black text-sm text-[var(--text)] flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-[var(--gold)]" />
+                    <span>{table.leagueNameAr}</span>
+                  </h3>
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                    TOP {table.rows.length}
+                  </span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-right">
+                  <table className="w-full text-xs">
                     <thead>
-                      <tr className="text-slate-400 border-b border-white/5">
-                        <th className="pb-2 font-bold w-10 text-center">#</th>
-                        <th className="pb-2 font-bold">الفريق</th>
-                        <th className="pb-2 font-bold text-center">لعب</th>
-                        <th className="pb-2 font-bold text-center">فوز</th>
-                        <th className="pb-2 font-bold text-center">تعادل</th>
-                        <th className="pb-2 font-bold text-center">خسارة</th>
-                        <th className="pb-2 font-bold text-center">نقاط</th>
+                      <tr className="text-[var(--text-muted)] border-b border-[var(--border)] text-[10px]">
+                        <th className="py-2 text-start">#</th>
+                        <th className="py-2 text-start">الفريق</th>
+                        <th className="py-2 text-center">لعب</th>
+                        <th className="py-2 text-center">ف</th>
+                        <th className="py-2 text-center">ت</th>
+                        <th className="py-2 text-center">خ</th>
+                        <th className="py-2 text-center">فارق</th>
+                        <th className="py-2 text-end">النقاط</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {lg.teams.map((t) => (
-                        <tr key={t.name} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-2.5 text-center font-bold font-mono">
-                            <span
-                              className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[10px] ${
-                                t.rank <= 4
-                                  ? "bg-emerald-500/20 text-emerald-400 font-black"
-                                  : "bg-white/5 text-slate-400"
-                              }`}
-                            >
-                              {t.rank}
-                            </span>
+                    <tbody className="divide-y divide-[var(--border)]/50">
+                      {table.rows.map((row) => (
+                        <tr key={`${table.leagueSlug}-${row.rank}`} className="hover:bg-[var(--bg)]/70">
+                          <td className="py-2.5 font-mono font-black text-[var(--text-muted)]">{row.rank}</td>
+                          <td className="py-2.5 font-bold text-[var(--text)] flex items-center gap-2">
+                            {row.teamLogo && (
+                              <img src={row.teamLogo} alt={row.team} className="w-4 h-4 object-contain" />
+                            )}
+                            <span className="truncate max-w-[140px]">{row.team}</span>
                           </td>
-                          <td className="py-2.5 font-bold text-white">{t.name}</td>
-                          <td className="py-2.5 text-center font-mono text-slate-300">{t.played}</td>
-                          <td className="py-2.5 text-center font-mono text-emerald-400">{t.won}</td>
-                          <td className="py-2.5 text-center font-mono text-slate-400">{t.drawn}</td>
-                          <td className="py-2.5 text-center font-mono text-rose-400">{t.lost}</td>
-                          <td className="py-2.5 text-center font-mono font-black text-amber-400 text-sm">
-                            {t.points}
-                          </td>
+                          <td className="py-2.5 text-center font-mono">{row.played}</td>
+                          <td className="py-2.5 text-center font-mono text-emerald-500">{row.won}</td>
+                          <td className="py-2.5 text-center font-mono text-amber-500">{row.drawn}</td>
+                          <td className="py-2.5 text-center font-mono text-rose-500">{row.lost}</td>
+                          <td className="py-2.5 text-center font-mono">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                          <td className="py-2.5 text-end font-mono font-black text-[var(--primary)]">{row.points}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -216,66 +135,29 @@ export default async function SportsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        {/* قائمة الهدافين والبانر الجانبي (4 أعمدة) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-500/10 via-[var(--surface)] to-[var(--surface)] p-5 space-y-4 shadow-lg">
-            <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
-              <Medal className="w-5 h-5 text-amber-400" />
-              <h3 className="font-black text-sm text-[var(--text)]">سباق هدافي الموسم</h3>
-            </div>
-
-            <div className="space-y-3">
-              {TOP_SCORERS.map((sc, i) => (
-                <div
-                  key={sc.name}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-black/30 border border-white/5 text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono font-black text-amber-400 text-sm w-4">{i + 1}</span>
-                    <div>
-                      <span className="font-bold text-white block">{sc.name}</span>
-                      <span className="text-[10px] text-slate-400">{sc.team}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-left font-mono">
-                    <span className="text-base font-black text-emerald-400">{sc.goals}</span>
-                    <span className="text-[10px] text-slate-400 block">هدف</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* بطاقة يلا سبورت الجانبية */}
-          <YallaSportBanner variant="card" />
-        </div>
-      </div>
-
-      {/* 5. شبكة مقالات وأخبار الرياضة المباشرة */}
-      <section className="space-y-6 pt-4 border-t border-[var(--border)]">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black text-[var(--text)] flex items-center gap-2">
-            <Flame className="w-5 h-5 text-rose-500" />
-            <span>آخر الأخبار والتقارير الرياضية</span>
+      {/* 4. أخبار الملاعب والرياضة */}
+      {sportsArticles.length > 0 && (
+        <section className="space-y-6">
+          <h2 className="text-2xl font-black text-[var(--text)] border-b border-[var(--border)] pb-3">
+            أحدث الأخبار والتقارير الرياضية
           </h2>
-          <span className="text-xs text-[var(--text-muted)] font-mono">{articles.length} مادة</span>
-        </div>
 
-        {articles.length > 0 ? (
+          {leadArticle && (
+            <div className="mb-6">
+              <ArticleCard article={leadArticle} variant="hero" />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((art) => (
+            {restArticles.map((art) => (
               <ArticleCard key={art.id} article={art} variant="medium" />
             ))}
           </div>
-        ) : (
-          <div className="p-12 text-center rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)]">
-            <p className="font-bold">جاري تحديث التغطيات الرياضية عبر مراسلي يلا سبورت...</p>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

@@ -77,55 +77,71 @@ export default async function StoryPage({ params }: Props) {
         </div>
       </div>
 
-      {/* مؤشر توازن وتنوع التغطيات الصحفية (Coverage Balance) */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <h3 className="font-bold text-sm text-[var(--text)]">مؤشر تنوع وتوازن التغطيات المجمعة</h3>
-          </div>
-          <span className="text-xs text-[var(--text-muted)] font-mono">
-            {story.articles.length} مصادر مستقلة
-          </span>
-        </div>
-
-        {/* شريط التوزيع البصري */}
-        <div className="space-y-2">
-          <div className="h-2 rounded-full bg-[var(--bg)] overflow-hidden flex">
-            <div className="bg-emerald-500 h-full" style={{ width: "45%" }} title="وكالات فلسطينية رسمية: 45%" />
-            <div className="bg-sky-500 h-full" style={{ width: "35%" }} title="قنوات وشبكات إخبارية عربية: 35%" />
-            <div className="bg-indigo-500 h-full" style={{ width: "20%" }} title="وكالات دولية معتمدة: 20%" />
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] text-[var(--text-muted)] pt-1">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>وكالات محلية ورسمية (45%)</span>
+      {/* مؤشر توازن وتنوع المصادر المساهمة (Coverage Distribution) */}
+      {(() => {
+        const sourceMap = new Map<string, number>();
+        for (const art of story.articles) {
+          const name = art.source?.nameAr || "الوطن اليوم";
+          sourceMap.set(name, (sourceMap.get(name) || 0) + 1);
+        }
+        const total = Math.max(story.articles.length, 1);
+        const breakdown = Array.from(sourceMap.entries()).map(([name, count], idx) => ({
+          name,
+          count,
+          pct: Math.round((count / total) * 100),
+          color: ["bg-emerald-500", "bg-sky-500", "bg-amber-500", "bg-indigo-500", "bg-rose-500"][idx % 5]!,
+        }));
+        return (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="font-bold text-sm text-[var(--text)]">توزيع التغطيات حسب الوكالات والمصادر الفعلية</h3>
+              </div>
+              <span className="text-xs text-[var(--text-muted)] font-mono">
+                {sourceMap.size} مصادر مستقلة · {story.articles.length} مواد
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-sky-500" />
-              <span>فضائيات وشبكات عربية (35%)</span>
+
+            <div className="space-y-2">
+              <div className="h-2.5 rounded-full bg-[var(--bg)] overflow-hidden flex">
+                {breakdown.map((b) => (
+                  <div
+                    key={b.name}
+                    className={`${b.color} h-full`}
+                    style={{ width: `${Math.max(b.pct, 4)}%` }}
+                    title={`${b.name}: ${b.count} (${b.pct}%)`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 text-[11px] text-[var(--text-muted)] pt-1">
+                {breakdown.map((b) => (
+                  <div key={b.name} className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${b.color}`} />
+                    <span>
+                      {b.name} ({b.pct}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span>صحافة دولية معتمدة (20%)</span>
+
+            {/* بطاقات المصادر المساهمة في الملف */}
+            <div className="flex items-center gap-2 overflow-x-auto pt-2 scrollbar-none">
+              <span className="text-[11px] text-[var(--text-muted)] font-bold shrink-0">المصادر المشاركة:</span>
+              {Array.from(new Set(story.articles.map((a) => a.source?.nameAr).filter(Boolean))).map((srcName) => (
+                <span
+                  key={srcName}
+                  className="px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] shrink-0"
+                >
+                  {srcName}
+                </span>
+              ))}
             </div>
           </div>
-        </div>
-
-        {/* بطاقات المصادر المساهمة في الملف */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-2 scrollbar-none">
-          <span className="text-[11px] text-[var(--text-muted)] font-bold shrink-0">المصادر المشاركة:</span>
-          {Array.from(new Set(story.articles.map((a) => a.source?.nameAr).filter(Boolean))).map((srcName) => (
-            <span
-              key={srcName}
-              className="px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] shrink-0"
-            >
-              {srcName}
-            </span>
-          ))}
-        </div>
-      </div>
+        );
+      })()}
 
       {/* جدول التغطيات الصحفية والخط الزمني */}
       <div className="space-y-4">

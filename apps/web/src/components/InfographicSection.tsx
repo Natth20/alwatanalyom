@@ -1,61 +1,92 @@
-import Link from "next/link";
-import { BarChart2, TrendingUp, ShieldCheck, Activity, Award } from "lucide-react";
+"use client";
 
-interface StatItem {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { BarChart2, TrendingUp, ShieldCheck, Activity, Coins } from "lucide-react";
+
+interface LiveMetricTile {
   id: string;
   label: string;
   value: string;
   subValue: string;
-  trend: "up" | "down" | "neutral";
-  trendText: string;
   sourceText: string;
   accentColor: string;
 }
 
-const STATS_DATA: StatItem[] = [
-  {
-    id: "stat-1",
-    label: "صمود التجارة والمنشآت المحلية",
-    value: "84.2%",
-    subValue: "نسبة استمرار عمل الأسواق والمتاجر",
-    trend: "up",
-    trendText: "+3.4% مقارنة بالشهر الماضي",
-    sourceText: "جهاز الإحصاء المركزي الفلسطيني",
-    accentColor: "from-emerald-500 to-teal-700",
-  },
-  {
-    id: "stat-2",
-    label: "توليد الطاقة الشمسية البديلة",
-    value: "318 MW",
-    subValue: "القدرة المركبة المستقلة في المحافظات",
-    trend: "up",
-    trendText: "نمو سنوي قياسي",
-    sourceText: "سلطة الطاقة والموارد الطبيعية",
-    accentColor: "from-amber-500 to-orange-700",
-  },
-  {
-    id: "stat-3",
-    label: "التحويلات المالية وصمود الأسر",
-    value: "$1.42B",
-    subValue: "إجمالي تدفقات المغتربين السنوية",
-    trend: "up",
-    trendText: "شريان دعم اقتصادي حاسم",
-    sourceText: "سلطة النقد الفلسطينية",
-    accentColor: "from-blue-500 to-indigo-700",
-  },
-  {
-    id: "stat-4",
-    label: "مؤشر الشفافية ودقة الأخبار",
-    value: "99.4%",
-    subValue: "نسبة التحقق من الأخبار والمصادر",
-    trend: "up",
-    trendText: "معيار تدقيق رقمي صارم",
-    sourceText: "وحدة التحقق — الوطن اليوم",
-    accentColor: "from-rose-500 to-pink-700",
-  },
-];
-
 export function InfographicSection() {
+  const [tiles, setTiles] = useState<LiveMetricTile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      fetch("/api/v1/pulse").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("/api/v1/quotes").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    ])
+      .then(([pulse, market]) => {
+        if (!active) return;
+        const list: LiveMetricTile[] = [];
+
+        if (pulse) {
+          list.push({
+            id: "articles",
+            label: "الأرشيف الإخباري الموثق",
+            value: (pulse.totalPublishedArticles ?? 0).toLocaleString("ar-EG"),
+            subValue: `${(pulse.last24hArticles ?? 0).toLocaleString("ar-EG")} مادة نُشرت خلال آخر 24 ساعة`,
+            sourceText: "سجل قاعدة البيانات الحية — الوطن اليوم",
+            accentColor: "from-emerald-500 to-teal-700",
+          });
+          list.push({
+            id: "sources",
+            label: "الوكالات والمصادر المفعّلة",
+            value: (pulse.activeSourcesCount ?? 0).toLocaleString("ar-EG"),
+            subValue: "مصادر إخبارية ووكالات معتمدة متصل بها لحظياً",
+            sourceText: "نظام الالتقاط والتوثيق (RSS / API)",
+            accentColor: "from-blue-500 to-indigo-700",
+          });
+        }
+
+        const goldQ = Array.isArray(market?.quotes)
+          ? market.quotes.find((q: any) => q.symbol === "XAUUSD")
+          : null;
+        if (goldQ?.price) {
+          list.push({
+            id: "gold",
+            label: "أونصة الذهب العالمية",
+            value: `$${Number(goldQ.price).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
+            subValue: goldQ.changePct ? `التغير اليومي: ${goldQ.changePct}` : "تحديث سوقي مباشر",
+            sourceText: goldQ.provider || "Yahoo Finance Live",
+            accentColor: "from-amber-500 to-orange-700",
+          });
+        }
+
+        const fxQ = Array.isArray(market?.quotes)
+          ? market.quotes.find((q: any) => q.symbol === "USDILS")
+          : null;
+        if (fxQ?.price) {
+          list.push({
+            id: "usdils",
+            label: "صرف الدولار مقابل الشيكل",
+            value: `${Number(fxQ.price).toFixed(4)} ₪`,
+            subValue: "سعر الصرف الفوري المرجعي في السوق المحلي",
+            sourceText: fxQ.provider || "Open Exchange Rates",
+            accentColor: "from-rose-500 to-pink-700",
+          });
+        }
+
+        setTiles(list);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!loading && tiles.length === 0) return null;
+
   return (
     <section className="card-luxury rounded-3xl p-6 md:p-8 shadow-lg">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-[var(--border)] pb-4">
@@ -66,65 +97,69 @@ export function InfographicSection() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl md:text-2xl font-black text-[var(--text)]">
-                بيانات الوطن · صحافة الأرقام والمؤشرات
+                بيانات الوطن · المؤشرات الحية من المصدر
               </h2>
-              <span className="text-[10px] font-bold bg-[var(--primary)]/10 text-[var(--primary)] px-2 py-0.5 rounded-full">
-                بيانات موثقة
+              <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full">
+                أرقام حقيقية 100%
               </span>
             </div>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              قراءة بيانية تفاعلية في صمود المجتمع، نبض الاقتصاد، والأرقام الحيوية
+              إحصاءات فورية محسوبة مباشرة من قاعدة بيانات المنصة وأسواق المال العالمية بدون أي تقديرات
             </p>
           </div>
         </div>
 
         <Link
-          href="/data-journalism"
+          href="/pulse"
           className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
         >
-          <span>استعراض مركز الإحصاءات الكامل</span>
+          <span>فتح مرصد البيانات الكامل</span>
           <span>←</span>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {STATS_DATA.map((stat) => (
-          <div
-            key={stat.id}
-            className="group relative rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 hover:border-[var(--primary)]/50 hover:shadow-md transition-all duration-300"
-          >
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-xs font-bold text-[var(--text-muted)] line-clamp-1">
-                {stat.label}
-              </span>
-              <div
-                className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${stat.accentColor}`}
-              />
-            </div>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-36 rounded-2xl bg-[var(--bg)] border border-[var(--border)] animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {tiles.map((stat) => (
+            <div
+              key={stat.id}
+              className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 hover:border-[var(--primary)]/50 hover:shadow-md transition-all duration-300 space-y-2.5"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-[var(--text-muted)] line-clamp-1">
+                  {stat.label}
+                </span>
+                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.accentColor} text-white flex items-center justify-center shrink-0`}>
+                  {stat.id === "gold" || stat.id === "usdils" ? (
+                    <Coins className="w-3.5 h-3.5" />
+                  ) : (
+                    <Activity className="w-3.5 h-3.5" />
+                  )}
+                </div>
+              </div>
 
-            <div className="mb-2">
-              <span className="text-3xl md:text-4xl font-black text-[var(--text)] tracking-tight">
+              <div className="text-2xl md:text-3xl font-black font-mono text-[var(--text)]">
                 {stat.value}
-              </span>
-            </div>
+              </div>
 
-            <p className="text-xs text-[var(--text-muted)] mb-3 leading-snug">
-              {stat.subValue}
-            </p>
+              <p className="text-[11px] text-[var(--text-muted)] leading-snug">
+                {stat.subValue}
+              </p>
 
-            <div className="pt-3 border-t border-[var(--border)]/70 flex flex-col gap-1 text-[11px]">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                <span>{stat.trendText}</span>
-              </span>
-              <span className="text-[10px] text-[var(--text-muted)] truncate">
-                المصدر: {stat.sourceText}
-              </span>
+              <div className="pt-2 border-t border-[var(--border)]/60 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                <ShieldCheck className="w-3 h-3 shrink-0" />
+                <span className="truncate">{stat.sourceText}</span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
-

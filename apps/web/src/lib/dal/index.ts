@@ -2,6 +2,7 @@ import { prisma } from "@awt/db";
 import { ArticleCard, StorySummary, InstrumentQuote, InstrumentDetail, ChannelCard, isMockDataAllowed, SITE_SECTIONS, PALESTINE_SUBSECTIONS } from "@awt/shared";
 import { searchClient } from "@awt/search";
 import { FACT_CHECKS, FactCheckItem } from "@/data/factChecks";
+import { fetchAllLiveQuotes, fetchLiveInstrumentDetail } from "@/lib/live-data/markets";
 import {
   MOCK_BREAKING,
   MOCK_QUOTES,
@@ -148,114 +149,132 @@ export async function getActiveBreaking(): Promise<ArticleCard[]> {
 /**
  * جلب بيانات الصفحة الرئيسية مع الوحدات العشر وتطبيق قاعدة عدم التكرار (shownStoryIds)
  */
+let _homeFeedCache: { data: Awaited<ReturnType<typeof _fetchHomeFeedUncached>>; expiresAt: number } | null = null;
+let _homeFeedInFlight: Promise<Awaited<ReturnType<typeof _fetchHomeFeedUncached>>> | null = null;
+
+/**
+ * جلب بيانات الصفحة الرئيسية كاملة بتخزين مؤقت ذكي 60 ثانية وتوازي استعلامات سريع
+ */
 export async function getHomeFeed() {
+  if (_homeFeedCache && _homeFeedCache.expiresAt > Date.now()) {
+    return _homeFeedCache.data;
+  }
+  if (_homeFeedInFlight) {
+    return _homeFeedInFlight;
+  }
+  _homeFeedInFlight = _fetchHomeFeedUncached()
+    .then((data) => {
+      if (data.heroStories.length > 0 || data.fastStreamArticles.length > 0) {
+        _homeFeedCache = { data, expiresAt: Date.now() + 60_000 };
+      }
+      return data;
+    })
+    .finally(() => {
+      _homeFeedInFlight = null;
+    });
+  return _homeFeedInFlight;
+}
+
+async function _fetchHomeFeedUncached() {
   if (!prisma) {
     return isMockDataAllowed() ? buildMockHomeFeed() : buildEmptyHomeFeed();
   }
 
-  const shownStoryIds = new Set<string>();
-
   try {
-    // 1. شريط العاجل
-    const breaking = await getActiveBreaking();
-
-    // 2. قصص البطل (Hero) والأهم
-    const heroStoriesRaw = await prisma.story.findMany({
-      where: {
-        articles: { some: { status: "PUBLISHED" } },
-      },
-      include: {
-        section: true,
-        articles: {
-          where: { status: "PUBLISHED" },
-          include: { source: true, section: true },
-          take: 4,
+    const emptySet = new Set<string>();
+    const [
+      breaking,
+      heroStoriesRaw,
+      trendingCandidates,
+      palestineCandidates,
+      arabWorldArticles,
+      worldArticles,
+      economyArticles,
+      techArticles,
+      sportsArticles,
+      quotes,
+      fastStreamArticles,
+      videoArticles,
+    ] = await Promise.all([
+      getActiveBreaking(),
+      prisma.story.findMany({
+        where: { articles: { some: { status: "PUBLISHED" } } },
+        include: {
+          section: true,
+          articles: {
+            where: { status: "PUBLISHED" },
+            include: { source: true, section: true },
+            take: 4,
+          },
         },
-      },
-      orderBy: [{ pinned: "desc" }, { importance: "desc" }, { lastUpdatedAt: "desc" }],
-      take: 5,
-    });
-
-    for (const s of heroStoriesRaw) {
-      shownStoryIds.add(s.id);
-    }
-
-    // 3. يتصدر الآن (Trending)
-    const trendingStoriesRaw = await prisma.story.findMany({
-      where: {
-        id: { notIn: Array.from(shownStoryIds) },
-        articles: { some: { status: "PUBLISHED" } },
-      },
-      include: {
-        section: true,
-        articles: {
-          where: { status: "PUBLISHED" },
-          include: { source: true, section: true },
-          take: 2,
+        orderBy: [{ pinned: "desc" }, { importance: "desc" }, { lastUpdatedAt: "desc" }],
+        take: 5,
+      }),
+      prisma.story.findMany({
+        where: { articles: { some: { status: "PUBLISHED" } } },
+        include: {
+          section: true,
+          articles: {
+            where: { status: "PUBLISHED" },
+            include: { source: true, section: true },
+            take: 2,
+          },
         },
-      },
-      orderBy: { trendingScore: "desc" },
-      take: 4,
-    });
-
-    for (const s of trendingStoriesRaw) {
-      shownStoryIds.add(s.id);
-    }
-
-    // 4. قصص فلسطين
-    const palestineStoriesRaw = await prisma.story.findMany({
-      where: {
-        id: { notIn: Array.from(shownStoryIds) },
-        section: { slug: "palestine" },
-        articles: { some: { status: "PUBLISHED" } },
-      },
-      include: {
-        section: true,
-        articles: {
-          where: { status: "PUBLISHED" },
-          include: { source: true, section: true },
-          take: 3,
+        orderBy: { trendingScore: "desc" },
+        take: 9,
+      }),
+      prisma.story.findMany({
+        where: {
+          section: { slug: "palestine" },
+          articles: { some: { status: "PUBLISHED" } },
         },
-      },
-      orderBy: { lastUpdatedAt: "desc" },
-      take: 6,
-    });
+        include: {
+          section: true,
+          articles: {
+            where: { status: "PUBLISHED" },
+            include: { source: true, section: true },
+            take: 3,
+          },
+        },
+        orderBy: { lastUpdatedAt: "desc" },
+        take: 9,
+      }),
+      getSectionArticles("arab-world", 5, emptySet),
+      getSectionArticles("world", 5, emptySet),
+      getSectionArticles("economy", 4, emptySet),
+      getSectionArticles("tech", 4, emptySet),
+      getSectionArticles("sports", 4, emptySet),
+      getLatestQuotes(["BRENT", "XAUUSD", "USDILS", "BTCUSD"]),
+      prisma.article
+        .findMany({
+          where: { status: "PUBLISHED" },
+          include: { section: true, source: true },
+          orderBy: { publishedAt: "desc" },
+          take: 15,
+        })
+        .then((list) => list.map(mapArticleToCard)),
+      prisma.article
+        .findMany({
+          where: {
+            status: "PUBLISHED",
+            OR: [{ kind: "VIDEO" }, { section: { slug: "videos" } }],
+          },
+          include: { section: true, source: true },
+          orderBy: { publishedAt: "desc" },
+          take: 6,
+        })
+        .then((list) => list.map(mapArticleToCard)),
+    ]);
 
-    for (const s of palestineStoriesRaw) {
-      shownStoryIds.add(s.id);
-    }
+    const shownStoryIds = new Set<string>(heroStoriesRaw.map((s) => s.id));
+    const trendingStoriesRaw = trendingCandidates
+      .filter((s) => !shownStoryIds.has(s.id))
+      .slice(0, 4);
+    trendingStoriesRaw.forEach((s) => shownStoryIds.add(s.id));
 
-    // 5. العالم العربي والعالم
-    const arabWorldArticles = await getSectionArticles("arab-world", 5, shownStoryIds);
-    const worldArticles = await getSectionArticles("world", 5, shownStoryIds);
-    const economyArticles = await getSectionArticles("economy", 4, shownStoryIds);
-    const techArticles = await getSectionArticles("tech", 4, shownStoryIds);
-    const sportsArticles = await getSectionArticles("sports", 4, shownStoryIds);
-
-    // 6. أسعار المؤشرات لنافذة الاقتصاد
-    const quotes = await getLatestQuotes(["BRENT", "XAUUSD", "USDILS", "BTCUSD"]);
-
-    // 7. التدفق اللحظي المباشر لأحدث الأخبار (Fast-Stream Wire)
-    const fastStreamArticles = await prisma.article.findMany({
-      where: { status: "PUBLISHED" },
-      include: { section: true, source: true },
-      orderBy: { publishedAt: "desc" },
-      take: 15,
-    }).then((list) => list.map(mapArticleToCard));
-
-    // 8. تقارير الفيديو الصحفية
-    const videoArticles = await prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: [
-          { kind: "VIDEO" },
-          { section: { slug: "videos" } },
-        ],
-      },
-      include: { section: true, source: true },
-      orderBy: { publishedAt: "desc" },
-      take: 6,
-    }).then((list) => list.map(mapArticleToCard));
+    const palestineStoriesRaw = palestineCandidates
+      .filter((s) => !shownStoryIds.has(s.id))
+      .slice(0, 6);
 
     if (heroStoriesRaw.length === 0 && palestineStoriesRaw.length === 0) {
       if (isMockDataAllowed()) {
@@ -687,79 +706,90 @@ async function getSectionArticles(sectionSlug: string, take: number, shownStoryI
 }
 
 /**
- * جلب أحدث أسعار المؤشرات
+ * جلب أحدث أسعار المؤشرات من الأسواق العالمية الحية وقاعدة البيانات
  */
 export async function getLatestQuotes(symbols?: string[]): Promise<InstrumentQuote[]> {
-  if (!prisma) {
-    return isMockDataAllowed() ? MOCK_QUOTES : [];
+  const bySymbol = new Map<string, InstrumentQuote>();
+
+  if (prisma) {
+    try {
+      const instruments = await prisma.instrument.findMany({
+        where: {
+          enabled: true,
+          ...(symbols ? { symbol: { in: symbols } } : {}),
+        },
+        include: {
+          quotes: {
+            orderBy: { asOf: "desc" },
+            take: 1,
+          },
+        },
+      });
+
+      for (const inst of instruments) {
+        if (inst.providerKey === "mock" || inst.providerKey === "mock-provider") {
+          continue;
+        }
+        const q = inst.quotes[0];
+        if (!q) continue;
+        bySymbol.set(inst.symbol, {
+          symbol: inst.symbol,
+          nameAr: inst.nameAr,
+          nameEn: inst.nameEn,
+          category: inst.category as any,
+          price: q.price.toString(),
+          change: q.change ? q.change.toString() : null,
+          changePct: q.changePct ? q.changePct.toString() : null,
+          unit: inst.unit,
+          currency: inst.currency,
+          status: q.status as any,
+          asOf: q.asOf.toISOString(),
+          provider: inst.providerKey,
+        });
+      }
+    } catch {
+      // Proceed with live public market fetch below
+    }
   }
 
   try {
-    const instruments = await prisma.instrument.findMany({
-      where: {
-        enabled: true,
-        ...(symbols ? { symbol: { in: symbols } } : {}),
-      },
-      include: {
-        quotes: {
-          orderBy: { asOf: "desc" },
-          take: 1,
-        },
-      },
-    });
-
-    const mapped = instruments.map((inst) => {
-      const q = inst.quotes[0];
-      return {
-        symbol: inst.symbol,
-        nameAr: inst.nameAr,
-        nameEn: inst.nameEn,
-        category: inst.category as any,
-        price: q ? q.price.toString() : null,
-        change: q?.change ? q.change.toString() : null,
-        changePct: q?.changePct ? q.changePct.toString() : null,
-        unit: inst.unit,
-        currency: inst.currency,
-        status: q ? (q.status as any) : "UNAVAILABLE",
-        asOf: q?.asOf ? q.asOf.toISOString() : null,
-        provider: inst.providerKey,
-      };
-    });
-
-    if (mapped.length > 0) return mapped;
-    return isMockDataAllowed() ? MOCK_QUOTES : [];
+    const liveQuotes = await fetchAllLiveQuotes();
+    for (const lq of liveQuotes) {
+      bySymbol.set(lq.symbol, lq);
+    }
   } catch {
-    return isMockDataAllowed() ? MOCK_QUOTES : [];
+    // Keep any real DB quotes collected
   }
+
+  const all = Array.from(bySymbol.values());
+  if (symbols && symbols.length > 0) {
+    const allowed = new Set(symbols.map((s) => s.toUpperCase()));
+    const filtered = all.filter((q) => allowed.has(q.symbol.toUpperCase()));
+    if (filtered.length > 0) return filtered;
+  }
+
+  return all;
 }
 
+export const getQuotes = getLatestQuotes;
+
 /**
- * جلب تفاصيل أداة مالية وسجل أسعارها
+ * جلب تفاصيل أداة مالية وسجل أسعارها الحي من الأسواق العالمية أو قاعدة البيانات
  */
 export async function getInstrumentDetails(symbol: string): Promise<InstrumentDetail | null> {
   const normSymbol = symbol.trim().toUpperCase();
 
-  const buildMockDetail = (): InstrumentDetail | null => {
-    if (!isMockDataAllowed()) return null;
-    const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
-    if (!mock) return null;
-    const basePrice = mock.price ? parseFloat(mock.price) : 100;
-    return {
-      ...mock,
-      history: [
-        { time: new Date(Date.now() - 3600000 * 4).toISOString(), price: Number((basePrice * 0.98).toFixed(2)) },
-        { time: new Date(Date.now() - 3600000 * 3).toISOString(), price: Number((basePrice * 0.99).toFixed(2)) },
-        { time: new Date(Date.now() - 3600000 * 2).toISOString(), price: Number((basePrice * 0.985).toFixed(2)) },
-        { time: new Date(Date.now() - 3600000 * 1).toISOString(), price: Number((basePrice * 1.01).toFixed(2)) },
-        { time: new Date().toISOString(), price: basePrice },
-      ],
-      high24h: Number((basePrice * 1.02).toFixed(2)),
-      low24h: Number((basePrice * 0.97).toFixed(2)),
-    };
-  };
+  try {
+    const liveDetail = await fetchLiveInstrumentDetail(normSymbol);
+    if (liveDetail) {
+      return liveDetail;
+    }
+  } catch {
+    // Fall through to DB lookup
+  }
 
   if (!prisma) {
-    return buildMockDetail();
+    return null;
   }
 
   try {
@@ -773,12 +803,11 @@ export async function getInstrumentDetails(symbol: string): Promise<InstrumentDe
       },
     });
 
-    if (inst) {
+    if (inst && inst.providerKey !== "mock" && inst.providerKey !== "mock-provider") {
       const q = inst.quotes[0];
       const now = Date.now();
       let status = (q?.status as any) || "UNAVAILABLE";
 
-      // قاعدة 5: إذا تأخر التحديث تظهر حالة "متأخر" بدل "مباشر"
       if (q?.asOf && status === "LIVE") {
         const diffMinutes = (now - new Date(q.asOf).getTime()) / (1000 * 60);
         if (diffMinutes > 20) {
@@ -818,19 +847,8 @@ export async function getInstrumentDetails(symbol: string): Promise<InstrumentDe
       };
     }
 
-    return buildMockDetail();
+    return null;
   } catch {
-    if (isMockDataAllowed()) {
-      const mock = MOCK_QUOTES.find((m) => m.symbol.toUpperCase() === normSymbol);
-      if (mock) {
-        return {
-          ...mock,
-          history: [],
-          high24h: null,
-          low24h: null,
-        };
-      }
-    }
     return null;
   }
 }
@@ -1863,5 +1881,88 @@ export async function getStoryClusters(limit = 6) {
   } catch (error) {
     console.warn("Failed to fetch story clusters from DB:", error);
     return [];
+  }
+}
+
+export type MostReadArticleItem = ArticleCard & { readCount: number };
+
+/**
+ * جلب المقالات الأكثر قراءة فعلياً من قاعدة البيانات حسب عداد المشاهدات الحقيقي
+ */
+export async function getMostReadArticles(limit = 5): Promise<MostReadArticleItem[]> {
+  if (!prisma) return [];
+  try {
+    const rows = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      include: { section: true, source: true },
+      orderBy: [{ readCount: "desc" }, { publishedAt: "desc" }],
+      take: limit,
+    });
+    return rows.map((row) => ({
+      ...mapArticleToCard(row),
+      readCount: row.readCount || 0,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export interface EditorialTelemetrySummary {
+  totalPublishedArticles: number;
+  last24hArticles: number;
+  activeSourcesCount: number;
+  factChecksCount: number;
+  storiesCount: number;
+  correctionsCount: number;
+}
+
+/**
+ * إحصاءات غرفة الأخبار الحقيقية مباشرة من PostgreSQL (بدون أي أرقام تقديرية أو وهمية)
+ */
+export async function getEditorialTelemetrySummary(): Promise<EditorialTelemetrySummary> {
+  if (!prisma) {
+    return {
+      totalPublishedArticles: 0,
+      last24hArticles: 0,
+      activeSourcesCount: 0,
+      factChecksCount: 0,
+      storiesCount: 0,
+      correctionsCount: 0,
+    };
+  }
+  try {
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [
+      totalPublishedArticles,
+      last24hArticles,
+      activeSourcesCount,
+      factChecksCount,
+      storiesCount,
+      correctionsCount,
+    ] = await Promise.all([
+      prisma.article.count({ where: { status: "PUBLISHED" } }),
+      prisma.article.count({ where: { status: "PUBLISHED", publishedAt: { gte: since24h } } }),
+      prisma.source.count({ where: { enabled: true } }),
+      prisma.factCheck.count(),
+      prisma.story.count(),
+      prisma.correction.count(),
+    ]);
+    return {
+      totalPublishedArticles,
+      last24hArticles,
+      activeSourcesCount,
+      factChecksCount,
+      storiesCount,
+      correctionsCount,
+    };
+  } catch {
+    return {
+      totalPublishedArticles: 0,
+      last24hArticles: 0,
+      activeSourcesCount: 0,
+      factChecksCount: 0,
+      storiesCount: 0,
+      correctionsCount: 0,
+    };
   }
 }

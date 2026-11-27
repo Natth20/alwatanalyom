@@ -3,102 +3,92 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, X, ArrowLeft, Radio } from "lucide-react";
+import { Flame, X, ChevronLeft, Clock } from "lucide-react";
 
-interface BreakingToastProps {
-  initialTitle?: string;
-  initialSlug?: string;
-  initialId?: string;
+interface BreakingAlert {
+  id: string;
+  slug: string;
+  titleAr: string;
+  publishedAt: string;
 }
 
-export function FloatingBreakingHUD({
-  initialTitle = "عاجل: صفارات الإنذار تدوي في الجليل الأعلى بعد رصد صواريخ ومسيرات",
-  initialSlug = "breaking-alert-live",
-  initialId = "art-hero-1",
-}: BreakingToastProps) {
+export function FloatingBreakingHUD() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(false);
+  const [alertItem, setAlertItem] = useState<BreakingAlert | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
-    // إظهار الإشعار بعد 3 ثوانٍ من دخول الصفحة للترحيب البصري الذكي
-    const timer = setTimeout(() => {
-      const isDismissed = sessionStorage.getItem("awt_breaking_dismissed");
-      if (!isDismissed) {
-        setVisible(true);
-      }
-    }, 3000);
 
-    return () => clearTimeout(timer);
-  }, []);
+    const loadLatest = async () => {
+      try {
+        const res = await fetch("/api/v1/breaking");
+        if (!res.ok) return;
+        const data = await res.json();
+        const first = Array.isArray(data?.items) ? data.items[0] : null;
+        if (first?.id && first?.titleAr) {
+          setAlertItem({
+            id: first.id,
+            slug: first.slug,
+            titleAr: first.titleAr,
+            publishedAt: first.publishedAt,
+          });
+        }
+      } catch {}
+    };
 
-  const handleDismiss = () => {
-    setVisible(false);
-    setDismissed(true);
-    try {
-      sessionStorage.setItem("awt_breaking_dismissed", "true");
-    } catch {}
-  };
+    loadLatest();
+    const timer = setInterval(loadLatest, 45000);
+    return () => clearInterval(timer);
+  }, [pathname]);
 
-  if (pathname?.startsWith("/admin") || !visible || dismissed) return null;
+  if (pathname?.startsWith("/admin") || dismissed || !alertItem) {
+    return null;
+  }
+
+  const timeFormatted = new Date(alertItem.publishedAt).toLocaleTimeString("ar-EG", {
+    timeZone: "Asia/Jerusalem",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 start-4 sm:start-6 z-50 max-w-sm sm:max-w-md w-full animate-in fade-in slide-in-from-bottom-5 duration-400 no-print">
-      <div className="glass-hud rounded-3xl p-4 border-2 border-red-500/40 text-white shadow-2xl relative overflow-hidden group">
-        {/* شريط وميض علوي */}
-        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
-
-        <div className="flex items-start gap-3">
-          {/* أيقونة النبض العاجل */}
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-red-900/50 animate-pulse border border-red-400/40">
-            <Flame className="w-5 h-5 fill-current" />
-          </div>
-
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-600/30 border border-red-500/40 text-red-300 text-[10px] font-black uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-                تنبيه ميداني عاجل
-              </span>
-
-              <button
-                onClick={handleDismiss}
-                className="text-white/50 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="إغلاق التنبيه"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-relaxed">
-              {initialTitle}
-            </p>
-
-            <div className="flex items-center gap-3 pt-1">
-              <Link
-                href={`/article/${initialId}/${initialSlug}`}
-                onClick={handleDismiss}
-                className="inline-flex items-center gap-1 text-[11px] font-black text-[var(--gold)] hover:underline"
-              >
-                <span>متابعة تفاصيل الحدث</span>
-                <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
-              </Link>
-
-              <span className="text-white/20">•</span>
-
-              <Link
-                href="/live"
-                onClick={handleDismiss}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:underline"
-              >
-                <Radio className="w-3 h-3 animate-pulse" />
-                <span>البث الحي 24/7</span>
-              </Link>
-            </div>
-          </div>
-        </div>
+    <div className="hidden md:flex fixed bottom-5 start-5 z-40 max-w-sm glass-hud rounded-2xl p-3.5 border border-red-500/40 shadow-2xl bg-[#1C0108]/95 text-white items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md">
+        <Flame className="w-4 h-4 animate-pulse" />
       </div>
+
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center justify-between gap-2 text-[10px]">
+          <span className="font-black text-red-400">عاجل · بث مباشر</span>
+          <span className="text-white/60 flex items-center gap-1 font-mono">
+            <Clock className="w-2.5 h-2.5" />
+            {timeFormatted}
+          </span>
+        </div>
+        <Link
+          href={`/article/${alertItem.id}/${alertItem.slug}`}
+          className="block text-xs font-bold text-white hover:text-[var(--gold)] transition-colors line-clamp-2 leading-snug"
+        >
+          {alertItem.titleAr}
+        </Link>
+        <Link
+          href={`/article/${alertItem.id}/${alertItem.slug}`}
+          className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--gold)] hover:underline"
+        >
+          <span>قراءة التفاصيل</span>
+          <ChevronLeft className="w-3 h-3" />
+        </Link>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        className="text-white/40 hover:text-white p-1 cursor-pointer shrink-0"
+        aria-label="إغلاق التنبيه العاجل"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }

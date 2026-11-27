@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { StorySummary, ArticleCard as ArticleCardType } from "@awt/shared";
+import { StorySummary, ArticleCard as ArticleCardType, InstrumentQuote } from "@awt/shared";
 import {
   Clock,
   ShieldCheck,
@@ -20,10 +20,15 @@ interface Props {
   heroStory?: StorySummary;
   heroArticle?: ArticleCardType;
   secondaryArticles?: ArticleCardType[];
+  quotes?: InstrumentQuote[];
 }
 
-export function HomeHeroSection({ heroStory, heroArticle, secondaryArticles = [] }: Props) {
+export function HomeHeroSection({ heroStory, heroArticle, secondaryArticles = [], quotes = [] }: Props) {
   if (!heroArticle && !heroStory) return null;
+
+  const goldQ = quotes.find((q) => q.symbol === "XAUUSD");
+  const ilsQ = quotes.find((q) => q.symbol === "USDILS");
+  const brentQ = quotes.find((q) => q.symbol === "BRENT");
 
   const mainArticle = heroArticle || heroStory?.articles[0];
   const relatedCoverages = heroStory?.articles.slice(1, 3) || [];
@@ -47,31 +52,63 @@ export function HomeHeroSection({ heroStory, heroArticle, secondaryArticles = []
           </span>
         </div>
 
-        {/* المؤشرات والإحصاءات الحية */}
-        <div className="flex items-center gap-3 sm:gap-6 text-xs text-stone-200 shrink-0">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] border border-white/10">
+        {/* المؤشرات والملفات المباشرة */}
+        <div className="flex items-center gap-3 sm:gap-5 text-xs text-stone-200 shrink-0">
+          <Link
+            href="/palestine/jerusalem"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors"
+          >
             <MapPin className="w-3.5 h-3.5 text-rose-400" />
             <span className="text-[11px] text-slate-300">القدس والأقصى:</span>
-            <strong className="text-white font-black">اقتحامات متجددة</strong>
-          </div>
+            <strong className="text-white font-black">غرفة الرصد</strong>
+          </Link>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+          <Link
+            href="/palestine/gaza"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-300 transition-colors"
+          >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[11px]">المعابر البرية:</span>
-            <strong className="font-bold">قيود مشددة</strong>
-          </div>
+            <span className="text-[11px]">غزة والمعابر:</span>
+            <strong className="font-bold">تغطية حية</strong>
+          </Link>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300">
-            <Coins className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[11px]">الذهب اللحظي (أونصة):</span>
-            <strong className="font-mono font-black text-amber-400">$3,515.40</strong>
-          </div>
+          {goldQ?.price && (
+            <Link
+              href="/economy/instrument/XAUUSD"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-300 transition-colors"
+            >
+              <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[11px]">الذهب (أونصة):</span>
+              <strong className="font-mono font-black text-amber-400">
+                ${Number(goldQ.price).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </strong>
+            </Link>
+          )}
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-300">
-            <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-[11px]">الدولار / الشيكل:</span>
-            <strong className="font-mono font-black text-sky-400">3.35 ₪</strong>
-          </div>
+          {ilsQ?.price && (
+            <Link
+              href="/economy/instrument/USDILS"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-sky-300 transition-colors"
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-[11px]">الدولار / الشيكل:</span>
+              <strong className="font-mono font-black text-sky-400">
+                {Number(ilsQ.price).toFixed(2)} ₪
+              </strong>
+            </Link>
+          )}
+
+          {brentQ?.price && (
+            <Link
+              href="/economy/instrument/BRENT"
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-stone-200 transition-colors"
+            >
+              <span className="text-[11px] text-stone-300">برنت:</span>
+              <strong className="font-mono font-black text-white">
+                ${Number(brentQ.price).toFixed(2)}
+              </strong>
+            </Link>
+          )}
         </div>
 
         <Link

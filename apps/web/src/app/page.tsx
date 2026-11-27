@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getHomeFeed } from "@/lib/dal";
+import { getHomeFeed, getMostReadArticles } from "@/lib/dal";
 import { BreakingBar } from "@/components/BreakingBar";
 import { AdSlot } from "@/components/AdSlot";
 import { VisualPrototypeSwitcher, type PrototypeView } from "@/components/home/VisualPrototypeSwitcher";
@@ -20,7 +20,10 @@ export default async function HomePage({ searchParams }: Props) {
   const currentView: PrototypeView =
     rawView === "bento" || rawView === "live" ? rawView : "stream";
 
-  const feed = await getHomeFeed();
+  const [feed, mostReadArticles] = await Promise.all([
+    getHomeFeed(),
+    getMostReadArticles(5),
+  ]);
 
   const heroStory = feed.heroStories[0];
   const heroMainArticle = heroStory?.articles[0] || feed.fastStreamArticles[0];
@@ -54,6 +57,7 @@ export default async function HomePage({ searchParams }: Props) {
             techArticles={feed.techArticles}
             sportsArticles={feed.sportsArticles}
             quotes={feed.quotes}
+            mostReadArticles={mostReadArticles}
           />
         )}
 

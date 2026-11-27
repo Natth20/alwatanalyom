@@ -29,15 +29,36 @@ export default function DmcaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!statementChecked) return;
     setSubmitting(true);
-    setTimeout(() => {
-      const ticketId = `AWT-DMCA-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmittedTicket(ticketId);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/v1/dmca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          claimantName,
+          claimantEmail,
+          infringingUrl,
+          originalWorkUrl,
+          requestedAction,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ticketCode) {
+        setSubmittedTicket(json.ticketCode);
+      } else {
+        setSubmitError(json?.error?.message || "تعذر إرسال الإشعار، تحقق من البيانات.");
+      }
+    } catch {
+      setSubmitError("تعذر الاتصال بالخادم حالياً.");
+    } finally {
       setSubmitting(false);
-    }, 1200);
+    }
   };
 
   return (
