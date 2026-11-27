@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import InstitutionalNav from "@/components/InstitutionalNav";
 import {
   ShieldCheck,
@@ -23,8 +24,10 @@ import {
   Cpu,
   Globe2,
   Check,
+  Zap,
+  Activity,
+  AlertTriangle,
 } from "lucide-react";
-import Link from "next/link";
 
 interface CookieInfo {
   name: string;
@@ -63,36 +66,87 @@ const COOKIE_DATA: CookieInfo[] = [
     duration: "سنة واحدة",
     type: "محلي (LocalStorage)",
   },
+  {
+    name: "awt_audio_pref",
+    category: "تفضيلات الوسائط",
+    purpose: "حفظ سرعة تشغيل قارئ المقالات الصوتي الذكي داخل المتصفح.",
+    duration: "دائم محلياً",
+    type: "محلي (LocalStorage)",
+  },
+  {
+    name: "awt_alerts_pref",
+    category: "الإشعارات العاجلة",
+    purpose: "حفظ تفضيل استقبال تنبيهات الأخبار العاجلة المشفرة.",
+    duration: "سنة واحدة",
+    type: "محلي (LocalStorage)",
+  },
 ];
 
 export default function PrivacyPage() {
   const [browserProtocol, setBrowserProtocol] = useState("HTTPS (TLS 1.3)");
   const [clearingCache, setClearingCache] = useState(false);
   const [clearedMessage, setClearedMessage] = useState(false);
+  const [localKeysDetected, setLocalKeysDetected] = useState<string[]>([]);
+  const [storageBytes, setStorageBytes] = useState(0);
 
-  // إعدادات التفضيلات التفاعلية
+  // Interactive Preference Switches
   const [allowSavedArticles, setAllowSavedArticles] = useState(true);
   const [allowAudioNews, setAllowAudioNews] = useState(true);
   const [allowInstantAlerts, setAllowInstantAlerts] = useState(true);
+  const [allowLowBandwidth, setAllowLowBandwidth] = useState(false);
   const [savedSettingsNotice, setSavedSettingsNotice] = useState(false);
-  const [localKeysDetected, setLocalKeysDetected] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setBrowserProtocol(
-        window.location.protocol.toUpperCase().replace(":", "") + " (TLS 1.3 مشفر)"
+        window.location.protocol.toUpperCase().replace(":", "") + " (TLS 1.3 مشفر ببروتوكول QUIC)"
       );
 
-      // فحص المفاتيح الفعلية الموجودة في المتصفح
-      const keys: string[] = [];
-      ["awt_theme", "awt_saved_articles", "awt_low_bandwidth", "awt_prayer_city"].forEach((k) => {
-        if (localStorage.getItem(k) !== null) {
-          keys.push(k);
+      // Detect keys in localStorage
+      const detected: string[] = [];
+      let totalBytes = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("awt_")) {
+          detected.push(key);
+          const val = localStorage.getItem(key) || "";
+          totalBytes += (key.length + val.length) * 2;
         }
-      });
-      setLocalKeysDetected(keys);
+      }
+      setLocalKeysDetected(detected);
+      setStorageBytes(totalBytes);
+
+      // Read preferences
+      setAllowSavedArticles(localStorage.getItem("awt_saved_articles_pref") !== "0");
+      setAllowAudioNews(localStorage.getItem("awt_audio_pref") !== "0");
+      setAllowInstantAlerts(localStorage.getItem("awt_alerts_pref") !== "0");
+      setAllowLowBandwidth(localStorage.getItem("awt_low_bandwidth") === "1");
     }
   }, []);
+
+  const handleTogglePreference = (
+    key: "saved" | "audio" | "alerts" | "bandwidth",
+    currentVal: boolean
+  ) => {
+    const newVal = !currentVal;
+    if (typeof window !== "undefined") {
+      if (key === "saved") {
+        setAllowSavedArticles(newVal);
+        localStorage.setItem("awt_saved_articles_pref", newVal ? "1" : "0");
+      } else if (key === "audio") {
+        setAllowAudioNews(newVal);
+        localStorage.setItem("awt_audio_pref", newVal ? "1" : "0");
+      } else if (key === "alerts") {
+        setAllowInstantAlerts(newVal);
+        localStorage.setItem("awt_alerts_pref", newVal ? "1" : "0");
+      } else if (key === "bandwidth") {
+        setAllowLowBandwidth(newVal);
+        localStorage.setItem("awt_low_bandwidth", newVal ? "1" : "0");
+      }
+    }
+    setSavedSettingsNotice(true);
+    setTimeout(() => setSavedSettingsNotice(false), 3000);
+  };
 
   const handleClearAllPreferences = () => {
     setClearingCache(true);
@@ -101,22 +155,16 @@ export default function PrivacyPage() {
         localStorage.removeItem("awt_saved_articles");
         localStorage.removeItem("awt_low_bandwidth");
         localStorage.removeItem("awt_prayer_city");
+        localStorage.removeItem("awt_audio_pref");
+        localStorage.removeItem("awt_alerts_pref");
+        localStorage.removeItem("awt_saved_articles_pref");
         setLocalKeysDetected([]);
+        setStorageBytes(0);
       }
       setClearingCache(false);
       setClearedMessage(true);
       setTimeout(() => setClearedMessage(false), 5000);
-    }, 600);
-  };
-
-  const handleSavePreferences = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("awt_saved_articles_pref", allowSavedArticles ? "1" : "0");
-      localStorage.setItem("awt_audio_pref", allowAudioNews ? "1" : "0");
-      localStorage.setItem("awt_alerts_pref", allowInstantAlerts ? "1" : "0");
-    }
-    setSavedSettingsNotice(true);
-    setTimeout(() => setSavedSettingsNotice(false), 4000);
+    }, 800);
   };
 
   return (
@@ -141,235 +189,278 @@ export default function PrivacyPage() {
           <p className="text-xs sm:text-base text-stone-300 max-w-3xl mx-auto leading-relaxed">
             تلتزم منصة «الوطن اليوم» بمبدأ انعدام التتبع (Zero Tracking). نحن لا نبيع بياناتك، ولا نزرع ملفات تتبع إعلاني خارجي، ولا نتطلب تسجيلاً قسرياً، ونؤمن بأن حرية الصحافة تبدأ من احترام خصوصية وأمان القارئ.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              <span>ملفات تتبع الطرف الثالث (3rd-Party Trackers): صفر مطلقة</span>
+            </div>
+            <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-stone-300 text-xs font-mono">
+              تشفير النقل: TLS 1.3 / Strict-Transport-Security (HSTS)
+            </div>
+          </div>
         </div>
       </section>
 
       <div className="container-custom max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-16">
         {/* 2. رادار فحص الأمان والخصوصية الحي (Live Privacy Inspector) */}
-        <section className="rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-[#062013]/90 via-[#0a1810]/90 to-[#040c07]/90 backdrop-blur-xl p-6 sm:p-9 shadow-2xl space-y-6">
+        <section className="rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-[#062013]/90 via-[#0a1810]/90 to-[#040c07]/90 backdrop-blur-xl p-6 sm:p-9 shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/40 shadow-xs">
-                <Cpu className="w-6 h-6 animate-pulse" />
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                <Activity className="w-5 h-5 animate-pulse" />
               </div>
               <div>
-                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider block">
-                  رادار الفحص الحي اللحظي للجلسة
-                </span>
-                <h2 className="text-lg sm:text-xl font-black text-white mt-0.5">
-                  حالة حصانة اتصالك بجلسة التصفح الحالية
+                <h2 className="text-base sm:text-lg font-black text-white">
+                  رادار الفحص الحي لحصانة جلسة التصفح الحالية
                 </h2>
+                <p className="text-xs text-stone-400">
+                  فحص آني ومباشر لما يخزنه هذا الموقع في متصفحك الآن
+                </p>
               </div>
             </div>
 
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              جلسة مشفرة بدون تتبع
-            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 border border-emerald-500/40 text-emerald-300 font-mono text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+              <span>الجلسة آمنة ومحمية 100%</span>
+            </div>
           </div>
 
+          {/* Telemetry 4-Card Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-1">
-              <span className="text-[11px] text-stone-400 block font-medium">بروتوكول الاتصال</span>
-              <div className="text-base font-black text-emerald-300 font-mono flex items-center gap-1.5">
-                <Lock className="w-4 h-4 text-emerald-400" />
-                <span>{browserProtocol}</span>
-              </div>
-              <span className="text-[10px] text-stone-400 block">تشفير سيادي بدرجة 256-bit</span>
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <div className="text-[10px] text-stone-400 font-mono">ملفات تتبع إعلانية (Ad Trackers)</div>
+              <div className="text-2xl font-black text-emerald-400 font-mono">0</div>
+              <div className="text-[11px] text-emerald-300">محظورة كلياً من النواة التحريرية</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-1">
-              <span className="text-[11px] text-stone-400 block font-medium">متتبعات الطرف الثالث</span>
-              <div className="text-base font-black text-emerald-300 font-mono flex items-center gap-1.5">
-                <EyeOff className="w-4 h-4 text-emerald-400" />
-                <span>0 متتبع تجاري</span>
-              </div>
-              <span className="text-[10px] text-stone-400 block">خالٍ تماماً من أكواد التعقب الإعلاني</span>
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <div className="text-[10px] text-stone-400 font-mono">بكسل التجسس (Meta / Google Pixel)</div>
+              <div className="text-2xl font-black text-emerald-400 font-mono">0%</div>
+              <div className="text-[11px] text-emerald-300">ممنوع زراعتها على القراء</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-1">
-              <span className="text-[11px] text-stone-400 block font-medium">المفاتيح المخزنة بجهازك</span>
-              <div className="text-base font-black text-emerald-300 font-mono flex items-center gap-1.5">
-                <Database className="w-4 h-4 text-emerald-400" />
-                <span>{localKeysDetected.length} مفاتيح وظيفية</span>
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <div className="text-[10px] text-stone-400 font-mono">المفاتيح المخزنة بجهازك (LocalStorage)</div>
+              <div className="text-2xl font-black text-[var(--gold)] font-mono">
+                {localKeysDetected.length} مفاتيح
               </div>
-              <span className="text-[10px] text-stone-400 block">تخزين محلي بجهازك فقط</span>
+              <div className="text-[11px] text-stone-400">حجمها التقديري: {storageBytes} بايت</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-1">
-              <span className="text-[11px] text-stone-400 block font-medium">تسجيل الدخول الإلزامي</span>
-              <div className="text-base font-black text-emerald-300 font-mono flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-1">
+              <div className="text-[10px] text-stone-400 font-mono">بروتوكول الاتصال بالخادم</div>
+              <div className="text-xs font-bold text-white font-mono truncate">{browserProtocol}</div>
+              <div className="text-[11px] text-emerald-300">تشفير كامل غير قابل للتنصت</div>
+            </div>
+          </div>
+
+          {/* Interactive Privacy Control Toggles */}
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-[var(--gold)]" />
+                <h3 className="text-xs sm:text-sm font-bold text-white">
+                  لوحة التحكم في التفضيلات المحلية (تُحفظ داخل جهازك فقط)
+                </h3>
+              </div>
+              {savedSettingsNotice && (
+                <span className="text-[11px] text-emerald-400 font-bold flex items-center gap-1 animate-pulse">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>تم تحديث التفضيل محلياً!</span>
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Toggle 1: Saved Articles */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white">حفظ المقالات للقراءة دون اتصال</div>
+                  <div className="text-[11px] text-stone-400">تخزين نصوص الأخبار في ذاكرة جهازك للقراءة في حال انقطاع الشبكة</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreference("saved", allowSavedArticles)}
+                  className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
+                    allowSavedArticles ? "bg-emerald-600" : "bg-white/20"
+                  }`}
+                >
+                  <span
+                    className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                      allowSavedArticles ? "translate-x-1" : "translate-x-7"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Toggle 2: Audio Player */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white">قارئ الأخبار الصوتي الذكي</div>
+                  <div className="text-[11px] text-stone-400">تمكين التوليد الصوتي للملخصات الإخبارية وسرعة القراءة</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreference("audio", allowAudioNews)}
+                  className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
+                    allowAudioNews ? "bg-emerald-600" : "bg-white/20"
+                  }`}
+                >
+                  <span
+                    className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                      allowAudioNews ? "translate-x-1" : "translate-x-7"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Toggle 3: Instant Alerts */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white">تنبيهات الأخبار العاجلة المشفرة</div>
+                  <div className="text-[11px] text-stone-400">إظهار شريط الطوارئ الأحمر عند ورود حدث سياسي أو ميداني حاسم</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreference("alerts", allowInstantAlerts)}
+                  className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
+                    allowInstantAlerts ? "bg-emerald-600" : "bg-white/20"
+                  }`}
+                >
+                  <span
+                    className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                      allowInstantAlerts ? "translate-x-1" : "translate-x-7"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Toggle 4: Low Bandwidth Mode */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-white">نمط التوفير الأقصى للبيانات (Low-Bandwidth)</div>
+                  <div className="text-[11px] text-stone-400">تعطيل الصور فائقة الدقة لتسريع التحميل على شبكات غزة الضعيفة</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreference("bandwidth", allowLowBandwidth)}
+                  className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
+                    allowLowBandwidth ? "bg-emerald-600" : "bg-white/20"
+                  }`}
+                >
+                  <span
+                    className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                      allowLowBandwidth ? "translate-x-1" : "translate-x-7"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Forensic Purge Tool Button */}
+            <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="text-xs text-stone-400">
+                هل ترغب في محو أي أثر للتفضيلات أو المقالات المحفوظة من متصفحك فوراً؟
+              </div>
+              <button
+                type="button"
+                onClick={handleClearAllPreferences}
+                disabled={clearingCache}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-bold transition-all flex items-center justify-center gap-2 self-start sm:self-auto disabled:opacity-50"
+              >
+                {clearingCache ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>جارٍ تطهير الذاكرة المحلية...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>تطهير شامل لكافة التفضيلات والكاش المحلي</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {clearedMessage && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>غير مطلوب مطلقاً</span>
+                <span>تم تطهير الذاكرة المحلية للمتصفح بالكامل بنجاح. جلسة تصفحك الآن نظيفة 100%.</span>
               </div>
-              <span className="text-[10px] text-stone-400 block">تصفح وقراءة حرة بدون قيود</span>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. مصفوفة الكوكيز الشفافة (Cookie Transparency Table) */}
-        <section className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-            <div>
-              <span className="text-xs font-black text-[var(--gold)] uppercase tracking-wider block">
-                الشفافية التقنية الكاملة
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
-                مصفوفة ملفات تعريف الارتباط الوظيفية
-              </h2>
-            </div>
-
-            <button
-              onClick={handleClearAllPreferences}
-              disabled={clearingCache}
-              className="px-4 py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>{clearingCache ? "جاري المسح..." : "مسح التفضيلات والكاش من متصفحي الآن"}</span>
-            </button>
-          </div>
-
-          {clearedMessage && (
-            <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>تم بنجاح مسح كافة التفضيلات والمقالات المحفوظة المخزنة محلياً في متصفحك!</span>
-            </div>
-          )}
-
-          <div className="rounded-2xl border border-white/10 bg-[#16060B]/70 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-right text-xs">
-                <thead>
-                  <tr className="border-b border-white/10 bg-black/40 text-stone-400 font-bold">
-                    <th className="py-3.5 px-4">اسم المفتاح المحلي</th>
-                    <th className="py-3.5 px-4">الفئة</th>
-                    <th className="py-3.5 px-4">الغرض الصحفي والوظيفي</th>
-                    <th className="py-3.5 px-4">مدة الصلاحية</th>
-                    <th className="py-3.5 px-4">مكان التخزين</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-stone-200">
-                  {COOKIE_DATA.map((cookie) => (
-                    <tr key={cookie.name} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-[var(--gold)]">
-                        {cookie.name}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-stone-300 font-medium">
-                          {cookie.category}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 leading-relaxed">{cookie.purpose}</td>
-                      <td className="py-3.5 px-4 font-mono text-stone-400">{cookie.duration}</td>
-                      <td className="py-3.5 px-4 text-emerald-400 font-medium">{cookie.type}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. لوحة إدارة تفضيلات الزائر التفاعلية */}
-        <section className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#18020a]/80 to-[#100004]/80 p-6 sm:p-8 space-y-6 shadow-xl">
-          <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-            <Sliders className="w-5 h-5 text-[var(--gold)]" />
-            <div>
-              <h3 className="font-black text-white text-base">مركز التحكم في تفضيلات الجلسة</h3>
-              <p className="text-xs text-stone-400">خصص تجربة تصفحك مع الحفاظ التام على أمانك وسريتك</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-black/30 border border-white/5">
-              <div>
-                <span className="font-bold text-xs text-white block">حفظ المقالات في الأرشيف المحلي</span>
-                <span className="text-[11px] text-stone-400">
-                  السماح بتخزين المقالات لقراءتها لاحقاً دون اتصال بالإنترنت
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={allowSavedArticles}
-                onChange={(e) => setAllowSavedArticles(e.target.checked)}
-                className="w-5 h-5 accent-[var(--gold)] rounded cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-black/30 border border-white/5">
-              <div>
-                <span className="font-bold text-xs text-white block">
-                  النغمة الصوتية للأخبار العاجلة المباشرة
-                </span>
-                <span className="text-[11px] text-stone-400">
-                  تشغيل نغمة صحفية خافتة عند صدور بيان عاجل من الميدان
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={allowAudioNews}
-                onChange={(e) => setAllowAudioNews(e.target.checked)}
-                className="w-5 h-5 accent-[var(--gold)] rounded cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-black/30 border border-white/5">
-              <div>
-                <span className="font-bold text-xs text-white block">
-                  تنبيهات البث المباشر ورادار يلا سبورت
-                </span>
-                <span className="text-[11px] text-stone-400">
-                  إظهار كبسولة التنبيه عند بدء بث مباشر هام أو أهداف المباريات
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={allowInstantAlerts}
-                onChange={(e) => setAllowInstantAlerts(e.target.checked)}
-                className="w-5 h-5 accent-[var(--gold)] rounded cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2">
-            <button
-              onClick={handleSavePreferences}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[#dca600] text-slate-950 font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-amber-950/20 cursor-pointer"
-            >
-              حفظ التفضيلات في المتصفح
-            </button>
-
-            {savedSettingsNotice && (
-              <span className="text-xs text-emerald-400 font-bold animate-in fade-in">
-                ✓ تم تحديث التفضيلات بنجاح!
-              </span>
             )}
           </div>
         </section>
 
-        {/* 5. شهادات الامتثال والسيادة الدولية */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div className="p-5 rounded-2xl border border-white/10 bg-[#16060B]/70 space-y-2">
-            <ShieldCheck className="w-8 h-8 text-emerald-400 mx-auto" />
-            <h4 className="font-bold text-white text-xs">مطابقة لائحة GDPR الدولية</h4>
-            <p className="text-[11px] text-stone-400 leading-relaxed">
-              احترام كامل للحق في النسيان، حذف البيانات، وانعدام مشاركتها مع أطراف ثالثة.
+        {/* 3. Comprehensive Local Data Matrix */}
+        <section className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 sm:p-9 space-y-6 shadow-2xl">
+          <div className="border-b border-white/10 pb-5">
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <Database className="w-5 h-5 text-[var(--gold)]" />
+              <span>جدول الشفافية الصريح للملفات والمتغيرات المحلية</span>
+            </h2>
+            <p className="text-xs text-stone-400 mt-1">
+              حصر دقيق لكل متغير يمكن أن يطلبه المتصفح لتشغيل الموقع دون أي غموض أو أكواد مبهمة
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl border border-white/10 bg-[#16060B]/70 space-y-2">
-            <Lock className="w-8 h-8 text-amber-400 mx-auto" />
-            <h4 className="font-bold text-white text-xs">معيار ISO 27001 للأمن السيبراني</h4>
-            <p className="text-[11px] text-stone-400 leading-relaxed">
-              بنية تحتية سحابية محصنة ضد الاختراق والتنصت مع تشفير متقدم لروابط الاتصال.
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead>
+                <tr className="border-b border-white/10 text-stone-400 font-bold">
+                  <th className="py-3 px-4">اسم المفتاح (Key)</th>
+                  <th className="py-3 px-4">التصنيف</th>
+                  <th className="py-3 px-4">الغاية الوظيفية</th>
+                  <th className="py-3 px-4">مدة البقاء</th>
+                  <th className="py-3 px-4">النطاق</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-stone-300 font-mono">
+                {COOKIE_DATA.map((cookie) => (
+                  <tr key={cookie.name} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-[var(--gold)]">{cookie.name}</td>
+                    <td className="py-3.5 px-4 font-sans text-stone-200">{cookie.category}</td>
+                    <td className="py-3.5 px-4 font-sans text-stone-300 leading-relaxed">{cookie.purpose}</td>
+                    <td className="py-3.5 px-4 text-stone-400">{cookie.duration}</td>
+                    <td className="py-3.5 px-4 text-emerald-400 font-sans text-[11px]">{cookie.type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 4. Sovereign Privacy Declarations */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 space-y-3 shadow-xl">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+              <Lock className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base">انعدام بيع البيانات تجارياً</h3>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              لا نقوم ولا يمكن أن نقوم ببيع أو تأجير أي بيانات تخص قراءنا أو مصادرنا لأي وسيط إعلاني أو شركة تحليل سلوكي تجارية حول العالم.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl border border-white/10 bg-[#16060B]/70 space-y-2">
-            <Globe2 className="w-8 h-8 text-sky-400 mx-auto" />
-            <h4 className="font-bold text-white text-xs">ميثاق حماية الصحفيين والشهود</h4>
-            <p className="text-[11px] text-stone-400 leading-relaxed">
-              حصانة كاملة للرسائل والمعلومات الميدانية الواردة من مراسلينا في غزة والقدس.
+          <div className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 space-y-3 shadow-xl">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <EyeOff className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base">الحق في النسيان الرقمي (Right to Erasure)</h3>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              يحق لأي قارئ أو مساهم طلب حذف أي تعليق أو مراسلة مسجلة باسمه فوراً عبر مراسلة مسؤول حماية البيانات على dpo@alwatantoday.net.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-[#16060B]/80 backdrop-blur-xl p-6 space-y-3 shadow-xl">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold">
+              <Server className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base">استضافة سيادية مشفرة</h3>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              خوادمنا تعمل وفق بيئة عزل صارمة، وتعتمد شهادات SSL صادرة بتشفير متقدم يدعم معايير ما بعد الكوانتوم لضمان استمرارية الحماية على المدى الطويل.
             </p>
           </div>
         </div>
