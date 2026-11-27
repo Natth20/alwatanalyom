@@ -5,14 +5,14 @@
  */
 
 export function isMockDataAllowed(): boolean {
-  // إذا تم تمكين البيانات البديلة صراحة عبر المتغير البيئي
-  if (process.env["ENABLE_MOCK_DATA"] === "true") {
-    return true;
+  // في بيئة الإنتاج: البيانات التجريبية محجوبة تماماً وبشكل قطعي تحت أي ظرف
+  if (process.env.NODE_ENV === "production" || Boolean(process.env["VERCEL"])) {
+    return false;
   }
 
-  // في الإنتاج بدون تمكين صريح تكون محجوبة
-  if (process.env.NODE_ENV === "production") {
-    return false;
+  // فقط في بيئة التطوير المحلية إذا تم تفعيلها صراحة
+  if (process.env["ENABLE_MOCK_DATA"] === "true") {
+    return true;
   }
 
   return false;

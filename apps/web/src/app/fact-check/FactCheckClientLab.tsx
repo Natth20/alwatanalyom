@@ -234,6 +234,15 @@ export function FactCheckClientLab({ initialItems }: { initialItems: FactCheckIt
           </div>
         </div>
 
+        {filtered.length === 0 ? (
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-10 text-center space-y-2 text-xs text-[var(--text-muted)]">
+            <ShieldCheck className="w-8 h-8 mx-auto text-rose-500/60" />
+            <p className="font-bold text-sm text-[var(--text)]">
+              لا توجد تقارير تحقق منشورة ضمن هذا التصنيف في قاعدة البيانات حالياً
+            </p>
+            <p>يمكنك استخدام مختبر الفحص المباشر أعلاه لتحليل أي رابط خارجي أو البحث في الأرشيف الموثق فوراً.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((item) => {
             const st = verdictStyle(item.verdict);
@@ -275,6 +284,7 @@ export function FactCheckClientLab({ initialItems }: { initialItems: FactCheckIt
             );
           })}
         </div>
+        )}
       </section>
     </div>
   );

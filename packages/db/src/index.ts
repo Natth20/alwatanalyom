@@ -14,11 +14,15 @@ function buildSafeDatasourceUrl(): string | undefined {
   try {
     const parsed = new URL(raw);
     const isProd = process.env["NODE_ENV"] === "production" || Boolean(process.env["VERCEL"]);
-    if (isProd && !parsed.searchParams.has("connection_limit")) {
-      parsed.searchParams.set("connection_limit", "5");
-    }
-    if (parsed.port === "6543" && !parsed.searchParams.has("pgbouncer")) {
+    if (parsed.hostname.includes(".pooler.supabase.com")) {
+      // Switch Supabase Session Pooler (:5432, max 15 clients globally) -> Transaction Pooler (:6543 + pgbouncer)
+      if (!parsed.port || parsed.port === "5432") {
+        parsed.port = "6543";
+      }
       parsed.searchParams.set("pgbouncer", "true");
+      parsed.searchParams.set("connection_limit", isProd ? "3" : "5");
+    } else if (isProd && !parsed.searchParams.has("connection_limit")) {
+      parsed.searchParams.set("connection_limit", "3");
     }
     if (!parsed.searchParams.has("pool_timeout")) {
       parsed.searchParams.set("pool_timeout", "20");
