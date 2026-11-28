@@ -17,6 +17,15 @@ import { HomeAidAndJobsBar } from "./HomeAidAndJobsBar";
 import { HomeVideoSection } from "./HomeVideoSection";
 import { HomeSportsSection } from "./HomeSportsSection";
 import { HomeSmartHubsDock } from "./HomeSmartHubsDock";
+import { HomeEditionMasthead } from "./HomeEditionMasthead";
+import { HomeTrendingStoriesSection } from "./HomeTrendingStoriesSection";
+import { HomeNewsletterBanner } from "./HomeNewsletterBanner";
+import { TrendingRibbon } from "@/components/TrendingRibbon";
+import { OpinionSection } from "@/components/OpinionSection";
+import { PerspectiveMatrix } from "@/components/PerspectiveMatrix";
+import { PodcastWidget } from "@/components/PodcastWidget";
+import { HistoryTodayWidget } from "@/components/HistoryTodayWidget";
+import { DailyMindGames } from "@/components/DailyMindGames";
 import { AdSlot } from "@/components/AdSlot";
 import { TrendingUp, ShieldCheck, ChevronLeft } from "lucide-react";
 
@@ -25,6 +34,8 @@ interface Props {
   heroArticle?: ArticleCardType;
   secondaryArticles: ArticleCardType[];
   palestineStories: StorySummary[];
+  trendingStories?: StorySummary[];
+  breakingCount?: number;
   fastStreamArticles: ArticleCardType[];
   videoArticles: ArticleCardType[];
   arabWorldArticles: ArticleCardType[];
@@ -41,6 +52,8 @@ export function HomeStreamLayout({
   heroArticle,
   secondaryArticles,
   palestineStories,
+  trendingStories = [],
+  breakingCount = 0,
   fastStreamArticles,
   videoArticles,
   arabWorldArticles,
@@ -58,8 +71,18 @@ export function HomeStreamLayout({
   ].filter(Boolean) as string[];
 
   return (
-    <div className="space-y-16 sm:space-y-20 lg:space-y-24">
-      {/* 0. شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
+    <div className="space-y-14 sm:space-y-18 lg:space-y-20">
+      {/* 0.0 ترويسة طبعة اليوم الخاصة بالرئيسية وشريط التنقل السريع بين الصروح */}
+      <HomeEditionMasthead
+        totalBreaking={breakingCount}
+        totalStories={palestineStories.length + trendingStories.length}
+        totalQuotes={quotes.length}
+      />
+
+      {/* 0.1 شريط الوسوم المتداولة الحي */}
+      <TrendingRibbon />
+
+      {/* 0.2 شريط قصص الأخبار التفاعلية السريعة (Visual News Stories Rail) */}
       <NewsStoriesBar stories={palestineStories} articles={fastStreamArticles} />
 
       {/* 1. المركز الرئاسي والبطل الإخباري ثلاثي الأعمدة (Tri-Pillar Hero Wall) */}
@@ -73,23 +96,32 @@ export function HomeStreamLayout({
       {/* 1.1 الموجز الصوتي الذكي في صدارة الصفحة الرئيسية */}
       <FrontpageAudioBrief headlines={headlines} />
 
-      {/* 2. صرح فلسطين أولاً وغرف العمليات الأربع الميدانية */}
-      <PalestineFocusBlock stories={palestineStories} />
+      {/* 1.2 أبرز الملفات والقصص المتصاعدة الآن */}
+      <HomeTrendingStoriesSection stories={trendingStories} />
 
-      {/* 2.1 غرفة العمليات الميدانية الحية وأطلس فلسطين التفاعلي */}
-      <LiveWarRoomMap />
+      {/* 2. صرح فلسطين أولاً وغرف العمليات الأربع الميدانية + الأطلس الحي */}
+      <div id="palestine-citadel" className="scroll-mt-24 space-y-14 sm:space-y-18">
+        <PalestineFocusBlock stories={palestineStories} />
+        <LiveWarRoomMap />
+      </div>
 
       {/* 2.2 صرح المال والأسواق والسلع الحيوية وحاسبة الذهب اللحظية */}
-      <PalestineCommoditiesWidget />
+      <div id="gold-markets" className="scroll-mt-24">
+        <PalestineCommoditiesWidget />
+      </div>
 
       {/* 3. جدارية الصحافة المرئية وفيديو الوطن — بالعرض الكامل 12 عموداً بنمط سينمائي */}
-      <HomeVideoSection articles={videoArticles} />
+      <div id="cinema-reels" className="scroll-mt-24">
+        <HomeVideoSection articles={videoArticles} />
+      </div>
 
       {/* 4. ساحة يلا سبورت والملاعب (مباريات اليوم الحية + شبكة التقارير الكروية) */}
-      <HomeSportsSection articles={sportsArticles} />
+      <div id="sports-arena" className="scroll-mt-24">
+        <HomeSportsSection articles={sportsArticles} />
+      </div>
 
       {/* 5. الهيكل التحريري الشبكي: الأخبار الإقليمية والدولية والأعمدة الجانبية */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div id="global-matrix" className="scroll-mt-24 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* العمود الرئيسي للأخبار والتحليلات (8 أعمدة) */}
         <div className="lg:col-span-8 space-y-10">
           {/* شبكة الأقسام المركزية: العالم العربي ودولياً */}
@@ -182,6 +214,9 @@ export function HomeStreamLayout({
               </div>
             </div>
           </div>
+
+          {/* 5.5 زاوية الرأي والتحليل الاستراتيجي (مقالات الرأي من /api/v1/search?section=opinion) */}
+          <OpinionSection />
         </div>
 
         {/* العمود الجانبي (4 أعمدة): الممر السريع + استطلاع الرأي + الأكثر قراءة + ميثاق الشرف */}
@@ -228,17 +263,34 @@ export function HomeStreamLayout({
         </div>
       </div>
 
+      {/* 5.8 مصفوفة تغطية الوكالات وتعدد المصادر الحية */}
+      <PerspectiveMatrix />
+
       {/* 6. جناح المراكز التفاعلية الذكية الخمسة في قلب الصفحة الرئيسية */}
-      <HomeSmartHubsDock />
+      <div id="smart-hubs" className="scroll-mt-24">
+        <HomeSmartHubsDock />
+      </div>
 
       {/* 7. صرح التحقق الجنائي ومنزلق كشف التزييف البصري (بالعرض الكامل) */}
       <FactCheckSlider />
 
-      {/* 7. صحافة البيانات والإنفوجرافيك التفاعلي (بالعرض الكامل) */}
+      {/* 7.5 صحافة البيانات والإنفوجرافيك التفاعلي (بالعرض الكامل) */}
       <InfographicSection />
 
-      {/* 8. بوابات المساعدات الإنسانية والوظائف المعتمدة (بالعرض الكامل) */}
+      {/* 8. جناح البودكاست الصوتي وحدث في مثل هذا اليوم */}
+      <div id="culture-history" className="scroll-mt-24 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <PodcastWidget />
+        <HistoryTodayWidget />
+      </div>
+
+      {/* 8.5 تحدي المعرفة والتاريخ الفلسطيني التفاعلي */}
+      <DailyMindGames />
+
+      {/* 9. بوابات المساعدات الإنسانية والوظائف المعتمدة (بالعرض الكامل) */}
       <HomeAidAndJobsBar />
+
+      {/* 10. صرح النشرة الصباحية البريدية */}
+      <HomeNewsletterBanner />
     </div>
   );
 }

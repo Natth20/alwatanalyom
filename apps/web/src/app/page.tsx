@@ -49,6 +49,8 @@ export default async function HomePage({ searchParams }: Props) {
             heroArticle={heroMainArticle}
             secondaryArticles={secondaryArticles}
             palestineStories={feed.palestineStories}
+            trendingStories={feed.trendingStories}
+            breakingCount={feed.breaking.length}
             fastStreamArticles={feed.fastStreamArticles}
             videoArticles={feed.videoArticles}
             arabWorldArticles={feed.arabWorldArticles}
