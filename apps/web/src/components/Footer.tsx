@@ -527,8 +527,8 @@ export function Footer() {
             </Link>
           </div>
 
-          {/* شبكات التواصل الاجتماعي الرسمية */}
-          <div className="flex items-center gap-2">
+          {/* شبكات التواصل الاجتماعي الرسمية + زر الصعود للأعلى */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {socialItems.map((s) => (
               <a
                 key={s.label}
@@ -540,6 +540,14 @@ export function Footer() {
                 {s.label}
               </a>
             ))}
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="px-3.5 py-1 rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/15 hover:bg-[var(--gold)] text-[var(--gold)] hover:text-[#120004] transition-all font-black text-xs cursor-pointer"
+              title="العودة إلى أعلى الصفحة"
+            >
+              ↑ الأعلى
+            </button>
           </div>
         </div>
       </div>

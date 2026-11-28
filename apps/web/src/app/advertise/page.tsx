@@ -229,19 +229,19 @@ export default function AdvertisePage() {
             {/* بطاقات النتائج اللحظية المتوقعة */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10">
               <div className="p-4 rounded-2xl bg-black/50 border border-emerald-500/30 space-y-1">
-                <span className="text-[11px] text-stone-400 block font-medium">الظهور الفعلي المضمون</span>
+                <span className="text-[11px] text-stone-400 block font-medium">الظهور التقديري الإرشادي</span>
                 <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
                   {impressions.toLocaleString("ar-EG")}
                 </div>
-                <span className="text-[10px] text-stone-400 block">مشاهدة حقيقية 100%</span>
+                <span className="text-[10px] text-stone-400 block">تقدير إرشادي لنطاق الحملة (1,000 ظهور / $)</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-black/50 border border-[var(--gold)]/30 space-y-1">
-                <span className="text-[11px] text-stone-400 block font-medium">النقرات المتوقعة لموقعك</span>
+                <span className="text-[11px] text-stone-400 block font-medium">النقرات المتوقعة إرشادياً</span>
                 <div className="text-2xl sm:text-3xl font-black text-[var(--gold)] font-mono">
                   {clicks.toLocaleString("ar-EG")}
                 </div>
-                <span className="text-[10px] text-stone-400 block">CTR مرتفع بمعدل 3.4%</span>
+                <span className="text-[10px] text-stone-400 block">بمعدل نقر إرشادي 2.0%</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-black/50 border border-sky-500/30 space-y-1">
@@ -250,8 +250,24 @@ export default function AdvertisePage() {
                   <ShieldCheck className="w-5 h-5 text-sky-400" />
                   <span>Zero-Bot</span>
                 </div>
-                <span className="text-[10px] text-stone-400 block">فلترة فورية لحركة الروبوتات</span>
+                <span className="text-[10px] text-stone-400 block">توثيق الظهور والنقرات عبر كابينة الإدارة</span>
               </div>
+            </div>
+
+            {/* مسار إطلاق الحملة الإعلانية (4 خطوات) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2 text-[11px]">
+              {[
+                { step: "01", title: "تحديد المساحة والميزانية", desc: "اختيار الموضع المناسب وأهداف الحملة" },
+                { step: "02", title: "إرسال طلب الحجز", desc: "تسجيل تذكرة رسمية تصل لغرفة التجاري" },
+                { step: "03", title: "المراجعة والمصادقة", desc: "التحقق من توافق الإعلان مع الميثاق المهني" },
+                { step: "04", title: "البث وقياس الأداء", desc: "متابعة الظهور والنقرات الفعلية مباشرة" },
+              ].map((s) => (
+                <div key={s.step} className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+                  <span className="font-mono text-[10px] font-black text-[var(--gold)]">خطوة {s.step}</span>
+                  <strong className="block text-white font-black">{s.title}</strong>
+                  <span className="text-stone-400 block leading-snug">{s.desc}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

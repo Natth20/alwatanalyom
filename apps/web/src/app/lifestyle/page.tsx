@@ -65,33 +65,34 @@ export default async function LifestylePage() {
         <span className="text-[var(--primary)] font-bold">نمط الحياة والصحة</span>
       </nav>
 
-      {/* ترويسة القسم الملكية */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-[var(--primary)] via-[#3e0011] to-[#1a0006] p-6 sm:p-10 text-white shadow-xl border border-[var(--gold)]/20">
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--gold)]/20 border border-[var(--gold)]/40 text-[var(--gold)] text-xs font-bold">
+      {/* ترويسة القسم الملكية المحدثة */}
+      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b0410] via-[#3e0011] to-[#120106] p-7 sm:p-11 text-white shadow-2xl border border-[var(--gold)]/30">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-85" />
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--gold)]/20 border border-[var(--gold)]/40 text-[var(--gold)] text-xs font-black">
             <Heart className="w-4 h-4 text-rose-400" />
-            <span>الصحة وجودة الحياة بمرجعية علمية</span>
+            <span>الصحة وجودة الحياة بمرجعية علمية موثقة</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            نمط الحياة والصحة
+          <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight title-imperial">
+            مجلة نمط الحياة <span className="text-[var(--gold)]">والصحة والمجتمع</span>
           </h1>
 
           <p className="text-sm sm:text-base text-stone-200 leading-relaxed">
-            مساحتكم الإخبارية والتوعوية للصحة الجسدية والنفسية، التغذية السليمة، والأسرة. نلتزم بنشر المواد الطبية المستندة إلى دراسات علمية محكّمة وبيانات الهيئات الصحية الرسمية.
+            مساحتكم المعرفية للصحة الجسدية والنفسية، التغذية السليمة، والتوازن الأسري. نلتزم بنشر المواد الطبية المستندة إلى دراسات علمية محكّمة وبيانات الهيئات الصحية الرسمية.
           </p>
         </div>
 
         <div className="absolute left-0 bottom-0 top-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-end pe-8">
           <Activity className="w-64 h-64 text-white" />
         </div>
-      </div>
+      </header>
 
       {/* تنبيه النزاهة الطبية */}
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-xs sm:text-sm text-[var(--text)]">
+      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 sm:p-5 flex items-center gap-3 text-xs sm:text-sm text-[var(--text)]">
         <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <p className="text-[var(--text-muted)] leading-relaxed">
-          <strong className="text-[var(--text)]">ميثاق التحرير الصحي في «الوطن اليوم»:</strong> لا نروّج للعلاجات الشعبية غير المثبتة أو الإشاعات الطبية. كافة المعلومات التوعوية تخضع للتدقيق وفقاً لإرشادات منظمة الصحة العالمية والمراجع الطبية المعتمدة.
+          <strong className="text-[var(--text)]">ميثاق التحرير الصحي في «الوطن اليوم»:</strong> لا نروّج للعلاجات غير المثبتة أو الشائعات الطبية. كافة المواد التوعوية تخضع للتدقيق وفق إرشادات منظمة الصحة العالمية والمراجع الطبية المعتمدة.
         </p>
       </div>
 
@@ -102,30 +103,22 @@ export default async function LifestylePage() {
           return (
             <div
               key={idx}
-              className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--gold)] hover:shadow-md transition-all text-start"
+              className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#1b050b]/95 dark:to-[#0e0407]/95 hover:border-[var(--gold)]/60 hover:-translate-y-0.5 hover:shadow-lg transition-all text-start space-y-2"
             >
-              <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center mb-2">
-                <IconComponent className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 dark:bg-[var(--gold)]/15 text-[var(--primary)] dark:text-[var(--gold)] border border-[var(--primary)]/20 dark:border-[var(--gold)]/30 flex items-center justify-center">
+                <IconComponent className="w-5 h-5" />
               </div>
-              <h3 className="font-bold text-sm text-[var(--text)] mb-1">{cat.name}</h3>
-              <p className="text-[11px] text-[var(--text-muted)] leading-snug">{cat.desc}</p>
+              <h3 className="font-black text-sm text-[var(--text)]">{cat.name}</h3>
+              <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">{cat.desc}</p>
             </div>
           );
         })}
       </div>
 
       {/* محتوى المقالات */}
-      <section className="space-y-6 pt-4">
+      <section className="space-y-8 pt-4">
         {heroArticle && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-2.5 h-6 bg-[var(--gold)] rounded-full" />
-              <h2 className="text-xl font-black text-[var(--text)]">
-                التقرير الرئيسي
-              </h2>
-            </div>
-            <ArticleCard article={heroArticle} />
-          </div>
+          <ArticleCard article={heroArticle} variant="hero" />
         )}
 
         {secondaryArticles.length > 0 && (

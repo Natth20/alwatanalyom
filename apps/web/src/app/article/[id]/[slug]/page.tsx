@@ -277,8 +277,19 @@ export default async function ArticlePage({ params }: PageProps) {
           <span className="hidden sm:inline text-[var(--border)]">|</span>
 
           <span className="flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5" />
-            <span>وقت القراءة: 2 إلى 3 دقائق</span>
+            <FileText className="w-3.5 h-3.5 text-[var(--gold)]" />
+            <span>
+              وقت القراءة:{" "}
+              {Math.max(
+                1,
+                Math.ceil(
+                  (((article.summaryAr || "").trim().split(/\s+/).length || 0) +
+                    ((article.bodyHtml || "").replace(/<[^>]+>/g, " ").trim().split(/\s+/).length || 0)) /
+                    180
+                )
+              )}{" "}
+              دقيقة تقريباً
+            </span>
           </span>
         </div>
 

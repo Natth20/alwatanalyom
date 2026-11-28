@@ -50,19 +50,20 @@ export default function SavedArticlesPage() {
 
   return (
     <div className="container-custom py-10 max-w-4xl mx-auto space-y-8">
-      {/* الترويسة الرئيسية */}
-      <div className="rounded-2xl border border-[var(--border)] bg-gradient-to-r from-[var(--surface)] to-[var(--bg)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center">
-              <Bookmark className="w-4 h-4" />
+      {/* الترويسة الرئيسية لخزنة المحفوظات */}
+      <header className="relative rounded-3xl overflow-hidden border border-[var(--gold)]/30 bg-gradient-to-br from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#21040c]/95 dark:via-[#140408]/95 dark:to-[#0e0407]/95 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#590018] to-[#26000a] text-[var(--gold)] border border-[var(--gold)]/40 flex items-center justify-center shadow-md">
+              <Bookmark className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-black text-[var(--text)]">
-              قائمة القراءة والمواد المحفوظة
+            <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] title-imperial">
+              خزنة القراءة والمواد المحفوظة
             </h1>
           </div>
           <p className="text-xs text-[var(--text-muted)]">
-            محفوظة بأمان محلياً على جهازك لقراءتها في أي وقت بدون انترنت
+            محفوظة بأمان محلياً على جهازك لقراءتها في أي وقت بدون إنترنت
           </p>
         </div>
 
@@ -73,14 +74,14 @@ export default function SavedArticlesPage() {
             </span>
             <button
               onClick={handleClearAll}
-              className="text-xs text-rose-500 hover:text-rose-600 flex items-center gap-1 font-semibold border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/5 transition-colors"
+              className="text-xs text-rose-500 hover:text-rose-600 flex items-center gap-1 font-semibold border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/5 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>إفراغ الكل</span>
             </button>
           </div>
         )}
-      </div>
+      </header>
 
       {loaded && savedItems.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

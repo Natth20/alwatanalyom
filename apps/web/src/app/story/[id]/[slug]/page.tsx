@@ -38,44 +38,51 @@ export default async function StoryPage({ params }: Props) {
   }
 
   return (
-    <div className="container-custom py-8 max-w-4xl mx-auto space-y-8">
+    <div className="container-custom py-10 max-w-5xl mx-auto space-y-10">
       {/* مسار التنقل */}
       <nav className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-        <Link href="/" className="hover:text-[var(--primary)]">الرئيسية</Link>
+        <Link href="/" className="hover:text-[var(--primary)] font-semibold">الرئيسية</Link>
         <span>/</span>
-        <span>قصص مجمعة وتغطيات متكاملة</span>
+        <Link href="/stories" className="hover:text-[var(--primary)]">القصص المجمعة</Link>
         <span>/</span>
-        <span className="text-[var(--primary)] font-semibold truncate max-w-xs">{story.headlineAr}</span>
+        <span className="text-[var(--primary)] font-black truncate max-w-xs">{story.headlineAr}</span>
       </nav>
 
-      {/* عنوان القصة والملخص التحريري المتجدد */}
-      <div className="space-y-4 border-b border-[var(--border)] pb-6">
-        <div className="flex items-center gap-3">
-          <span className="bg-emerald-500/10 text-emerald-600 px-2.5 py-0.5 rounded text-xs font-bold">
-            قصة مجمعة
-          </span>
-          <span className="text-xs text-[var(--text-muted)]">
-            {story.articles.length} مصادر ووكالات تغطي الحدث
+      {/* عنوان القصة والملخص التحريري المتجدد بتصميم صداري فاخر */}
+      <header className="relative rounded-3xl overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/20 via-[var(--surface)] to-[var(--surface)] dark:from-[#041d15]/90 dark:via-[#14050a]/95 dark:to-[#0e0407]/95 p-6 md:p-9 shadow-xl space-y-5">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80" />
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-black">
+              ملف قصة مجمعة
+            </span>
+            <span className="text-xs font-bold text-[var(--text-muted)]">
+              {story.articles.length} تغطيات متكاملة للحدث
+            </span>
+          </div>
+          <span className="text-[11px] font-mono text-[var(--text-muted)] bg-[var(--bg)] px-3 py-1 rounded-xl border border-[var(--border)]">
+            أهمية الملف: {story.importance}/10
           </span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-black text-[var(--text)] leading-tight">
+        <h1 className="text-2xl sm:text-4xl font-black text-[var(--text)] leading-tight title-imperial">
           {story.headlineAr}
         </h1>
 
         {story.summaryAr && (
-          <div className="p-4 rounded-xl bg-[var(--surface)] border-r-4 border-[var(--primary)] text-base text-[var(--text)] leading-relaxed">
-            <span className="font-bold text-xs text-[var(--primary)] block mb-1">السياق التحريري الموحد:</span>
+          <div className="p-5 rounded-2xl bg-[var(--bg)]/80 dark:bg-black/40 border-r-4 border-[var(--primary)] text-sm sm:text-base text-[var(--text)] leading-relaxed shadow-xs">
+            <span className="font-black text-xs text-[var(--primary)] block mb-1.5">السياق التحريري الموحد:</span>
             {story.summaryAr}
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-6 text-xs text-[var(--text-muted)] pt-2">
-          <span>أول ظهور للخبر: {new Date(story.firstSeenAt).toLocaleString("ar-EG")}</span>
-          <span>•</span>
-          <span>آخر تحديث وارد: {new Date(story.lastUpdatedAt).toLocaleString("ar-EG")}</span>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border)]">
+          <span>أول رصد للحدث: <strong className="text-[var(--text)] font-mono">{new Date(story.firstSeenAt).toLocaleString("ar-EG")}</strong></span>
+          <span className="opacity-30">•</span>
+          <span>آخر تحديث وارد: <strong className="text-[var(--text)] font-mono">{new Date(story.lastUpdatedAt).toLocaleString("ar-EG")}</strong></span>
         </div>
-      </div>
+      </header>
 
       {/* مؤشر توازن وتنوع المصادر المساهمة (Coverage Distribution) */}
       {(() => {

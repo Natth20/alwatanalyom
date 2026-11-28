@@ -75,19 +75,26 @@ export default async function AuthorPage({ params }: Props) {
         <span className="text-[var(--primary)] font-bold">{author.nameAr}</span>
       </nav>
 
-      {/* بطاقة الكاتب التعريفية */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-start">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] border-2 border-[var(--gold)] flex items-center justify-center shrink-0">
+      {/* بطاقة الكاتب التعريفية بتصميم أرشيفي فاخر */}
+      <div className="relative rounded-3xl overflow-hidden border border-[var(--gold)]/35 bg-gradient-to-br from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#21040c]/95 dark:via-[#140408]/95 dark:to-[#0e0407]/95 p-6 sm:p-9 shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-start">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#590018] to-[#26000a] text-[var(--gold)] border-2 border-[var(--gold)]/60 flex items-center justify-center shrink-0 shadow-lg">
           <User className="w-10 h-10 sm:w-12 sm:h-12" />
         </div>
 
-        <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[var(--primary)]/10 text-[var(--primary)]">
-            <Feather className="w-3.5 h-3.5" />
-            <span>كاتب ومحرر معتمد</span>
+        <div className="space-y-3 max-w-2xl flex-1">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[var(--gold)]/15 text-[var(--primary)] dark:text-[var(--gold)] border border-[var(--gold)]/35">
+              <Feather className="w-3.5 h-3.5" />
+              <span>كاتب ومحرر معتمد · الوطن اليوم</span>
+            </div>
+            <span className="text-xs font-mono px-3 py-1 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--text-muted)] font-bold">
+              {articles.length} مادة منشورة
+            </span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black text-[var(--text)]">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--text)] title-imperial">
             {author.nameAr}
           </h1>
 
@@ -96,14 +103,10 @@ export default async function AuthorPage({ params }: Props) {
               {author.bioAr}
             </p>
           ) : (
-            <p className="text-xs text-[var(--text-muted)]">
-              صحفي ومحرر مشارك في التغطيات والتحليلات الإخبارية لمنصة «الوطن اليوم».
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              صحفي ومحرر مشارك في التغطيات والتحليلات الإخبارية الموثقة وفق ميثاق الشرف التحريري لمنصة «الوطن اليوم».
             </p>
           )}
-
-          <div className="pt-2 text-xs text-[var(--text-muted)] font-medium">
-            إجمالي المواد المنشورة: {articles.length} مادة صحفية
-          </div>
         </div>
       </div>
 

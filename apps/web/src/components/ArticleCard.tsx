@@ -128,7 +128,9 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
         {/* النصوص والعنوان */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
-            <span className="font-black text-[var(--gold)] bg-[#590018]/60 px-2 py-0.5 rounded-md border border-[var(--gold)]/20">{article.sectionNameAr}</span>
+            <span className="font-black text-[var(--primary)] dark:text-[var(--gold)] bg-[var(--primary)]/10 dark:bg-[#590018]/70 px-2 py-0.5 rounded-md border border-[var(--primary)]/20 dark:border-[var(--gold)]/25">
+              {article.sectionNameAr}
+            </span>
             <span>•</span>
             <span className="truncate">{article.source?.nameAr || "مصدر أصلي"}</span>
             <span className="ms-auto font-mono">{publishedDate}</span>
@@ -146,7 +148,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
 
   // 3. النمط القياسي المتوسط للشبكات (Medium - بطاقة غنية ومجسمة)
   return (
-    <article className="group card-imperial bg-[var(--surface)] p-4 flex flex-col justify-between hover:border-[var(--primary)]/50 hover:shadow-lg transition-all duration-300 h-full">
+    <article className="group card-imperial rounded-3xl bg-[var(--surface)] dark:bg-gradient-to-b dark:from-[#1b050b]/95 dark:to-[#100206]/95 border border-[var(--border)] dark:border-[var(--gold)]/20 p-4 flex flex-col justify-between hover:border-[var(--primary)]/60 dark:hover:border-[var(--gold)]/55 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 h-full">
       <div>
         {/* صورة البطاقة الدائمة */}
         <div className="relative w-full aspect-16/10 rounded-xl overflow-hidden mb-3.5 bg-stone-900 shadow-sm border border-[var(--border)]">
@@ -159,7 +161,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
           {/* شريط ذهبي أعلى الصورة بالداخل */}
-          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70" />
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
 
           {/* شارة القسم والعاجل */}
           <div className="absolute top-2 start-2 flex items-center gap-1.5">
@@ -208,7 +210,7 @@ export function ArticleCard({ article, variant = "medium" }: Props) {
 
         <Link
           href={`/article/${article.id}/${article.slug}`}
-          className="text-[var(--gold)] font-black hover:underline flex items-center gap-1 text-[11px] shrink-0 group-hover:gap-2 transition-all"
+          className="text-[var(--primary)] dark:text-[var(--gold)] font-black hover:underline flex items-center gap-1 text-[11px] shrink-0 group-hover:gap-2 transition-all"
         >
           <span>التفاصيل</span>
           <ArrowLeft className="w-3 h-3 rtl:rotate-0" />

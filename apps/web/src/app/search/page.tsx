@@ -31,21 +31,24 @@ export default async function SearchPage({ searchParams }: Props) {
   const results = q.trim() ? await searchArticles(q, section || undefined, 30) : [];
 
   return (
-    <div className="container-custom py-8 max-w-4xl mx-auto space-y-8">
-      {/* الترويسة الرئيسية */}
-      <div className="rounded-2xl border border-[var(--border)] bg-gradient-to-r from-[var(--surface)] to-[var(--bg)] p-6 md:p-8 space-y-2 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center">
-            <Search className="w-4 h-4" />
+    <div className="container-custom py-10 max-w-5xl mx-auto space-y-8">
+      {/* الترويسة الرئيسية لمحرك البحث السيادي */}
+      <header className="relative rounded-3xl overflow-hidden border border-[var(--gold)]/30 bg-gradient-to-br from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#21040c]/95 dark:via-[#140408]/95 dark:to-[#0e0407]/95 p-6 md:p-9 space-y-3 shadow-xl">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#590018] to-[#26000a] text-[var(--gold)] border border-[var(--gold)]/40 flex items-center justify-center shadow-md shrink-0">
+            <Search className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-black text-[var(--text)]">
-            محرك البحث الذكي في منصة «الوطن اليوم»
-          </h1>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] title-imperial">
+              محرك البحث الذكي في أرشيف «الوطن اليوم»
+            </h1>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
+              استقصاء فوري عبر الفهرسة السريعة وقاعدة البيانات في مئات التغطيات والقصص الموثقة.
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-[var(--text-muted)]">
-          ابحث بدقة في مئات التغطيات الإخبارية والقصص المجمعة والمصنفة من مصادرها الرسمية الموثقة.
-        </p>
-      </div>
+      </header>
 
       {/* حقل البحث ونماذج الفرز */}
       <form method="GET" action="/search" className="space-y-4">

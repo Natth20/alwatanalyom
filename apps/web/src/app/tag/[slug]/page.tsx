@@ -75,20 +75,34 @@ export default async function TagPage({ params }: Props) {
         <span className="text-[var(--primary)] font-bold">{tag.nameAr}</span>
       </nav>
 
-      {/* ترويسة الوسم */}
-      <div className="border-b-2 border-[var(--primary)] pb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center">
-            <Hash className="w-5 h-5" />
+      {/* ترويسة الوسم الفاخرة */}
+      <header className="relative rounded-3xl overflow-hidden border border-[var(--gold)]/30 bg-gradient-to-br from-[#26000A]/15 via-[var(--surface)] to-[var(--surface)] dark:from-[#21040c]/95 dark:via-[#140408]/95 dark:to-[#0e0407]/95 p-6 sm:p-9 shadow-xl space-y-3">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-80" />
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#590018] to-[#26000a] text-[var(--gold)] border border-[var(--gold)]/40 flex items-center justify-center shadow-md shrink-0">
+              <Hash className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-[var(--primary)] dark:text-[var(--gold)] block">
+                محور موضوعي موثق
+              </span>
+              <h1 className="text-2xl sm:text-4xl font-black text-[var(--text)] title-imperial">
+                #{tag.nameAr}
+              </h1>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-[var(--text)]">
-            #{tag.nameAr}
-          </h1>
+
+          <span className="px-3.5 py-1.5 rounded-2xl bg-[var(--bg)] border border-[var(--border)] text-xs font-mono font-bold text-[var(--primary)]">
+            {articles.length} مادة صحفية
+          </span>
         </div>
-        <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-          أحدث المواد الإخبارية والتقارير المرتبطة بهذا الوسم ({articles.length} مادة صحفية)
+
+        <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
+          متابعة شاملة لكافة الأخبار والتقارير والتغطيات الميدانية والتحليلية المرتبطة بوسم #{tag.nameAr} من مصادرها الأصلية المعتمدة.
         </p>
-      </div>
+      </header>
 
       {/* قائمة المقالات */}
       {articles.length > 0 ? (

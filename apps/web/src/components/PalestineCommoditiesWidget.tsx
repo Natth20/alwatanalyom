@@ -20,6 +20,7 @@ export function PalestineCommoditiesWidget() {
   const [asOf, setAsOf] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"gold" | "fx" | "commodities">("gold");
+  const [gramWeight, setGramWeight] = useState<number>(1);
 
   const loadData = () => {
     setLoading(true);
@@ -113,11 +114,31 @@ export function PalestineCommoditiesWidget() {
         </div>
       ) : activeTab === "gold" ? (
         <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-black/35 border border-amber-500/20 rounded-2xl px-4 py-2.5 text-xs">
+            <span className="text-amber-200 font-bold">مضاعف الوزن الفوري (لحساب الصاغة والشبكة):</span>
+            <div className="flex items-center gap-1.5 font-mono">
+              {[1, 5, 10, 20, 50].map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => setGramWeight(w)}
+                  className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
+                    gramWeight === w
+                      ? "bg-[var(--gold)] text-[#140106] shadow-sm"
+                      : "bg-white/10 text-stone-200 hover:bg-white/20"
+                  }`}
+                >
+                  {w} غ
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {goldKarats.map((row) => (
               <div
                 key={row.karatNumber}
-                className="rounded-2xl border border-amber-500/25 bg-white/[0.04] p-4 space-y-2.5"
+                className="rounded-2xl border border-amber-500/25 bg-white/[0.04] hover:border-[var(--gold)]/55 transition-colors p-4 space-y-2.5"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-[var(--gold)]">{row.karat}</span>
@@ -126,11 +147,12 @@ export function PalestineCommoditiesWidget() {
                   </span>
                 </div>
                 <div className="text-2xl font-black font-mono text-white">
-                  {row.ilsPerGram.toFixed(2)} <span className="text-sm text-amber-300">₪ / غ</span>
+                  {(row.ilsPerGram * gramWeight).toFixed(2)}{" "}
+                  <span className="text-sm text-amber-300">₪ / {gramWeight}غ</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-stone-300 pt-1.5 border-t border-white/10 font-mono">
-                  <span>{row.jodPerGram.toFixed(2)} د.أ</span>
-                  <span>${row.usdPerGram.toFixed(2)}</span>
+                  <span>{(row.jodPerGram * gramWeight).toFixed(2)} د.أ</span>
+                  <span>${(row.usdPerGram * gramWeight).toFixed(2)}</span>
                 </div>
               </div>
             ))}

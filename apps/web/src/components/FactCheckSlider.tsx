@@ -4,6 +4,42 @@ import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { MoveHorizontal, CheckCircle2, ShieldAlert, ShieldCheck, ExternalLink, Search } from "lucide-react";
 
+interface ForensicCase {
+  id: string;
+  label: string;
+  claimSideTitle: string;
+  claimSideDesc: string;
+  proofSideTitle: string;
+  proofSideDesc: string;
+}
+
+const FORENSIC_CASES: ForensicCase[] = [
+  {
+    id: "context",
+    label: "فيديو خارج السياق",
+    claimSideTitle: "علامات المحتوى المجتزأ أو المعاد تدويره",
+    claimSideDesc: "مقاطع منزوعة من سياقها الزمني تعود لسنوات سابقة ويعاد نشرها بهدف التضليل أو إثارة الهلع.",
+    proofSideTitle: "التحقق الزمني والبحث العكسي للإطارات",
+    proofSideDesc: "تجزئة الفيديو ومطابقة الإطارات مع الأرشيف الإعلامي المعتمد لتحديد تاريخ النشر الأصلي بدقة.",
+  },
+  {
+    id: "ai-image",
+    label: "صور مولّدة بالذكاء",
+    claimSideTitle: "مؤشرات التوليد الاصطناعي (Deepfake / AI)",
+    claimSideDesc: "تباين غير طبيعي في الإضاءة والظلال أو تشوهات في البنية الهندسية والأصابع والنصوص.",
+    proofSideTitle: "الفحص الجنائي للبصريات (ELA & SynthID)",
+    proofSideDesc: "تحليل مستوى الخطأ الإشعاعي وفحص البيانات الوصفية EXIF ومطابقة الأقمار الصناعية.",
+  },
+  {
+    id: "forged-doc",
+    label: "وثائق وبيانات منسوبة",
+    claimSideTitle: "الترويسات والأختام المصطنعة",
+    claimSideDesc: "أخطاء في أرقام الصادر والخطوط الرسمية أو استخدام نماذج مراسلات ملغاة لجهات حكومية.",
+    proofSideTitle: "المطابقة المزدوجة مع المصدر الرسمي",
+    proofSideDesc: "الاستعلام المباشر من الجهة المعنية ونشر البيان النافي أو الوثيقة المعتمدة حصراً.",
+  },
+];
+
 interface Props {
   claimTitle?: string;
   forensicProof?: string;
@@ -15,7 +51,9 @@ export function FactCheckSlider({
 }: Props) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [activeCaseIdx, setActiveCaseIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const currentCase = FORENSIC_CASES[activeCaseIdx] ?? FORENSIC_CASES[0]!;
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -49,10 +87,22 @@ export function FactCheckSlider({
           </h3>
         </div>
 
-        <span className="text-xs text-[var(--text-muted)] font-medium flex items-center gap-1.5">
-          <MoveHorizontal className="w-4 h-4 text-rose-500 animate-pulse" />
-          <span>اسحب الفاصل للمقارنة بين مؤشرات التضليل وبروتوكول التحقق</span>
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {FORENSIC_CASES.map((c, idx) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setActiveCaseIdx(idx)}
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                activeCaseIdx === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-[var(--bg)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div
@@ -68,9 +118,9 @@ export function FactCheckSlider({
         <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-950 via-slate-900 to-black text-white p-8">
           <div className="text-center space-y-3 max-w-md">
             <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-            <h4 className="text-lg font-black text-emerald-300">بروتوكول التثبت المزدوج والمصدر الأصيل</h4>
+            <h4 className="text-lg font-black text-emerald-300">{currentCase.proofSideTitle}</h4>
             <p className="text-xs text-slate-300 leading-relaxed">
-              تطابق الإحداثيات الجغرافية والبيانات الرسمية الصادرة عن الجهات الميدانية المعتمدة مع سلسلة النشر الأولي.
+              {currentCase.proofSideDesc}
             </p>
           </div>
           <div className="absolute bottom-4 end-4 px-3 py-1.5 rounded-xl bg-emerald-600/90 text-white text-xs font-black flex items-center gap-1.5 pointer-events-none">
@@ -86,9 +136,9 @@ export function FactCheckSlider({
         >
           <div className="text-center space-y-3 min-w-[280px] max-w-md">
             <ShieldAlert className="w-12 h-12 text-rose-400 mx-auto" />
-            <h4 className="text-lg font-black text-rose-300">علامات المحتوى المجتزأ أو المفبرك</h4>
+            <h4 className="text-lg font-black text-rose-300">{currentCase.claimSideTitle}</h4>
             <p className="text-xs text-rose-100/80 leading-relaxed">
-              مقاطع منزوعة من سياقها الزمني أو منشورة عبر حسابات مجهولة دون تاريخ تصوير أو إحداثيات موثقة.
+              {currentCase.claimSideDesc}
             </p>
           </div>
           <div className="absolute bottom-4 start-4 px-3 py-1.5 rounded-xl bg-rose-600/90 text-white text-xs font-black flex items-center gap-1.5 pointer-events-none">
